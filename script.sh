@@ -44,6 +44,23 @@ echo $deviceid
 echo $ipswurl1
 echo $ipswurl2
 
+_wait_for_dfu
+
+if [ -e work/iBSS.img4 ]; then
+
+./ipwnder -p
+
+./irecovery -f iBSS.img4
+./irecovery -f iBSS.img4
+
+./irecovery -f iBEC.img4
+./irecovery -f devicetree.img4
+./irecovery -c devicetree
+./irecovery -f kernelcache.img4
+./irecovery -c bootx &
+
+fi
+
 # we need a shsh file that we can use in order to boot the ios 8 ramdisk
 # in this case we are going to use the ones from SSHRD_Script https://github.com/verygenericname/SSHRD_Script
 ./img4tool -e -s other/shsh/"${check}".shsh -m IM4M
@@ -143,7 +160,7 @@ read -p "pls press the enter key once device is in the ramdisk " pause1
 
 sleep 2
 
-read -p "would you like to delete all the partitions? " response1
+read -p "would you like to delete all the partitions and start over? " response1
 
 if [[ "$response1" = 'yes' || "$response1" = 'y' ]]; then
 
@@ -158,8 +175,6 @@ _kill_if_running iproxy
 echo "device should now reboot into recovery, pls wait"
 
 echo "once in recovery you should follow instructions online to go back into dfu"
-
-fi
 
 _wait_for_dfu
 
@@ -243,6 +258,50 @@ nano fstab
 scp -P 2222 fstab root@localhost:/mnt1/etc/
 
 $(./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
+
+else
+
+ssh -p2222 root@localhost
+
+fi
+
+mkdir work
+
+cd work
+
+if [ ! -e devicetree.img4 ]; then
+
+./pzb -g Firmware/dfu/iBSS.n51ap.RELEASE.im4p "$ipswurl1"
+./pzb -g Firmware/dfu/iBEC.n51ap.RELEASE.im4p "$ipswurl1"
+./pzb -g kernelcache.release.n51 "$ipswurl1"
+./pzb -g Firmware/all_flash/all_flash.n51ap.production/DeviceTree.n51ap.im4p "$ipswurl1"
+./img4 -i iBSS.n51ap.RELEASE.im4p -o iBSS.dec -k b4c6843dddc7c7e3727077aee6e62c4c42d112d57eeb50505c1e7be26f4d580982839da4e75cc0eb1314ecc464ec4779
+./img4 -i iBEC.n51ap.RELEASE.im4p -o iBEC.dec -k f800c184406ae951847b5e0207f78c89058cd17ac2e346dd315a3bdbe8b43565962896ed8bd28bfbd201c94ba94b6afb
+./ipatcher iBSS.dec iBSS.patched
+./ipatcher iBEC.dec iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1"
+./img4 -i iBSS.patched -o iBSS.img4 -M IM4M -A -T ibss
+./img4 -i iBEC.patched -o iBEC.img4 -M IM4M -A -T ibec
+./img4 -i kernelcache.release.n51 -o kernelcache.im4p -k 315af5407859bf02143283deaa31e92e46c6ca6cb9799a6018c94d2cebb6579345f8496d5a0e72cf783e4bd4dbabc59c -D
+./img4 -i kernelcache.release.n51 -o kcache.raw -k 315af5407859bf02143283deaa31e92e46c6ca6cb9799a6018c94d2cebb6579345f8496d5a0e72cf783e4bd4dbabc59c
+./seprmvr64lite kcache.raw kcache.patched
+./kerneldiff kcache.raw kcache.patched kc.bpatch
+./img4 -i kernelcache.im4p -o kernelcache.img4 -M IM4M -T rkrn -P kc.bpatch
+./img4 -i DeviceTree.n51ap.im4p -o dtree.raw -k 4955c27b46e5eaf7e7b3829da15fefcf83f82bb816d59b13451b1fbc21332b730f5138e40148f8815767f1f92b0f16cb
+./img4 -i dtree.raw -o devicetree.img4 -A -M IM4M -T rdtr
+fi
+
+_wait_for_dfu
+
+./ipwnder -p
+
+./irecovery -f iBSS.img4
+./irecovery -f iBSS.img4
+
+./irecovery -f iBEC.img4
+./irecovery -f devicetree.img4
+./irecovery -c devicetree
+./irecovery -f kernelcache.img4
+./irecovery -c bootx &
 
 fi
 
