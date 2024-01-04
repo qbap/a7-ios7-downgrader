@@ -15,15 +15,37 @@ _wait_for_dfu() {
     done
 }
 
+remote_cmd() {
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "$@"
+}
+
+remote_cp() {
+    ./sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P2222 $@
+}
+
+_kill_if_running() {
+    if (pgrep -u root -xf "$1" &> /dev/null > /dev/null); then
+        # yes, it's running as root. kill it
+        sudo killall $1
+    else
+        if (pgrep -x "$1" &> /dev/null > /dev/null); then
+            killall $1
+        fi
+    fi
+}
+
 check="0x8960"
 deviceid="iPhone6,1"
 ipswurl1=$(curl -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | ./jq '.firmwares | .[] | select(.version=="'7.1.2'")' | ./jq -s '.[0] | .url' --raw-output)
 ipswurl2=$(curl -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | ./jq '.firmwares | .[] | select(.version=="'8.4.1'")' | ./jq -s '.[0] | .url' --raw-output)
 
 echo $deviceid
+
 echo $ipswurl1
 echo $ipswurl2
 
+# we need a shsh file that we can use in order to boot the ios 8 ramdisk
+# in this case we are going to use the ones from SSHRD_Script https://github.com/verygenericname/SSHRD_Script
 ./img4tool -e -s other/shsh/"${check}".shsh -m IM4M
 
 if [ "$deviceid" = 'iPhone6,1' ]; then
@@ -37,14 +59,21 @@ sudo diskutil enableOwnership /tmp/ios7
 sudo ./gnutar -cvf ios7.tar -C /tmp/ios7 .
 fi
 
-if [ -e ios7.dmg ]; then
+if [ ! -e 058-24099-024.dmg ]; then
+./pzb -g 058-24099-024.dmg "$ipswurl2"
+./dmg extract 058-24099-024.dmg rw.dmg -k e8427cfcf8ff5c79b43453784eec6fead8ca780a7500fe8c17187c9919c9b51800512daf
+./dmg build rw.dmg ios8.dmg
+hdiutil attach -mountpoint /tmp/ios8 ios8.dmg
+sudo diskutil enableOwnership /tmp/ios8
+sudo ./gnutar -cvf ios8.tar -C /tmp/ios8 .
+fi
 
 if [ ! -e apticket.der ]; then
 echo "you need to turn on ssh&sftp over wifi on ur phone now"
-echo "pls install dropbear on cydia"
-echo "and then go back and install openssh as well"
+echo "ios 10.3.3 instructions"
+echo "pls install dropbear on cydia from apt.netsirkl64.com repo"
+echo "and then go and install openssh and mterminal as well"
 echo "dropbear enables ssh on ios 10 and openssh enables sftp on ios 10"
-echo "you'll also need to download mterminal from cydia"
 echo "open mterminal and type su -"
 echo "it will ask for password, the password is alpine"
 echo "then you should type dropbear -R -p 2222"
@@ -56,8 +85,6 @@ echo "$ip"
 ./sshpass -p "alpine" scp -r -P 2222 root@$ip:/usr/local/standalone/firmware/Baseband ./Baseband
 ./sshpass -p "alpine" scp -r -P 2222 root@$ip:/var/keybags ./keybags
 fi
-
-
 
 if [ ! -e 058-24442-023.dmg ]; then
 ./pzb -g 058-24442-023.dmg "$ipswurl2"
@@ -71,6 +98,7 @@ hdiutil detach /Volumes/ramdisk
 fi
 
 if [ -e ramdisk.img4 ]; then
+
 if [ ! -e devicetree.img4 ]; then
 
 ./pzb -g Firmware/dfu/iBSS.n51.RELEASE.im4p "$ipswurl2"
@@ -88,31 +116,61 @@ if [ ! -e devicetree.img4 ]; then
 ./img4 -i DeviceTree.n51ap.im4p -o dtree.raw -k 2f744c5a6cda23c30eccb2fcac9aff2222ad2b37ed96f14a3988102558e0920905536622b1e78288c2533a7de5d01425
 ./img4 -i dtree.raw -o devicetree.img4 -A -M IM4M -T rdtr
 fi
+
+_wait_for_dfu
+
 ./ipwnder -p
 
 ./irecovery -f iBSS.img4
 ./irecovery -f iBSS.img4
 
 ./irecovery -f iBEC.img4
-
 ./irecovery -f ramdisk.img4
-
 ./irecovery -c ramdisk
-
 ./irecovery -f devicetree.img4
-
 ./irecovery -c devicetree
-
 ./irecovery -f kernelcache.img4
+./irecovery -c bootx &
 
-./irecovery -c bootx
+read -p "pls press the enter key once device is in the ramdisk" pause1
 
-fi
+./iproxy 2222 44 &
 
-fi
+remote_cmd "lwvm init"
+
+sleep 2
+
+./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "reboot" &
+
+_kill_if_running iproxy
+
+echo "device should now reboot into dfu, pls wait"
+
+echo "once in dfu mode the device will have to boot back into ramdisk again"
 
 _wait_for_dfu
 
-echo "meow!"
+./ipwnder -p
+
+./irecovery -f iBSS.img4
+./irecovery -f iBSS.img4
+
+./irecovery -f iBEC.img4
+./irecovery -f ramdisk.img4
+./irecovery -c ramdisk
+./irecovery -f devicetree.img4
+./irecovery -c devicetree
+./irecovery -f kernelcache.img4
+./irecovery -c bootx &
+
+read -p "pls press the enter key once device is in the ramdisk" pause1
+
+./iproxy 2222 44 &
+
+echo "https://ios7.iarchive.app/downgrade/installing-filesystem.html"
+
+ssh -l root -p 2222 127.0.0.1
+
+fi
 
 fi
