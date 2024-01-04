@@ -39,7 +39,7 @@ echo $ipswurl2
 read -p "what ios version would you like to downgrade to? " iosversion
 if [ "$iosversion" = '8.4.1' ]; then
     echo "good choice"
-else [ "$iosversion" = '7.1.2' ]; then
+else if [ "$iosversion" = '7.1.2' ]; then
     echo "good choice"
 else
     echo "that version is not supported"
@@ -159,7 +159,7 @@ if [ "$deviceid" = 'iPhone6,1' ]; then
             ./img4 -i kernelcache.im4p -o kernelcache -M IM4M -T krnl -P kc.bpatch
             ./img4 -i DeviceTree.n51ap.im4p -o dtree.raw -k 2f744c5a6cda23c30eccb2fcac9aff2222ad2b37ed96f14a3988102558e0920905536622b1e78288c2533a7de5d01425
             ./img4 -i dtree.raw -o devicetree.img4 -A -M IM4M -T rdtr
-        else [ "$iosversion" = '7.1.2' ]; then
+        else if [ "$iosversion" = '7.1.2' ]; then
             ../pzb -g Firmware/dfu/iBSS.n51ap.RELEASE.im4p "$ipswurl1"
             ../pzb -g Firmware/dfu/iBEC.n51ap.RELEASE.im4p "$ipswurl1"
             ../pzb -g kernelcache.release.n51 "$ipswurl1"
@@ -247,7 +247,7 @@ if [ "$deviceid" = 'iPhone6,1' ]; then
         if [ "$iosversion" = '8.4.1' ]; then
             scp -P 2222 ios8.tar root@localhost:/mnt2
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/ios8.tar -C /mnt1"
-        else [ "$iosversion" = '7.1.2' ]; then
+        else if [ "$iosversion" = '7.1.2' ]; then
             scp -P 2222 ios7.tar root@localhost:/mnt2
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/ios7.tar -C /mnt1"
         fi
