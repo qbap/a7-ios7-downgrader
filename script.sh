@@ -253,10 +253,6 @@ scp -r -P 2222 ./keybags root@localhost:/mnt2
 scp -r -P 2222 ./Baseband root@localhost:/mnt1/usr/local/standalone/firmware
 scp -P 2222 ./apticket.der root@localhost:/mnt1/System/Library/Caches/
 scp -P 2222 ./sep-firmware.img4 root@localhost:/mnt1/usr/standalone/firmware/
-scp -P 2222 root@localhost:/mnt1/etc/fstab ./fstab
-
-nano fstab
-
 scp -P 2222 fstab root@localhost:/mnt1/etc/
 
 read -p "would you like to also delete Setup.app? " response2
@@ -264,12 +260,14 @@ read -p "would you like to also delete Setup.app? " response2
 if [[ "$response2" = 'yes' || "$response2" = 'y' ]]; then
 
 ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/Applications/Setup.app"
+scp -P 2222 ./data_ark.plist.tar root@localhost:/mnt2/
+./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf data_ark.plist.tar -C /mnt2"
 
 fi
 
-ssh -p2222 root@localhost
+./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/ios7.tar"
 
-#$(./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
+$(./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
 
 else
 
