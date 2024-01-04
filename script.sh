@@ -89,10 +89,11 @@ fi
 if [ ! -e 058-24442-023.dmg ]; then
 ./pzb -g 058-24442-023.dmg "$ipswurl2"
 ./img4 -i 058-24442-023.dmg -o ramdisk.dmg -k 5f72aa47ded95dd5f3504c44db082240a8faf901c15014e99c6bf50a63c407c82846f07750b12fa5737ede556b226619
-hdiutil resize -size 50M ramdisk.dmg
-hdiutil attach ramdisk.dmg
-./gnutar -xvf iram.tar -C /Volumes/ramdisk
-hdiutil detach /Volumes/ramdisk
+hdiutil resize -size 60M ramdisk.dmg
+hdiutil attach -mountpoint /tmp/ramdisk ramdisk.dmg
+sudo diskutil enableOwnership /tmp/ramdisk
+sudo ./gnutar -xvf iram.tar -C /tmp/ramdisk
+hdiutil detach /tmp/ramdisk
 ./img4tool -c ramdisk.im4p -t rdsk ramdisk.dmg
 ./img4tool -c ramdisk.img4 -p ramdisk.im4p -m IM4M
 fi
@@ -112,6 +113,10 @@ if [ ! -e devicetree.img4 ]; then
 ./img4 -i iBSS.patched -o iBSS.img4 -M IM4M -A -T ibss
 ./img4 -i iBEC.patched -o iBEC.img4 -M IM4M -A -T ibec
 ./img4 -i kernelcache.release.n51 -o kernelcache.im4p -k 03447866614ec7f0e083eba37b31f1a75484c5ab65e00e895b95db81b873d1292f766e614c754ec523b62a48d33664e1 -D
+#./img4 -i kernelcache.release.n51 -o kcache.raw -k 03447866614ec7f0e083eba37b31f1a75484c5ab65e00e895b95db81b873d1292f766e614c754ec523b62a48d33664e1
+#./seprmvr64lite kcache.raw kcache.patched
+#./kerneldiff kcache.raw kcache.patched kc.bpatch
+#./img4 -i kernelcache.im4p -o kernelcache.img4 -M IM4M -T rkrn -P kc.bpatch
 ./img4 -i kernelcache.im4p -o kernelcache.img4 -M IM4M -T rkrn
 ./img4 -i DeviceTree.n51ap.im4p -o dtree.raw -k 2f744c5a6cda23c30eccb2fcac9aff2222ad2b37ed96f14a3988102558e0920905536622b1e78288c2533a7de5d01425
 ./img4 -i dtree.raw -o devicetree.img4 -A -M IM4M -T rdtr
@@ -132,21 +137,29 @@ _wait_for_dfu
 ./irecovery -f kernelcache.img4
 ./irecovery -c bootx &
 
-read -p "pls press the enter key once device is in the ramdisk" pause1
+read -p "pls press the enter key once device is in the ramdisk " pause1
 
-./iproxy 2222 44 &
+./iproxy 2222 22 &
+
+sleep 2
+
+read -p "would you like to delete all the partitions? " response1
+
+if [[ "$response1" = 'yes' || "$response1" = 'y' ]]; then
 
 remote_cmd "lwvm init"
 
 sleep 2
 
-./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "reboot" &
+$(./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
 
 _kill_if_running iproxy
 
-echo "device should now reboot into dfu, pls wait"
+echo "device should now reboot into recovery, pls wait"
 
-echo "once in dfu mode the device will have to boot back into ramdisk again"
+echo "once in recovery you should follow instructions online to go back into dfu"
+
+fi
 
 _wait_for_dfu
 
@@ -165,11 +178,71 @@ _wait_for_dfu
 
 read -p "pls press the enter key once device is in the ramdisk" pause1
 
-./iproxy 2222 44 &
+./iproxy 2222 22 &
 
 echo "https://ios7.iarchive.app/downgrade/installing-filesystem.html"
 
-ssh -l root -p 2222 127.0.0.1
+echo "partition 1"
+
+echo "step 1, press the letter n on your keyboard and then press enter"
+
+echo "step 2, press number 1 on your keyboard and press enter"
+
+echo "step 3, press enter again"
+
+echo "step 4, type 786438 and then press enter"
+
+echo "step 5, press enter one last time"
+
+echo "partition 2"
+
+echo "step 1, press the letter n on your keyboard and then press enter"
+
+echo "step 2, press number 2 on your keyboard and press enter"
+
+echo "step 3, press enter 3 more times"
+
+echo "last steps"
+
+echo "step 1, press the letter w on your keyboard and then press enter"
+
+echo "step 2, press y on your keyboard and press enter"
+
+./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "gptfdisk /dev/rdisk0s1"
+
+./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync"
+sleep 2
+./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync"
+sleep 2
+./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync"
+sleep 2
+./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync"
+sleep 2
+
+./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_hfs -s -v System -J -b 4096 -n a=4096,c=4096,e=4096 /dev/disk0s1s1"
+./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_hfs -s -v Data -J -b 4096 -n a=4096,c=4096,e=4096 /dev/disk0s1s2"
+
+./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_hfs /dev/disk0s1s1 /mnt1"
+./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_hfs /dev/disk0s1s2 /mnt2"
+
+scp -P 2222 ios7.tar root@localhost:/mnt2
+
+./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/ios7.tar -C /mnt1"
+./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mv -v /mnt1/private/var/* /mnt2"
+./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt1/usr/local/standalone/firmware/Baseband"
+./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir /mnt2/keybags"
+
+scp -r -P 2222 ./keybags root@localhost:/mnt2
+scp -r -P 2222 ./Baseband root@localhost:/mnt1/usr/local/standalone/firmware
+scp -P 2222 ./apticket.der root@localhost:/mnt1/System/Library/Caches/
+scp -P 2222 ./sep-firmware.img4 root@localhost:/mnt1/usr/standalone/firmware/
+scp -P 2222 root@localhost:/mnt1/etc/fstab ./fstab
+
+nano fstab
+
+scp -P 2222 fstab root@localhost:/mnt1/etc/
+
+$(./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
 
 fi
 
