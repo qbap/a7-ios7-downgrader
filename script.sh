@@ -31,8 +31,10 @@ _kill_if_running() {
 }
 check="0x8960"
 deviceid="iPhone6,1"
-ipswurl1=$(curl -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | ./jq '.firmwares | .[] | select(.version=="'7.1.2'")' | ./jq -s '.[0] | .url' --raw-output)
-ipswurl2=$(curl -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | ./jq '.firmwares | .[] | select(.version=="'8.4.1'")' | ./jq -s '.[0] | .url' --raw-output)
+ipswurl1="http://appldnld.apple.com/iOS7.1/031-4821.20140627.ZhtJx/iPhone6,1_7.1.2_11D257_Restore.ipsw"
+ipswurl2="http://appldnld.apple.com/ios8.4.1/031-31174-20150812-75196C52-3C8F-11E5-8C71-B31A3A53DB92/iPhone6,1_8.4.1_12H321_Restore.ipsw"
+#ipswurl1=$(curl -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | ./jq '.firmwares | .[] | select(.version=="'7.1.2'")' | ./jq -s '.[0] | .url' --raw-output)
+#ipswurl2=$(curl -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | ./jq '.firmwares | .[] | select(.version=="'8.4.1'")' | ./jq -s '.[0] | .url' --raw-output)
 echo $deviceid
 echo $ipswurl1
 echo $ipswurl2
@@ -111,6 +113,7 @@ if [ "$deviceid" = 'iPhone6,1' ]; then
         hdiutil attach -mountpoint /tmp/ramdisk ramdisk.dmg
         sudo diskutil enableOwnership /tmp/ramdisk
         sudo ./gnutar -xvf iram.tar -C /tmp/ramdisk
+        sudo ./gnutar -xvf dualbootstuff.tar -C /tmp/ramdisk
         hdiutil detach /tmp/ramdisk
         ./img4tool -c ramdisk.im4p -t rdsk ramdisk.dmg
         ./img4tool -c ramdisk.img4 -p ramdisk.im4p -m IM4M
@@ -241,7 +244,7 @@ if [ "$deviceid" = 'iPhone6,1' ]; then
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync"
         sleep 2
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_hfs -s -v System -J -b 4096 -n a=4096,c=4096,e=4096 /dev/disk0s1s1"
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_hfs -s -v Data -J -P -b 4096 -n a=4096,c=4096,e=4096 /dev/disk0s1s2"
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_hfs -s -v Data -J -b 4096 -n a=4096,c=4096,e=4096 /dev/disk0s1s2"
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_hfs /dev/disk0s1s1 /mnt1"
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_hfs /dev/disk0s1s2 /mnt2"
         if [ "$iosversion" = '8.4.1' ]; then
@@ -274,7 +277,7 @@ if [ "$deviceid" = 'iPhone6,1' ]; then
         scp -P 2222 ./work/kernelcache root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches
         if [ "$iosversion" = '8.4.1' ]; then
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt2"
-            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "NoMoreSIGABRT disk0s1s2"
+            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/NoMoreSIGABRT disk0s1s2"
         fi
         ssh -p2222 root@localhost
         $(./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
