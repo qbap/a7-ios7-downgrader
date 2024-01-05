@@ -33,8 +33,10 @@ check="0x8960"
 deviceid="iPhone6,1"
 ipswurl1="http://appldnld.apple.com/iOS7.1/031-4821.20140627.ZhtJx/iPhone6,1_7.1.2_11D257_Restore.ipsw"
 ipswurl2="http://appldnld.apple.com/ios8.4.1/031-31174-20150812-75196C52-3C8F-11E5-8C71-B31A3A53DB92/iPhone6,1_8.4.1_12H321_Restore.ipsw"
+ipswurl3="http://appldnld.apple.com/ios9.3.2/031-62564-20160516-7F3CEE38-13A9-11E6-ADCF-CED9400DF7EB/iPhone6,1_9.3.2_13F69_Restore.ipsw"
 #ipswurl1=$(curl -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | ./jq '.firmwares | .[] | select(.version=="'7.1.2'")' | ./jq -s '.[0] | .url' --raw-output)
 #ipswurl2=$(curl -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | ./jq '.firmwares | .[] | select(.version=="'8.4.1'")' | ./jq -s '.[0] | .url' --raw-output)
+#ipswurl3=$(curl -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | ./jq '.firmwares | .[] | select(.version=="'9.3.2'")' | ./jq -s '.[0] | .url' --raw-output)
 echo $deviceid
 echo $ipswurl1
 echo $ipswurl2
@@ -42,6 +44,8 @@ read -p "what ios version would you like to downgrade to? " iosversion
 if [ "$iosversion" = '8.4.1' ]; then
     echo "good choice"
 elif [ "$iosversion" = '7.1.2' ]; then
+    echo "good choice"
+elif [ "$iosversion" = '9.3.2' ]; then
     echo "good choice"
 else
     echo "that version is not supported"
@@ -82,6 +86,15 @@ if [ "$deviceid" = 'iPhone6,1' ]; then
         hdiutil attach -mountpoint /tmp/ios8 ios8.dmg
         sudo diskutil enableOwnership /tmp/ios8
         sudo ./gnutar -cvf ios8.tar -C /tmp/ios8 .
+    fi
+    # we need to download ios 9.3.2 root fs and decrypt it and put it into a tar file
+    if [ ! -e 058-36981-072.dmg ]; then
+        ./pzb -g 058-36981-072.dmg "$ipswurl3"
+        ./dmg extract 058-36981-072.dmg rw.dmg -k ca08477e9fdba12761bf5fbe2466f3028df6debe633b87cb2d66911c2826646fc3cbfc3c
+        ./dmg build rw.dmg ios9.dmg
+        hdiutil attach -mountpoint /tmp/ios9 ios9.dmg
+        sudo diskutil enableOwnership /tmp/ios9
+        sudo ./gnutar -cvf ios9.tar -C /tmp/ios9 .
     fi
     if [ ! -e apticket.der ]; then
         echo "you need to turn on ssh&sftp over wifi on ur phone now"
@@ -130,7 +143,7 @@ if [ "$deviceid" = 'iPhone6,1' ]; then
         ./img4 -i iBSS.n51.RELEASE.im4p -o iBSS.dec -k 46c3abc7147db7e9c06aae801b13a91238b9f71efaaa02e48731471ac1fc506ab1e4e9716eac2207037778d9f62648d9
         ./img4 -i iBEC.n51.RELEASE.im4p -o iBEC.dec -k c52d431c7fbc85b67307c2c7297f919f5fd45b3e2717b75e9ef1816f6afa2aa9e92fb8c7f1b1403600943a8bd637b62d
         ./ipatcher iBSS.dec iBSS.patched
-        ./ipatcher iBEC.dec iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 amfi_get_out_of_my_way=1 -v rd=md0 nand-enable-reformat=1 -progress"
+        ./ipatcher iBEC.dec iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 -progress"
         ./img4 -i iBSS.patched -o iBSS.img4 -M IM4M -A -T ibss
         ./img4 -i iBEC.patched -o iBEC.img4 -M IM4M -A -T ibec
         ./img4 -i kernelcache.release.n51 -o kernelcache.im4p -k 03447866614ec7f0e083eba37b31f1a75484c5ab65e00e895b95db81b873d1292f766e614c754ec523b62a48d33664e1 -D
@@ -151,7 +164,7 @@ if [ "$deviceid" = 'iPhone6,1' ]; then
             ../img4 -i iBSS.n51.RELEASE.im4p -o iBSS.dec -k 46c3abc7147db7e9c06aae801b13a91238b9f71efaaa02e48731471ac1fc506ab1e4e9716eac2207037778d9f62648d9
             ../img4 -i iBEC.n51.RELEASE.im4p -o iBEC.dec -k c52d431c7fbc85b67307c2c7297f919f5fd45b3e2717b75e9ef1816f6afa2aa9e92fb8c7f1b1403600943a8bd637b62d
             ../ipatcher iBSS.dec iBSS.patched
-            ../ipatcher iBEC.dec iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e amfi_get_out_of_my_way=1"
+            ../ipatcher iBEC.dec iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1"
             ../img4 -i iBSS.patched -o iBSS.img4 -M IM4M -A -T ibss
             ../img4 -i iBEC.patched -o iBEC.img4 -M IM4M -A -T ibec
             ../img4 -i kernelcache.release.n51 -o kernelcache.im4p -k 03447866614ec7f0e083eba37b31f1a75484c5ab65e00e895b95db81b873d1292f766e614c754ec523b62a48d33664e1 -D
@@ -180,6 +193,25 @@ if [ "$deviceid" = 'iPhone6,1' ]; then
             ../img4 -i kernelcache.im4p -o kernelcache.img4 -M IM4M -T rkrn -P kc.bpatch
             ../img4 -i kernelcache.im4p -o kernelcache -M IM4M -T krnl -P kc.bpatch
             ../img4 -i DeviceTree.n51ap.im4p -o dtree.raw -k 4955c27b46e5eaf7e7b3829da15fefcf83f82bb816d59b13451b1fbc21332b730f5138e40148f8815767f1f92b0f16cb
+            ../img4 -i dtree.raw -o devicetree.img4 -A -M IM4M -T rdtr
+        elif [ "$iosversion" = '9.3.2' ]; then
+            ../pzb -g Firmware/dfu/iBSS.n51.RELEASE.im4p "$ipswurl3"
+            ../pzb -g Firmware/dfu/iBEC.n51.RELEASE.im4p "$ipswurl3"
+            ../pzb -g kernelcache.release.n51 "$ipswurl3"
+            ../pzb -g Firmware/all_flash/all_flash.n51ap.production/DeviceTree.n51ap.im4p "$ipswurl3"
+            ../img4 -i iBSS.n51.RELEASE.im4p -o iBSS.dec -k fcd5ce2c70f483d50add94d63cc718724618dc046b4c6e432c81243e6f94cdff2f9b0b899a050f0870bb913860f97951
+            ../img4 -i iBEC.n51.RELEASE.im4p -o iBEC.dec -k e73bf307e7f8783ead2a6cbed9a2aea3ebf3b332e5dda4e94f88fe0899e30731dcbb1e5e03a5b6757a4c32cc298a018f
+            ../ipatcher iBSS.dec iBSS.patched
+            ../ipatcher iBEC.dec iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1"
+            ../img4 -i iBSS.patched -o iBSS.img4 -M IM4M -A -T ibss
+            ../img4 -i iBEC.patched -o iBEC.img4 -M IM4M -A -T ibec
+            ../img4 -i kernelcache.release.n51 -o kernelcache.im4p -k 1794b612cf3a4781cebd976c55f5c23abef2d346023dee0e7154673d4adfdee7d6ca1854e7107648a1e3f004f9add1be -D
+            ../img4 -i kernelcache.release.n51 -o kcache.raw -k 1794b612cf3a4781cebd976c55f5c23abef2d346023dee0e7154673d4adfdee7d6ca1854e7107648a1e3f004f9add1be
+            ../seprmvr64lite kcache.raw kcache.patched
+            ../kerneldiff kcache.raw kcache.patched kc.bpatch
+            ../img4 -i kernelcache.im4p -o kernelcache.img4 -M IM4M -T rkrn -P kc.bpatch
+            ../img4 -i kernelcache.im4p -o kernelcache -M IM4M -T krnl -P kc.bpatch
+            ../img4 -i DeviceTree.n51ap.im4p -o dtree.raw -k dc34b39adb91850be325246269da6c12eaed50c730a90bb566c638644fef398412a1b552d97aa8e764df0a30a700d05b
             ../img4 -i dtree.raw -o devicetree.img4 -A -M IM4M -T rdtr
         fi
     fi
@@ -253,6 +285,9 @@ if [ "$deviceid" = 'iPhone6,1' ]; then
         elif [ "$iosversion" = '7.1.2' ]; then
             scp -P 2222 ios7.tar root@localhost:/mnt2
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/ios7.tar -C /mnt1"
+        elif [ "$iosversion" = '9.3.2' ]; then
+            scp -P 2222 ios9.tar root@localhost:/mnt2
+            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/ios9.tar -C /mnt1"
         fi
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mv -v /mnt1/private/var/* /mnt2"
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt1/usr/local/standalone/firmware/Baseband"
@@ -261,6 +296,8 @@ if [ "$deviceid" = 'iPhone6,1' ]; then
         scp -r -P 2222 ./Baseband root@localhost:/mnt1/usr/local/standalone/firmware
         scp -P 2222 ./apticket.der root@localhost:/mnt1/System/Library/Caches/
         scp -P 2222 ./sep-firmware.img4 root@localhost:/mnt1/usr/standalone/firmware/
+        scp -P 2222 root@localhost:/mnt1/etc/fstab ./fstab
+        nano fstab
         scp -P 2222 fstab root@localhost:/mnt1/etc/
         read -p "would you like to also delete Setup.app? " response2
         if [[ "$response2" = 'yes' || "$response2" = 'y' ]]; then
@@ -270,14 +307,14 @@ if [ "$deviceid" = 'iPhone6,1' ]; then
         fi
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/ios7.tar"
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/ios8.tar"
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/ios9.tar"
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/log/asl/SweepStore"
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/Library/PreinstalledAssets/*"
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/Library/Preferences/.GlobalPreferences.plist"
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/.forward"
         scp -P 2222 ./work/kernelcache root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches
-        if [ "$iosversion" = '8.4.1' ]; then
-            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt2"
-            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/NoMoreSIGABRT disk0s1s2"
+        if [ "$iosversion" = '9.3.2' ]; then
+            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram oblit-inprogress=5"
         fi
         ssh -p2222 root@localhost
         $(./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
