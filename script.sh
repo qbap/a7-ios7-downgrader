@@ -29,24 +29,27 @@ _kill_if_running() {
         fi
     fi
 }
-check="0x8960"
-deviceid="iPhone6,1"
-ipswurl1="http://appldnld.apple.com/iOS7.1/031-4821.20140627.ZhtJx/iPhone6,1_7.1.2_11D257_Restore.ipsw"
-ipswurl2="http://appldnld.apple.com/ios8.4.1/031-31174-20150812-75196C52-3C8F-11E5-8C71-B31A3A53DB92/iPhone6,1_8.4.1_12H321_Restore.ipsw"
-ipswurl3="http://appldnld.apple.com/ios9.3.2/031-62564-20160516-7F3CEE38-13A9-11E6-ADCF-CED9400DF7EB/iPhone6,1_9.3.2_13F69_Restore.ipsw"
-#ipswurl1=$(curl -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | ./jq '.firmwares | .[] | select(.version=="'7.1.2'")' | ./jq -s '.[0] | .url' --raw-output)
-#ipswurl2=$(curl -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | ./jq '.firmwares | .[] | select(.version=="'8.4.1'")' | ./jq -s '.[0] | .url' --raw-output)
-#ipswurl3=$(curl -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | ./jq '.firmwares | .[] | select(.version=="'9.3.2'")' | ./jq -s '.[0] | .url' --raw-output)
+_wait_for_dfu
+check=$(./irecovery -q | grep CPID | sed 's/CPID: //')
+deviceid=$(./irecovery -q | grep PRODUCT | sed 's/PRODUCT: //')
+ipswurl1=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | ./jq '.firmwares | .[] | select(.version=="'7.1.2'")' | ./jq -s '.[0] | .url' --raw-output)
+ipswurl2=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | ./jq '.firmwares | .[] | select(.version=="'8.4.1'")' | ./jq -s '.[0] | .url' --raw-output)
+ipswurl3=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | ./jq '.firmwares | .[] | select(.version=="'9.3.2'")' | ./jq -s '.[0] | .url' --raw-output)
 echo $deviceid
 echo $ipswurl1
 echo $ipswurl2
+echo $ipswurl3
 read -p "what ios version would you like to downgrade to? " iosversion
 if [ "$iosversion" = '8.4.1' ]; then
-    echo "good choice"
+    echo "this version does not work correctly"
+    echo "to use this version, pls remove the exit cmd after this msg in script.sh"
+    exit
 elif [ "$iosversion" = '7.1.2' ]; then
     echo "good choice"
 elif [ "$iosversion" = '9.3.2' ]; then
-    echo "good choice"
+    echo "this version does not work correctly"
+    echo "to use this version, pls remove the exit cmd after this msg in script.sh"
+    exit
 else
     echo "that version is not supported"
     exit
@@ -68,7 +71,9 @@ fi
 # we need a shsh file that we can use in order to boot the ios 8 ramdisk
 # in this case we are going to use the ones from SSHRD_Script https://github.com/verygenericname/SSHRD_Script
 ./img4tool -e -s other/shsh/"${check}".shsh -m IM4M
-if [ "$deviceid" = 'iPhone6,1' ]; then
+# as of the time im writing this, i have only tested this script on iPhone6,1 not iPhone6,2
+# pls let me know if it works on iPhone6,2 as is, and if it doesnt ill fix it
+if [[ "$deviceid" = 'iPhone6,1' || "$deviceid" = 'iPhone6,2' ]]; then
     # we need to download ios 7.1.2 root fs and decrypt it and put it into a tar file
     if [ ! -e 058-4438-009.dmg ]; then
         ./pzb -g 058-4438-009.dmg "$ipswurl1"
@@ -163,14 +168,17 @@ if [ "$deviceid" = 'iPhone6,1' ]; then
             ../pzb -g Firmware/all_flash/all_flash.n51ap.production/DeviceTree.n51ap.im4p "$ipswurl2"
             ../img4 -i iBSS.n51.RELEASE.im4p -o iBSS.dec -k 46c3abc7147db7e9c06aae801b13a91238b9f71efaaa02e48731471ac1fc506ab1e4e9716eac2207037778d9f62648d9
             ../img4 -i iBEC.n51.RELEASE.im4p -o iBEC.dec -k c52d431c7fbc85b67307c2c7297f919f5fd45b3e2717b75e9ef1816f6afa2aa9e92fb8c7f1b1403600943a8bd637b62d
-            ../ipatcher iBSS.dec iBSS.patched
-            ../ipatcher iBEC.dec iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1"
+            #../ipatcher iBSS.dec iBSS.patched
+            #../ipatcher iBEC.dec iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1"
+            ../iBoot64Patcher iBSS.dec iBSS.patched
+            ../iBoot64Patcher iBEC.dec iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1"
             ../img4 -i iBSS.patched -o iBSS.img4 -M IM4M -A -T ibss
             ../img4 -i iBEC.patched -o iBEC.img4 -M IM4M -A -T ibec
             ../img4 -i kernelcache.release.n51 -o kernelcache.im4p -k 03447866614ec7f0e083eba37b31f1a75484c5ab65e00e895b95db81b873d1292f766e614c754ec523b62a48d33664e1 -D
             ../img4 -i kernelcache.release.n51 -o kcache.raw -k 03447866614ec7f0e083eba37b31f1a75484c5ab65e00e895b95db81b873d1292f766e614c754ec523b62a48d33664e1
             ../seprmvr64lite kcache.raw kcache.patched
-            ../kerneldiff kcache.raw kcache.patched kc.bpatch
+            ../Kernel64Patcher kcache.patched kcache.patched2 -a
+            ../kerneldiff kcache.raw kcache.patched2 kc.bpatch
             ../img4 -i kernelcache.im4p -o kernelcache.img4 -M IM4M -T rkrn -P kc.bpatch
             ../img4 -i kernelcache.im4p -o kernelcache -M IM4M -T krnl -P kc.bpatch
             ../img4 -i DeviceTree.n51ap.im4p -o dtree.raw -k 2f744c5a6cda23c30eccb2fcac9aff2222ad2b37ed96f14a3988102558e0920905536622b1e78288c2533a7de5d01425
@@ -258,7 +266,11 @@ if [ "$deviceid" = 'iPhone6,1' ]; then
         echo "step 1, press the letter n on your keyboard and then press enter"
         echo "step 2, press number 1 on your keyboard and press enter"
         echo "step 3, press enter again"
-        echo "step 4, type 786438 and then press enter"
+        if [ "$iosversion" = '7.1.2' ]; then
+            echo "step 4, type 786438 and then press enter"
+        else
+            echo "step 4, type 1548290 and then press enter"
+        fi
         echo "step 5, press enter one last time"
         echo "partition 2"
         echo "step 1, press the letter n on your keyboard and then press enter"
@@ -317,7 +329,11 @@ if [ "$deviceid" = 'iPhone6,1' ]; then
         if [ "$iosversion" = '9.3.2' ]; then
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram oblit-inprogress=5"
         fi
-        ssh -p2222 root@localhost
+        if [ "$iosversion" = '7.1.2' ]; then
+            echo "reboot"
+        else
+            ssh -p2222 root@localhost
+        fi
         $(./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
     else
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1"
