@@ -11,6 +11,7 @@ iBEC*
 IM4M
 ios7*
 ios8*
+ios9*
 dtree.raw
 apticket.der
 *.dmg
@@ -22,3 +23,4 @@ work2
 kc.bpatch
 kcache.raw
 kcache.patched
+kcache.patched2

@@ -201,14 +201,15 @@ if [ "$deviceid" = 'iPhone6,1' ]; then
             ../pzb -g Firmware/all_flash/all_flash.n51ap.production/DeviceTree.n51ap.im4p "$ipswurl3"
             ../img4 -i iBSS.n51.RELEASE.im4p -o iBSS.dec -k fcd5ce2c70f483d50add94d63cc718724618dc046b4c6e432c81243e6f94cdff2f9b0b899a050f0870bb913860f97951
             ../img4 -i iBEC.n51.RELEASE.im4p -o iBEC.dec -k e73bf307e7f8783ead2a6cbed9a2aea3ebf3b332e5dda4e94f88fe0899e30731dcbb1e5e03a5b6757a4c32cc298a018f
-            ../ipatcher iBSS.dec iBSS.patched
-            ../ipatcher iBEC.dec iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1"
+            ../iBoot64Patcher iBSS.dec iBSS.patched
+            ../iBoot64Patcher iBEC.dec iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1"
             ../img4 -i iBSS.patched -o iBSS.img4 -M IM4M -A -T ibss
             ../img4 -i iBEC.patched -o iBEC.img4 -M IM4M -A -T ibec
             ../img4 -i kernelcache.release.n51 -o kernelcache.im4p -k 1794b612cf3a4781cebd976c55f5c23abef2d346023dee0e7154673d4adfdee7d6ca1854e7107648a1e3f004f9add1be -D
             ../img4 -i kernelcache.release.n51 -o kcache.raw -k 1794b612cf3a4781cebd976c55f5c23abef2d346023dee0e7154673d4adfdee7d6ca1854e7107648a1e3f004f9add1be
             ../seprmvr64lite kcache.raw kcache.patched
-            ../kerneldiff kcache.raw kcache.patched kc.bpatch
+            ../Kernel64Patcher kcache.patched kcache.patched2 -a
+            ../kerneldiff kcache.raw kcache.patched2 kc.bpatch
             ../img4 -i kernelcache.im4p -o kernelcache.img4 -M IM4M -T rkrn -P kc.bpatch
             ../img4 -i kernelcache.im4p -o kernelcache -M IM4M -T krnl -P kc.bpatch
             ../img4 -i DeviceTree.n51ap.im4p -o dtree.raw -k dc34b39adb91850be325246269da6c12eaed50c730a90bb566c638644fef398412a1b552d97aa8e764df0a30a700d05b
