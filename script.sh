@@ -141,24 +141,24 @@ if [ "$deviceid" = 'iPhone6,1' ]; then
     if [ ! -e devicetree.img4 ]; then
         echo $iosversion
         if [ "$iosversion" = '8.4.1' ]; then
-            ./pzb -g Firmware/dfu/iBSS.n51.RELEASE.im4p "$ipswurl2"
-            ./pzb -g Firmware/dfu/iBEC.n51.RELEASE.im4p "$ipswurl2"
-            ./pzb -g kernelcache.release.n51 "$ipswurl2"
-            ./pzb -g Firmware/all_flash/all_flash.n51ap.production/DeviceTree.n51ap.im4p "$ipswurl2"
-            ./img4 -i iBSS.n51.RELEASE.im4p -o iBSS.dec -k 46c3abc7147db7e9c06aae801b13a91238b9f71efaaa02e48731471ac1fc506ab1e4e9716eac2207037778d9f62648d9
-            ./img4 -i iBEC.n51.RELEASE.im4p -o iBEC.dec -k c52d431c7fbc85b67307c2c7297f919f5fd45b3e2717b75e9ef1816f6afa2aa9e92fb8c7f1b1403600943a8bd637b62d
-            ./ipatcher iBSS.dec iBSS.patched
-            ./ipatcher iBEC.dec iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1"
-            ./img4 -i iBSS.patched -o iBSS.img4 -M IM4M -A -T ibss
-            ./img4 -i iBEC.patched -o iBEC.img4 -M IM4M -A -T ibec
-            ./img4 -i kernelcache.release.n51 -o kernelcache.im4p -k 03447866614ec7f0e083eba37b31f1a75484c5ab65e00e895b95db81b873d1292f766e614c754ec523b62a48d33664e1 -D
-            ./img4 -i kernelcache.release.n51 -o kcache.raw -k 03447866614ec7f0e083eba37b31f1a75484c5ab65e00e895b95db81b873d1292f766e614c754ec523b62a48d33664e1
-            ./seprmvr64lite kcache.raw kcache.patched
-            ./kerneldiff kcache.raw kcache.patched kc.bpatch
-            ./img4 -i kernelcache.im4p -o kernelcache.img4 -M IM4M -T rkrn -P kc.bpatch
-            ./img4 -i kernelcache.im4p -o kernelcache -M IM4M -T krnl -P kc.bpatch
-            ./img4 -i DeviceTree.n51ap.im4p -o dtree.raw -k 2f744c5a6cda23c30eccb2fcac9aff2222ad2b37ed96f14a3988102558e0920905536622b1e78288c2533a7de5d01425
-            ./img4 -i dtree.raw -o devicetree.img4 -A -M IM4M -T rdtr
+            ../pzb -g Firmware/dfu/iBSS.n51.RELEASE.im4p "$ipswurl2"
+            ../pzb -g Firmware/dfu/iBEC.n51.RELEASE.im4p "$ipswurl2"
+            ../pzb -g kernelcache.release.n51 "$ipswurl2"
+            ../pzb -g Firmware/all_flash/all_flash.n51ap.production/DeviceTree.n51ap.im4p "$ipswurl2"
+            ../img4 -i iBSS.n51.RELEASE.im4p -o iBSS.dec -k 46c3abc7147db7e9c06aae801b13a91238b9f71efaaa02e48731471ac1fc506ab1e4e9716eac2207037778d9f62648d9
+            ../img4 -i iBEC.n51.RELEASE.im4p -o iBEC.dec -k c52d431c7fbc85b67307c2c7297f919f5fd45b3e2717b75e9ef1816f6afa2aa9e92fb8c7f1b1403600943a8bd637b62d
+            ../ipatcher iBSS.dec iBSS.patched
+            ../ipatcher iBEC.dec iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e"
+            ../img4 -i iBSS.patched -o iBSS.img4 -M IM4M -A -T ibss
+            ../img4 -i iBEC.patched -o iBEC.img4 -M IM4M -A -T ibec
+            ../img4 -i kernelcache.release.n51 -o kernelcache.im4p -k 03447866614ec7f0e083eba37b31f1a75484c5ab65e00e895b95db81b873d1292f766e614c754ec523b62a48d33664e1 -D
+            ../img4 -i kernelcache.release.n51 -o kcache.raw -k 03447866614ec7f0e083eba37b31f1a75484c5ab65e00e895b95db81b873d1292f766e614c754ec523b62a48d33664e1
+            ../seprmvr64lite kcache.raw kcache.patched
+            ../kerneldiff kcache.raw kcache.patched kc.bpatch
+            ../img4 -i kernelcache.im4p -o kernelcache.img4 -M IM4M -T rkrn -P kc.bpatch
+            ../img4 -i kernelcache.im4p -o kernelcache -M IM4M -T krnl -P kc.bpatch
+            ../img4 -i DeviceTree.n51ap.im4p -o dtree.raw -k 2f744c5a6cda23c30eccb2fcac9aff2222ad2b37ed96f14a3988102558e0920905536622b1e78288c2533a7de5d01425
+            ../img4 -i dtree.raw -o devicetree.img4 -A -M IM4M -T rdtr
         elif [ "$iosversion" = '7.1.2' ]; then
             ../pzb -g Firmware/dfu/iBSS.n51ap.RELEASE.im4p "$ipswurl1"
             ../pzb -g Firmware/dfu/iBEC.n51ap.RELEASE.im4p "$ipswurl1"
@@ -263,7 +263,7 @@ if [ "$deviceid" = 'iPhone6,1' ]; then
         if [[ "$response2" = 'yes' || "$response2" = 'y' ]]; then
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/Applications/Setup.app"
             scp -P 2222 ./data_ark.plist.tar root@localhost:/mnt2/
-            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf data_ark.plist.tar -C /mnt2"
+            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/data_ark.plist.tar -C /mnt2"
         fi
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/ios7.tar"
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/ios8.tar"
