@@ -113,7 +113,7 @@ if [ "$deviceid" = 'iPhone6,1' ]; then
         hdiutil attach -mountpoint /tmp/ramdisk ramdisk.dmg
         sudo diskutil enableOwnership /tmp/ramdisk
         sudo ./gnutar -xvf iram.tar -C /tmp/ramdisk
-        sudo ./gnutar -xvf dualbootstuff.tar -C /tmp/ramdisk
+        #sudo ./gnutar -xvf dualbootstuff.tar -C /tmp/ramdisk
         hdiutil detach /tmp/ramdisk
         ./img4tool -c ramdisk.im4p -t rdsk ramdisk.dmg
         ./img4tool -c ramdisk.img4 -p ramdisk.im4p -m IM4M
@@ -130,7 +130,7 @@ if [ "$deviceid" = 'iPhone6,1' ]; then
         ./img4 -i iBSS.n51.RELEASE.im4p -o iBSS.dec -k 46c3abc7147db7e9c06aae801b13a91238b9f71efaaa02e48731471ac1fc506ab1e4e9716eac2207037778d9f62648d9
         ./img4 -i iBEC.n51.RELEASE.im4p -o iBEC.dec -k c52d431c7fbc85b67307c2c7297f919f5fd45b3e2717b75e9ef1816f6afa2aa9e92fb8c7f1b1403600943a8bd637b62d
         ./ipatcher iBSS.dec iBSS.patched
-        ./ipatcher iBEC.dec iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 -progress"
+        ./ipatcher iBEC.dec iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 amfi_get_out_of_my_way=1 -v rd=md0 nand-enable-reformat=1 -progress"
         ./img4 -i iBSS.patched -o iBSS.img4 -M IM4M -A -T ibss
         ./img4 -i iBEC.patched -o iBEC.img4 -M IM4M -A -T ibec
         ./img4 -i kernelcache.release.n51 -o kernelcache.im4p -k 03447866614ec7f0e083eba37b31f1a75484c5ab65e00e895b95db81b873d1292f766e614c754ec523b62a48d33664e1 -D
@@ -151,7 +151,7 @@ if [ "$deviceid" = 'iPhone6,1' ]; then
             ../img4 -i iBSS.n51.RELEASE.im4p -o iBSS.dec -k 46c3abc7147db7e9c06aae801b13a91238b9f71efaaa02e48731471ac1fc506ab1e4e9716eac2207037778d9f62648d9
             ../img4 -i iBEC.n51.RELEASE.im4p -o iBEC.dec -k c52d431c7fbc85b67307c2c7297f919f5fd45b3e2717b75e9ef1816f6afa2aa9e92fb8c7f1b1403600943a8bd637b62d
             ../ipatcher iBSS.dec iBSS.patched
-            ../ipatcher iBEC.dec iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e"
+            ../ipatcher iBEC.dec iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e amfi_get_out_of_my_way=1"
             ../img4 -i iBSS.patched -o iBSS.img4 -M IM4M -A -T ibss
             ../img4 -i iBEC.patched -o iBEC.img4 -M IM4M -A -T ibec
             ../img4 -i kernelcache.release.n51 -o kernelcache.im4p -k 03447866614ec7f0e083eba37b31f1a75484c5ab65e00e895b95db81b873d1292f766e614c754ec523b62a48d33664e1 -D
