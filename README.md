@@ -70,7 +70,7 @@ and then go and install `openssh` and `mterminal` as well
 
 dropbear enables ssh on ios 10 and openssh enables sftp on ios 10
 
-open mterminal and type su -
+open mterminal and type `su -`
 
 it will ask for password, the password is `alpine`
 
