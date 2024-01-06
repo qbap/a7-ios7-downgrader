@@ -338,30 +338,30 @@ if [[ "$deviceid" = 'iPhone6,1' || "$deviceid" = 'iPhone6,2' ]]; then
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_hfs /dev/disk0s1s1 /mnt1"
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_hfs /dev/disk0s1s2 /mnt2"
         if [ "$iosversion" = '8.4.1' ]; then
-            scp -P 2222 ios8.tar root@localhost:/mnt2
+            ./sshpass -p "alpine" scp -P 2222 ios8.tar root@localhost:/mnt2
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/ios8.tar -C /mnt1"
         elif [ "$iosversion" = '7.1.2' ]; then
-            scp -P 2222 ios712.tar root@localhost:/mnt2
+            ./sshpass -p "alpine" scp -P 2222 ios712.tar root@localhost:/mnt2
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/ios712.tar -C /mnt1"
         elif [ "$iosversion" = '7.0.6' ]; then
-            scp -P 2222 ios706.tar root@localhost:/mnt2
+            ./sshpass -p "alpine" scp -P 2222 ios706.tar root@localhost:/mnt2
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/ios706.tar -C /mnt1"
         elif [ "$iosversion" = '9.3.2' ]; then
-            scp -P 2222 ios9.tar root@localhost:/mnt2
+            ./sshpass -p "alpine" scp -P 2222 ios9.tar root@localhost:/mnt2
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/ios9.tar -C /mnt1"
         fi
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mv -v /mnt1/private/var/* /mnt2"
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt1/usr/local/standalone/firmware/Baseband"
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir /mnt2/keybags"
-        scp -r -P 2222 ./keybags root@localhost:/mnt2
-        scp -r -P 2222 ./Baseband root@localhost:/mnt1/usr/local/standalone/firmware
-        scp -P 2222 ./apticket.der root@localhost:/mnt1/System/Library/Caches/
-        scp -P 2222 ./sep-firmware.img4 root@localhost:/mnt1/usr/standalone/firmware/
-        scp -P 2222 ./fstab root@localhost:/mnt1/etc/
+        ./sshpass -p "alpine" scp -r -P 2222 ./keybags root@localhost:/mnt2
+        ./sshpass -p "alpine" scp -r -P 2222 ./Baseband root@localhost:/mnt1/usr/local/standalone/firmware
+        ./sshpass -p "alpine" scp -P 2222 ./apticket.der root@localhost:/mnt1/System/Library/Caches/
+        ./sshpass -p "alpine" scp -P 2222 ./sep-firmware.img4 root@localhost:/mnt1/usr/standalone/firmware/
+        ./sshpass -p "alpine" scp -P 2222 ./fstab root@localhost:/mnt1/etc/
         read -p "would you like to also delete Setup.app? " response2
         if [[ "$response2" = 'yes' || "$response2" = 'y' ]]; then
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/Applications/Setup.app"
-            scp -P 2222 ./data_ark.plist.tar root@localhost:/mnt2/
+            ./sshpass -p "alpine" scp -P 2222 ./data_ark.plist.tar root@localhost:/mnt2/
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/data_ark.plist.tar -C /mnt2"
         fi
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/ios706.tar"
@@ -372,8 +372,8 @@ if [[ "$deviceid" = 'iPhone6,1' || "$deviceid" = 'iPhone6,2' ]]; then
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/Library/PreinstalledAssets/*"
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/Library/Preferences/.GlobalPreferences.plist"
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/.forward"
-        scp -P 2222 ./fixkeybag root@localhost:/mnt1/usr/libexec/
-        scp -P 2222 ./work/kernelcache root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches
+        ./sshpass -p "alpine" scp -P 2222 ./fixkeybag root@localhost:/mnt1/usr/libexec/
+        ./sshpass -p "alpine" scp -P 2222 ./work/kernelcache root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches
         if [ "$iosversion" = '9.3.2' ]; then
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram oblit-inprogress=5"
         fi
@@ -388,7 +388,7 @@ if [[ "$deviceid" = 'iPhone6,1' || "$deviceid" = 'iPhone6,2' ]]; then
     else
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1"
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s2 /mnt2"
-        scp -P 2222 ./work/kernelcache root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches
+        ./sshpass -p "alpine" scp -P 2222 ./work/kernelcache root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches
         ssh -p2222 root@localhost
         $(./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
     fi
