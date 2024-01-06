@@ -139,4 +139,4 @@ all you gotta do at that step is press the keys on your keyboard it tells you to
 - [dora2-ios](https://github.com/dora2-iOS) for [iPwnder](https://iarchive.app/Download/ipwnder_macosx)
 - [NyanSatan](https://github.com/NyanSatan) for [fixkeybag](https://github.com/NyanSatan/fixkeybag)
 
-** i want to give a very special thanks to mineek, if it werent for them this entire project would have not been possible. you are amazing and i appreciate all that you do, thank you so much
+** i want to give a very special thanks to [Mineek](https://github.com/mineek), if it werent for them this entire project would have not been possible. you are amazing and i appreciate all that you do, thank you so much
