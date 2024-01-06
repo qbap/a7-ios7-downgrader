@@ -29,19 +29,12 @@ _kill_if_running() {
         fi
     fi
 }
-for cmd in curl python3 ssh scp killall sudo grep; do
+for cmd in curl cargo ssh scp killall sudo grep; do
     if ! command -v "${cmd}" > /dev/null; then
-        if [ "$cmd" = "python3" ]; then
+        if [ "$cmd" = "cargo" ]; then
             echo "[-] Command '${cmd}' not installed, please install it!";
-            if [ "$os" = 'Darwin' ]; then
-                if [ ! -e python-3.7.6-macosx10.6.pkg ]; then
-                    curl -k https://www.python.org/ftp/python/3.7.6/python-3.7.6-macosx10.6.pkg -o python-3.7.6-macosx10.6.pkg
-                fi
-                open -W python-3.7.6-macosx10.6.pkg
-            fi
-            if ! command -v "${cmd}" > /dev/null; then
-                cmd_not_found=1
-            fi
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+            exit
         else
             if ! command -v "${cmd}" > /dev/null; then
                 echo "[-] Command '${cmd}' not installed, please install it!";
@@ -53,10 +46,7 @@ done
 if [ "$cmd_not_found" = "1" ]; then
     exit 1
 fi
-# Check for autodecrypt
-if ! python3 -c 'import pkgutil; exit(not pkgutil.find_loader("autodecrypt"))'; then
-    python3 -m pip install autodecrypt
-fi
+cargo install taco
 if [ ! -e apticket.der ]; then
     echo "you need to turn on ssh&sftp over wifi on ur phone now"
     echo "https://github.com/y08wilm/a7-ios7-downgrader?tab=readme-ov-file#preparing-your-device"
