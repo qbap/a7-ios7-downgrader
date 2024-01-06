@@ -53,9 +53,10 @@ done
 if [ "$cmd_not_found" = "1" ]; then
     exit 1
 fi
-python3 -m pip install autodecrypt
-pip3 install autodecrypt
-pip install autodecrypt
+# Check for autodecrypt
+if ! python3 -c 'import pkgutil; exit(not pkgutil.find_loader("autodecrypt"))'; then
+    python3 -m pip install autodecrypt
+fi
 if [ ! -e apticket.der ]; then
     echo "you need to turn on ssh&sftp over wifi on ur phone now"
     echo "https://github.com/y08wilm/a7-ios7-downgrader?tab=readme-ov-file#preparing-your-device"
