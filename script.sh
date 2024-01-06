@@ -364,9 +364,7 @@ if [[ "$deviceid" = 'iPhone6,1' || "$deviceid" = 'iPhone6,2' ]]; then
         scp -r -P 2222 ./Baseband root@localhost:/mnt1/usr/local/standalone/firmware
         scp -P 2222 ./apticket.der root@localhost:/mnt1/System/Library/Caches/
         scp -P 2222 ./sep-firmware.img4 root@localhost:/mnt1/usr/standalone/firmware/
-        scp -P 2222 root@localhost:/mnt1/etc/fstab ./fstab
-        nano fstab
-        scp -P 2222 fstab root@localhost:/mnt1/etc/
+        scp -P 2222 ./fstab root@localhost:/mnt1/etc/
         read -p "would you like to also delete Setup.app? " response2
         if [[ "$response2" = 'yes' || "$response2" = 'y' ]]; then
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/Applications/Setup.app"
