@@ -50,6 +50,36 @@ at least 20gb free space on hdd
 
 usb type A port** usb-c is NOT supported
 
+already jailbroken device** cause the script has to backup `apticket.der`, `sep-firmware.img4`, `Baseband`, and `keybags` from your device before you can downgrade to older ios
+
+# preparing your device
+
+note that downgrading to ios 10.3.3 may not be required, it is just what i happened to do
+
+you may not have to downgrade to ios 10.3.3, i just havent tested on latest ios 12 sep only ios 10.3.3 sep
+
+use [Legacy-iOS-Kit](https://github.com/LukeZGD/Legacy-iOS-Kit) or [LeetDown](https://github.com/rA9stuff/LeetDown/releases) to downgrade your device to ios 10.3.3
+
+use [totally.not.spyware.lol](https://totally.not.spyware.lol/) to jailbreak your ios 10.3.3 device
+
+this website may require several, if not several dozen attempts to jailbreak your device successfully
+
+then install dropbear on cydia from `apt.netsirkl64.com` repo
+
+and then go and install `openssh` and `mterminal` as well
+
+dropbear enables ssh on ios 10 and openssh enables sftp on ios 10
+
+open mterminal and type su -
+
+it will ask for password, the password is `alpine`
+
+then you should type `dropbear -R -p 2222`
+
+this will then enable dropbear ssh to work over wifi
+
+go into settings and write down the local wifi ip of your device https://www.howtogeek.com/796854/iphone-ip-address/
+
 # issues
 
 [seprmvr64?tab=readme-ov-file#caveats](https://github.com/mineek/seprmvr64?tab=readme-ov-file#caveats)
@@ -125,7 +155,7 @@ all you gotta do at that step is press the keys on your keyboard it tells you to
 # credits
 
 - [Nathan](https://github.com/verygenericname) for the ssh ramdisk and [iBoot64Patcher fork](https://github.com/verygenericname/iBoot64Patcher)
-- [Mineek](https://github.com/mineek) for [seprmvr64](https://github.com/mineek/seprmvr64) and other patches**
+- [Mineek](https://github.com/mineek) for [seprmvr64](https://github.com/mineek/seprmvr64) and other patches** i want to give a very special thanks to [Mineek](https://github.com/mineek), if it werent for them this entire project would have not been possible. you are amazing and i appreciate all that you do, thank you so much
 - [nyuszika7h](https://github.com/nyuszika7h) for the script to help get into DFU
 - [tihmstar](https://github.com/tihmstar) for [pzb](https://github.com/tihmstar/partialZipBrowser)/original [iBoot64Patcher](https://github.com/tihmstar/iBoot64Patcher)/original [liboffsetfinder64](https://github.com/tihmstar/liboffsetfinder64)/[img4tool](https://github.com/tihmstar/img4tool)
 - [Tom](https://github.com/guacaplushy) for a couple patches and bugfixes
@@ -138,5 +168,3 @@ all you gotta do at that step is press the keys on your keyboard it tells you to
 - [exploit3dguy](https://github.com/exploit3dguy/) for [iPatcher](https://github.com/exploit3dguy/iPatcher) which is used for patching iBoot on ios 7
 - [dora2-ios](https://github.com/dora2-iOS) for [iPwnder](https://iarchive.app/Download/ipwnder_macosx)
 - [NyanSatan](https://github.com/NyanSatan) for [fixkeybag](https://github.com/NyanSatan/fixkeybag)
-
-** i want to give a very special thanks to [Mineek](https://github.com/mineek), if it werent for them this entire project would have not been possible. you are amazing and i appreciate all that you do, thank you so much
