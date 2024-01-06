@@ -28,6 +28,20 @@ and
 
 9.3.2** gets stuck on progress bar on first boot
 
+# contact
+
+if you need to reach me for any reason, you can msg me on telegram at [wilm271](https://t.me/wilm271)
+
+use this option if you need to contact me for issues with this script
+
+do NOT abuse this option of being able to contact me, or i will take it away
+
+i am not, and will not, ever talk again on discord with any of you
+
+f you sn**lie, fing pedo. you know who you are, i dont want to speak to you ever again
+
+and all of you peasants that support them soliciting n**es from m**ors can all burn in hell
+
 # data loss
 
 this script deletes everything on your phone, including the main os
@@ -62,7 +76,7 @@ use [Legacy-iOS-Kit](https://github.com/LukeZGD/Legacy-iOS-Kit) or [LeetDown](ht
 
 side note if you are trying to use [LeetDown](https://github.com/rA9stuff/LeetDown/) to downgrade an icloud locked device, you have to use [LeetDown v1.0.3](https://github.com/rA9stuff/LeetDown/releases/tag/1.0.3)
 
-if you are trying to use [Silver](https://www.appletech752.com/downloads.html) to bypass your device, make sure you put it into dfu mode immediately after the first progress bar on the iphone finishes when using [LeetDown v1.0.3](https://github.com/rA9stuff/LeetDown/releases/tag/1.0.3) and only then run the untethered bypass with [Silver](https://www.appletech752.com/downloads.html). if you reach the second progress bar on the device when restoring to ios 10.3.3 then you have to start all over again
+if you are trying to use [Silver](https://www.appletech752.com/downloads.html) to icloud bypass your device, make sure you put it into dfu mode immediately after the first progress bar on the iphone finishes when using [LeetDown v1.0.3](https://github.com/rA9stuff/LeetDown/releases/tag/1.0.3) and only then run the untethered bypass with [Silver](https://www.appletech752.com/downloads.html). if you reach the second progress bar on the device when restoring to ios 10.3.3 then you have to start all over again
 
 it is also worth noting that [LeetDown v1.0.3](https://github.com/rA9stuff/LeetDown/releases/tag/1.0.3) is the only one that works reliably under mac os high sierra 10.13
 
