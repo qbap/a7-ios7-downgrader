@@ -40,7 +40,7 @@ i am not, and will not, ever talk again on discord with any of you
 
 f you sn**lie, fing pedo. you know who you are, i dont want to speak to you ever again
 
-and all of you peasants that support them soliciting n**es from m**ors can all burn in hell
+and all of you peasants that support them soliciting n**es from minors can all burn in hell
 
 # data loss
 
