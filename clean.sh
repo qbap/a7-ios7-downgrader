@@ -1,6 +1,7 @@
 rm -rf work
 rm -rf BuildManifest.plist
 rm -rf ramdisk*
+rm -rf RestoreRamdisk*
 rm -rf DeviceTree*
 rm -rf kernelcache*
 rm -rf kcache*
