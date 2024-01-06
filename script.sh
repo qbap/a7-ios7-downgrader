@@ -29,6 +29,19 @@ _kill_if_running() {
         fi
     fi
 }
+if [ ! -e apticket.der ]; then
+    echo "you need to turn on ssh&sftp over wifi on ur phone now"
+    echo "https://github.com/y08wilm/a7-ios7-downgrader?tab=readme-ov-file#preparing-your-device"
+    read -p "what is the local ip of ur ios device on your wifi?" ip
+    echo "$ip"
+    ./sshpass -p "alpine" scp -P 2222 root@$ip:/System/Library/Caches/apticket.der ./apticket.der
+    ./sshpass -p "alpine" scp -P 2222 root@$ip:/usr/standalone/firmware/sep-firmware.img4 ./sep-firmware.img4
+    ./sshpass -p "alpine" scp -r -P 2222 root@$ip:/usr/local/standalone/firmware/Baseband ./Baseband
+    ./sshpass -p "alpine" scp -r -P 2222 root@$ip:/var/keybags ./keybags
+fi
+if [ ! -e apticket.der ]; then
+    exit
+fi
 _wait_for_dfu
 check=$(./irecovery -q | grep CPID | sed 's/CPID: //')
 deviceid=$(./irecovery -q | grep PRODUCT | sed 's/PRODUCT: //')
@@ -132,26 +145,6 @@ if [[ "$deviceid" = 'iPhone6,1' || "$deviceid" = 'iPhone6,2' ]]; then
         fi
     else
         echo "that version is not supported"
-    fi
-    if [ ! -e apticket.der ]; then
-        echo "you need to turn on ssh&sftp over wifi on ur phone now"
-        echo "ios 10.3.3 instructions"
-        echo "pls install dropbear on cydia from apt.netsirkl64.com repo"
-        echo "and then go and install openssh and mterminal as well"
-        echo "dropbear enables ssh on ios 10 and openssh enables sftp on ios 10"
-        echo "open mterminal and type su -"
-        echo "it will ask for password, the password is alpine"
-        echo "then you should type dropbear -R -p 2222"
-        echo "this will then enable dropbear ssh to work over wifi"
-        read -p "what is the local ip of ur ios device on your wifi?" ip
-        echo "$ip"
-        ./sshpass -p "alpine" scp -P 2222 root@$ip:/System/Library/Caches/apticket.der ./apticket.der
-        ./sshpass -p "alpine" scp -P 2222 root@$ip:/usr/standalone/firmware/sep-firmware.img4 ./sep-firmware.img4
-        ./sshpass -p "alpine" scp -r -P 2222 root@$ip:/usr/local/standalone/firmware/Baseband ./Baseband
-        ./sshpass -p "alpine" scp -r -P 2222 root@$ip:/var/keybags ./keybags
-    fi
-    if [ ! -e apticket.der ]; then
-        exit
     fi
     # we need to download restore ramdisk for ios 8.4.1
     # in this example we are using a modified copy of the ssh tar from SSHRD_Script https://github.com/verygenericname/SSHRD_Script
