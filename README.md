@@ -60,6 +60,12 @@ you may not have to downgrade to ios 10.3.3, i just havent tested on latest ios 
 
 use [Legacy-iOS-Kit](https://github.com/LukeZGD/Legacy-iOS-Kit) or [LeetDown](https://github.com/rA9stuff/LeetDown/releases) to downgrade your device to ios 10.3.3
 
+side note if you are trying to use [LeetDown](https://github.com/rA9stuff/LeetDown/) to downgrade an icloud locked device, you have to use [LeetDown v1.0.3](https://github.com/rA9stuff/LeetDown/releases/tag/1.0.3)
+
+if you are trying to use [Silver](https://www.appletech752.com/downloads.html) to bypass your device, make sure you put it into dfu mode immediately after the first progress bar on the iphone finishes when using [LeetDown v1.0.3](https://github.com/rA9stuff/LeetDown/releases/tag/1.0.3) and only then run the untethered bypass with [Silver](https://www.appletech752.com/downloads.html). if you reach the second progress bar on the device when restoring to ios 10.3.3 then you have to start all over again
+
+it is also worth noting that [LeetDown v1.0.3](https://github.com/rA9stuff/LeetDown/releases/tag/1.0.3) is the only one that works reliably under mac os high sierra 10.13
+
 use [totally.not.spyware.lol](https://totally.not.spyware.lol/) to jailbreak your ios 10.3.3 device
 
 this website may require several, if not several dozen attempts to jailbreak your device successfully
