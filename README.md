@@ -76,6 +76,8 @@ Evasi0n7** requires ios 7.0.6 and needs to be patched using https://github.com/U
 
 hactivation** https://trainghiemso.vn/cach-ha-iphone-5-ipad-4-tu-10-3-3-xuong-8-4-1-khong-can-shsh-blobs/
 
+evermusic** mp3 player that supports ios 7 if you download last compatible build from the app store but i havent gotten around to testing it yet, it should work fine
+
 # setup.app bypass
 
 it installs a modified data_ark.plist to the device to enable the app store to work as well
