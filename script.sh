@@ -202,7 +202,8 @@ if [[ "$deviceid" = 'iPhone6,1' || "$deviceid" = 'iPhone6,2' ]]; then
             ../img4 -i kernelcache.im4p -o kernelcache.img4 -M IM4M -T rkrn -P kc.bpatch
             ../img4 -i kernelcache.im4p -o kernelcache -M IM4M -T krnl -P kc.bpatch
             ../img4 -i DeviceTree.n51ap.im4p -o dtree.raw -k 2f744c5a6cda23c30eccb2fcac9aff2222ad2b37ed96f14a3988102558e0920905536622b1e78288c2533a7de5d01425
-            ../img4 -i dtree.raw -o devicetree.img4 -A -M IM4M -T rdtr
+            ../dtree_patcher dtree.raw dree.patched -n
+            ../img4 -i dtree.patched -o devicetree.img4 -A -M IM4M -T rdtr
         elif [ "$iosversion" = '7.1.2' ]; then
             ../pzb -g Firmware/dfu/iBSS.n51ap.RELEASE.im4p "$ipswurl1"
             ../pzb -g Firmware/dfu/iBEC.n51ap.RELEASE.im4p "$ipswurl1"
