@@ -121,3 +121,22 @@ when the script says "waiting for device in dfu mode" it means u gotta put it ba
 uhh and when it gets to the partitioning step, make terminal full screen, it has easy to read instructions on top
 
 all you gotta do at that step is press the keys on your keyboard it tells you to
+
+# credits
+
+- [Nathan](https://github.com/verygenericname) for the ssh ramdisk and [iBoot64Patcher fork](https://github.com/verygenericname/iBoot64Patcher)
+- [Mineek](https://github.com/mineek) for [seprmvr64](https://github.com/mineek/seprmvr64) and other patches**
+- [nyuszika7h](https://github.com/nyuszika7h) for the script to help get into DFU
+- [tihmstar](https://github.com/tihmstar) for [pzb](https://github.com/tihmstar/partialZipBrowser)/original [iBoot64Patcher](https://github.com/tihmstar/iBoot64Patcher)/original [liboffsetfinder64](https://github.com/tihmstar/liboffsetfinder64)/[img4tool](https://github.com/tihmstar/img4tool)
+- [Tom](https://github.com/guacaplushy) for a couple patches and bugfixes
+- [xerub](https://github.com/xerub) for [img4lib](https://github.com/xerub/img4lib) and [restored_external](https://github.com/xerub/sshrd) in the ramdisk
+- [Cryptic](https://github.com/Cryptiiiic) for [iBoot64Patcher](https://github.com/Cryptiiiic/iBoot64Patcher) fork, and [liboffsetfinder64](https://github.com/Cryptiiiic/liboffsetfinder64) fork
+- [libimobiledevice](https://github.com/libimobiledevice) for several tools used in this project (irecovery, ideviceenterrecovery etc), and [nikias](https://github.com/nikias) for keeping it up to date
+- [Nick Chan](https://github.com/asdfugil) general help with patches and iBoot payload stuff
+- [Serena](https://github.com/SerenaKit) for helping with boot ramdisk.
+- [planetbeing](https://github.com/planetbeing/) for dmg tool from [xpwn](https://github.com/planetbeing/xpwn)
+- [exploit3dguy](https://github.com/exploit3dguy/) for [iPatcher](https://github.com/exploit3dguy/iPatcher) which is used for patching iBoot on ios 7
+- [dora2-ios](https://github.com/dora2-iOS) for [iPwnder](https://iarchive.app/Download/ipwnder_macosx)
+- [NyanSatan](https://github.com/NyanSatan) for [fixkeybag](https://github.com/NyanSatan/fixkeybag)
+
+** i want to give a very special thanks to mineek, if it werent for them this entire project would have not been possible. you are amazing and i appreciate all that you do, thank you so much
