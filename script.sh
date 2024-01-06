@@ -40,17 +40,28 @@ echo $deviceid
 echo $ipswurl1
 echo $ipswurl2
 echo $ipswurl3
+echo $ipswurl4
 read -p "what ios version would you like to downgrade to? " iosversion
 if [ "$iosversion" = '8.4.1' ]; then
-    echo "this version does not work correctly"
-    echo "to use this version, pls remove the exit cmd after this msg in script.sh"
-    exit
+    echo "this version is known to get stuck on the slide to upgrade screen"
+    read -p "would you like to use this version anyway? " response6
+    if [[ "$response6" = 'yes' || "$response6" = 'y' ]]; then
+        echo "ok"
+    else
+        exit
+    fi
 elif [ "$iosversion" = '7.1.2' ]; then
     echo "good choice"
+elif [ "$iosversion" = '7.0.6' ]; then
+    echo "good choice"
 elif [ "$iosversion" = '9.3.2' ]; then
-    echo "this version does not work correctly"
-    echo "to use this version, pls remove the exit cmd after this msg in script.sh"
-    exit
+    echo "this version is known to get on a progress bar on first boot"
+    read -p "would you like to use this version anyway? " response6
+    if [[ "$response6" = 'yes' || "$response6" = 'y' ]]; then
+        echo "ok"
+    else
+        exit
+    fi
 else
     echo "that version is not supported"
     exit
@@ -197,7 +208,7 @@ if [[ "$deviceid" = 'iPhone6,1' || "$deviceid" = 'iPhone6,2' ]]; then
             ../img4 -i iBEC.patched -o iBEC.img4 -M IM4M -A -T ibec
             ../img4 -i kernelcache.release.n51 -o kernelcache.im4p -k 03447866614ec7f0e083eba37b31f1a75484c5ab65e00e895b95db81b873d1292f766e614c754ec523b62a48d33664e1 -D
             ../img4 -i kernelcache.release.n51 -o kcache.raw -k 03447866614ec7f0e083eba37b31f1a75484c5ab65e00e895b95db81b873d1292f766e614c754ec523b62a48d33664e1
-            ../seprmvr64 kcache.raw kcache.patched
+            ../seprmvr64lite kcache.raw kcache.patched
             ../kerneldiff kcache.raw kcache.patched kc.bpatch
             ../img4 -i kernelcache.im4p -o kernelcache.img4 -M IM4M -T rkrn -P kc.bpatch
             ../img4 -i kernelcache.im4p -o kernelcache -M IM4M -T krnl -P kc.bpatch
