@@ -1,4 +1,12 @@
 rm -rf work
+rm -rf BuildManifest.plist
 rm -rf ramdisk*
-rm -rf devicetree*
+rm -rf DeviceTree*
+rm -rf kernelcache*
+rm -rf kcache*
+rm -rf kc.bpatch
+rm -rf dtree.raw
+rm -rf dtree.patched
+rm -rf iBSS*
+rm -rf iBEC*
 rm -rf 058-24442-023.dmg
