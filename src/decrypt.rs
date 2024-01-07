@@ -113,14 +113,16 @@ async fn grab_keys(url: String, file: &String) -> String {
 /// Make sure you have it in your PATH.
 /// At some point I'll use some crate to path ASN.1 and decrypt the file.
 fn decrypt_img4(file: String, output: String, ivkey: String) {
+    if output.contains("kernelcache") {
+        let _d = output.clone() + ".im4p";
+        println!("[i] Decrypting {file} to {_d}");
+        Command::new("img4")
+            .args(["-i", &file, &_d, &ivkey, "-D"])
+            .output()
+            .expect("failed to execute process is img4 in your $PATH ?");
+    }
     Command::new("img4")
         .args(["-i", &file, &output, &ivkey])
-        .output()
-        .expect("failed to execute process is img4 in your $PATH ?");
-}
-fn decrypt_img4_2(file: String, output: String, ivkey: String) {
-    Command::new("img4")
-        .args(["-i", &file, &output, &ivkey], "-D")
         .output()
         .expect("failed to execute process is img4 in your $PATH ?");
 }
@@ -130,6 +132,7 @@ fn decrypt_dmg(file: String, output: String, ivkey: String) {
         .output()
         .expect("failed to execute process is img4 in your $PATH ?");
 }
+
 
 /// Main decrypt function.
 /// Gets build by version
@@ -186,14 +189,8 @@ pub async fn decrypt(model: String, ios_version: String, file: String, key: Opti
         println!("[x] IV  : {}", &ivkey[..32]);
         println!("[x] Key : {}", &ivkey[32..]);
         // output filename
-        let mut output = file.replace("wefefwwefwefwefim4p", "bin");
+        let output = file.replace("wefefwwefwefwefim4p", "bin");
         
-        if output.contains("kernelcache") {
-            let _c = ".im4p".to_string();
-            println!("[i] Decrypting {file} to {output + &_c}");
-            decrypt_img4_2(file, output + &_c, ivkey);
-        }
-
         println!("[i] Decrypting {file} to {output}");
         decrypt_img4(file, output, ivkey);
     }
