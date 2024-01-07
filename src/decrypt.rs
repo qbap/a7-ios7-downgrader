@@ -118,6 +118,12 @@ fn decrypt_img4(file: String, output: String, ivkey: String) {
         .output()
         .expect("failed to execute process is img4 in your $PATH ?");
 }
+fn decrypt_img4_2(file: String, output: String, ivkey: String) {
+    Command::new("img4")
+        .args(["-i", &file, &output, &ivkey], "-D")
+        .output()
+        .expect("failed to execute process is img4 in your $PATH ?");
+}
 fn decrypt_dmg(file: String, output: String, ivkey: String) {
     Command::new("dmg")
         .args(["extract", &file, &output, "-k", &ivkey])
@@ -180,7 +186,13 @@ pub async fn decrypt(model: String, ios_version: String, file: String, key: Opti
         println!("[x] IV  : {}", &ivkey[..32]);
         println!("[x] Key : {}", &ivkey[32..]);
         // output filename
-        let output = file.replace("wefefwwefwefwefim4p", "bin");
+        let mut output = file.replace("wefefwwefwefwefim4p", "bin");
+        
+        if output.contains("kernelcache") {
+            let _c = ".im4p".to_string();
+            println!("[i] Decrypting {file} to {output + &_c}");
+            decrypt_img4_2(file, output + &_c, ivkey);
+        }
 
         println!("[i] Decrypting {file} to {output}");
         decrypt_img4(file, output, ivkey);
