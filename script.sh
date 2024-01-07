@@ -19,6 +19,70 @@ remote_cmd() {
 remote_cp() {
     ./sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P2222 $@
 }
+_download_boot_files() {
+    # deviceid arg 1
+    # replacc arg 2
+    # version arg 3
+    # Copy required library for taco to work to /usr/bin
+    sudo rm -rf /usr/bin/img4
+    sudo cp ./img4 /usr/bin/img4
+    sudo rm -rf /usr/local/bin/img4
+    sudo cp ./img4 /usr/local/bin/img4
+    # Copy required library for taco to work to /usr/bin
+    sudo rm -rf /usr/bin/dmg
+    sudo cp ./dmg /usr/bin/dmg
+    sudo rm -rf /usr/local/bin/dmg
+    sudo cp ./dmg /usr/local/bin/dmg
+
+    rm -rf kernelcache.dec
+    rm -rf iBSS.dec
+    rm -rf iBEC.dec
+    rm -rf DeviceTree.dec
+    rm -rf OS.dec
+    rm -rf RestoreRamDisk.dec
+
+    rm -rf $1/$3
+
+    mkdir -p $1/$3
+
+    ./pzb -g BuildManifest.plist "$ipswurl"
+
+    # Download kernelcache
+    ./pzb -g "$(awk "/""${replace}""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"
+    # Decrypt kernelcache
+    # note that as per src/decrypt.rs it will not rename the file
+    cargo run decrypt $1 $3 $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) -l
+    # so we shall rename the file ourselves
+    mv $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) $1/$3/kernelcache.dec
+
+    # Download iBSS
+    ./pzb -g $(awk "/""$2""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
+    # Decrypt iBSS
+    ./gaster decrypt $(awk "/""$2""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//') $1/$3/iBSS.dec
+
+    # Download iBEC
+    ./pzb -g $(awk "/""$2""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
+    # Decrypt iBEC
+    ./gaster decrypt $(awk "/""$2""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//') $1/$3/iBEC.dec
+
+    # Download DeviceTree
+    ./pzb -g $(awk "/""$2""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
+    # Decrypt DeviceTree
+    ./gaster decrypt $(awk "/""$2""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]all_flash.*production[/]//') $1/$3/DeviceTree.dec
+
+    # Download root fs
+    ./pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
+    # Decrypt root fs
+    # note that as per src/decrypt.rs it will rename the file to OS.dmg by default
+    cargo run decrypt $1 $3 "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -l
+    osfn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
+    mv $(echo $osfn | sed "s/dmg/bin/g") $1/$3/OS.dec
+
+    # Download RestoreRamDisk
+    ./pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
+    # Decrypt RestoreRamDisk
+    ./gaster decrypt "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" $1/$3/RestoreRamDisk.dec
+}
 _kill_if_running() {
     if (pgrep -u root -xf "$1" &> /dev/null > /dev/null); then
         # yes, it's running as root. kill it
@@ -62,41 +126,13 @@ if [ ! -e apticket.der ]; then
 fi
 _wait_for_dfu
 check=$(./irecovery -q | grep CPID | sed 's/CPID: //')
+replace=$(./irecovery -q | grep MODEL | sed 's/MODEL: //')
 deviceid=$(./irecovery -q | grep PRODUCT | sed 's/PRODUCT: //')
-ipswurl1=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | ./jq '.firmwares | .[] | select(.version=="'7.1.2'")' | ./jq -s '.[0] | .url' --raw-output)
+ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | ./jq '.firmwares | .[] | select(.version=="'$1'")' | ./jq -s '.[0] | .url' --raw-output)
 ipswurl2=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | ./jq '.firmwares | .[] | select(.version=="'8.4.1'")' | ./jq -s '.[0] | .url' --raw-output)
-ipswurl3=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | ./jq '.firmwares | .[] | select(.version=="'9.3.2'")' | ./jq -s '.[0] | .url' --raw-output)
-ipswurl4=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | ./jq '.firmwares | .[] | select(.version=="'7.0.6'")' | ./jq -s '.[0] | .url' --raw-output)
 echo $deviceid
-echo $ipswurl1
+echo $ipswurl
 echo $ipswurl2
-echo $ipswurl3
-echo $ipswurl4
-read -p "what ios version would you like to downgrade to? " iosversion
-if [ "$iosversion" = '8.4.1' ]; then
-    echo "this version is known to get stuck on the slide to upgrade screen"
-    read -p "would you like to use this version anyway? " response6
-    if [[ "$response6" = 'yes' || "$response6" = 'y' ]]; then
-        echo "ok"
-    else
-        exit
-    fi
-elif [ "$iosversion" = '7.1.2' ]; then
-    echo "good choice"
-elif [ "$iosversion" = '7.0.6' ]; then
-    echo "good choice"
-elif [ "$iosversion" = '9.3.2' ]; then
-    echo "this version is known to get on a progress bar on first boot"
-    read -p "would you like to use this version anyway? " response6
-    if [[ "$response6" = 'yes' || "$response6" = 'y' ]]; then
-        echo "ok"
-    else
-        exit
-    fi
-else
-    echo "that version is not supported"
-    exit
-fi
 # if we already have installed ios using this script we can just boot the existing kernelcache
 if [ -e work/iBSS.img4 ]; then
     _wait_for_dfu
