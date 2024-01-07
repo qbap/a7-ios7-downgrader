@@ -299,7 +299,7 @@ fi
 # we need a shsh file that we can use in order to boot the ios 8 ramdisk
 # in this case we are going to use the ones from SSHRD_Script https://github.com/verygenericname/SSHRD_Script
 ./img4tool -e -s other/shsh/"${check}".shsh -m IM4M
-_download_ramdisk_boot_files $deviceid $replace 9.3.2
+_download_ramdisk_boot_files $deviceid $replace 8.4.1
 _download_boot_files $deviceid $replace $1
 _download_root_fs $deviceid $replace $1
 _wait_for_dfu
