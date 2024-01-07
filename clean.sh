@@ -1,7 +1,7 @@
 rm -rf work
 rm -rf BuildManifest.plist
 rm -rf ramdisk*
-rm -rf RestoreRamdisk*
+rm -rf RestoreRamDisk*
 rm -rf DeviceTree*
 rm -rf kernelcache*
 rm -rf kcache*
@@ -10,4 +10,5 @@ rm -rf dtree.raw
 rm -rf dtree.patched
 rm -rf iBSS*
 rm -rf iBEC*
+rm -rf OS*
 rm -rf 058-24442-023.dmg

@@ -1,5 +1,6 @@
 iPhone6,1_7.1.2_11D257_Restore.ipsw
 iPhone6,1_8.4.1_12H321_Restore.ipsw
+target
 kernelcache*
 BuildManifest.plist
 DeviceTree*
@@ -7,13 +8,14 @@ devicetree*
 sep-firmware*
 rw.dmg
 ramdisk*
-RestoreRamdisk*
+RestoreRamDisk*
 iBSS*
 iBEC*
 IM4M
 ios7*
 ios8*
 ios9*
+OS*
 dtree.raw
 apticket.der
 *.dmg

@@ -16,6 +16,17 @@ replace=$(./irecovery -q | grep MODEL | sed 's/MODEL: //')
 deviceid=$(./irecovery -q | grep PRODUCT | sed 's/PRODUCT: //')
 ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | ./jq '.firmwares | .[] | select(.version=="'$1'")' | ./jq -s '.[0] | .url' --raw-output)
 
+# Copy required library for taco to work to /usr/bin
+sudo rm -rf /usr/bin/img4
+sudo cp ./img4 /usr/bin/img4
+sudo rm -rf /usr/local/bin/img4
+sudo cp ./img4 /usr/local/bin/img4
+# Copy required library for taco to work to /usr/bin
+sudo rm -rf /usr/bin/dmg
+sudo cp ./dmg /usr/bin/dmg
+sudo rm -rf /usr/local/bin/dmg
+sudo cp ./dmg /usr/local/bin/dmg
+
 ./gaster pwn
 ./pzb -g BuildManifest.plist "$ipswurl"
 
@@ -23,10 +34,10 @@ echo $(pwd)/"$(awk "/""${replace}""/{x=1}x&&/kernelcache.release/{print;exit}" B
 
 # Download kernelcache
 ./pzb -g "$(awk "/""${replace}""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"
-# Copy required library for taco to work to /usr/bin
-sudo cp ./img4 /usr/bin/img4
 # Decrypt kernelcache
-taco decrypt $deviceid $1 "$(awk "/""${replace}""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" -l
+# note that as per src/decrypt.rs it will not rename the file
+cargo run decrypt $deviceid $1 "$(awk "/""${replace}""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" -l
+# so we shall rename the file ourselves
 mv "$(awk "/""${replace}""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" kernelcache.dec
 
 # Download iBSS
@@ -46,11 +57,11 @@ mv "$(awk "/""${replace}""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManif
 
 # Download root fs
 ./pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
-# Copy required library for taco to work to /usr/bin
-sudo cp ./img4 /usr/bin/img4
 # Decrypt root fs
-taco decrypt $deviceid $1 "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -l
-mv "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" OS.dec
+# note that as per src/decrypt.rs it will rename the file to OS.dmg by default
+cargo run decrypt $deviceid $1 "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -l
+osfn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
+mv $(echo $osfn | sed "s/dmg/bin/g") "OS.dmg"
 
 # Download RestoreRamDisk
 ./pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
