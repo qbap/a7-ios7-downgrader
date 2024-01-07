@@ -152,6 +152,8 @@ tested working on my iphone 5s on ios 7.1.2
 
 `git clone --recursive https://github.com/y08wilm/a7-ios7-downgrader && cd a7-ios7-downgrader`
 
+`git reset --hard 9af26f2233e2d6b76ac04b65e4bf064c5de4e73c`
+
 `chmod +x script.sh`
 
 `chmod +x clean.sh`
