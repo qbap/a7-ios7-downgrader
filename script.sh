@@ -325,7 +325,7 @@ cd ..
 read -p "pls press the enter key once device is in the ramdisk " pause1
 ./iproxy 2222 22 &
 sleep 2
-read -p "would you like to delete all the partitions and start over? " response1
+read -p "would you like to wipe this phone and install ios $1? " response1
 if [[ "$response1" = 'yes' || "$response1" = 'y' ]]; then
     # this command erases the nand so we can create new partitions
     remote_cmd "lwvm init"
@@ -357,11 +357,7 @@ if [[ "$response1" = 'yes' || "$response1" = 'y' ]]; then
     echo "step 1, press the letter n on your keyboard and then press enter"
     echo "step 2, press number 1 on your keyboard and press enter"
     echo "step 3, press enter again"
-    if [ "$1" = '7*' ]; then
-        echo "step 4, type 786438 and then press enter"
-    else
-        echo "step 4, type 1548290 and then press enter"
-    fi
+    echo "step 4, type 786438 and then press enter"
     echo "step 5, press enter one last time"
     echo "partition 2"
     echo "step 1, press the letter n on your keyboard and then press enter"
@@ -406,10 +402,7 @@ if [[ "$response1" = 'yes' || "$response1" = 'y' ]]; then
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/.forward"
     ./sshpass -p "alpine" scp -P 2222 ./fixkeybag root@localhost:/mnt1/usr/libexec/
     ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/kernelcache root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches
-    if [ "$1" = '9*' ]; then
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram oblit-inprogress=5"
-    fi
-    ssh -p2222 root@localhost
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram oblit-inprogress=5"
     $(./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
 else
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1"
