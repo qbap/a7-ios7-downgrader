@@ -89,7 +89,7 @@ _download_ramdisk_boot_files() {
     
     rm -rf BuildManifest.plist
     
-    # we need to download restore ramdisk for ios 9.3.2
+    # we need to download restore ramdisk for ios 8.4.1
     # in this example we are using a modified copy of the ssh tar from SSHRD_Script https://github.com/verygenericname/SSHRD_Script
     # this modified copy of the ssh tar fixes a few issues on ios 8 and adds some executables we need
     if [ ! -e ramdisk/ramdisk.img4 ]; then
@@ -285,20 +285,23 @@ check=$(./irecovery -q | grep CPID | sed 's/CPID: //')
 replace=$(./irecovery -q | grep MODEL | sed 's/MODEL: //')
 deviceid=$(./irecovery -q | grep PRODUCT | sed 's/PRODUCT: //')
 echo $deviceid
-# if we already have installed ios using this script we can just boot the existing kernelcache
 if [ -e $deviceid/$1/iBSS.img4 ]; then
-    _wait_for_dfu
-     cd $deviceid/$1
-    ../../ipwnder -p
-    ../../irecovery -f iBSS.img4
-    ../../irecovery -f iBSS.img4
-    ../../irecovery -f iBEC.img4
-    ../../irecovery -f devicetree.img4
-    ../../irecovery -c devicetree
-    ../../irecovery -f kernelcache.img4
-    ../../irecovery -c bootx &
-    cd ../../
-    exit
+    read -p "would you like to skip the ramdisk and boot ios $1? " response76
+    if [[ "$response76" = 'yes' || "$response76" = 'y' ]]; then
+        # if we already have installed ios using this script we can just boot the existing kernelcache
+        _wait_for_dfu
+        cd $deviceid/$1
+        ../../ipwnder -p
+        ../../irecovery -f iBSS.img4
+        ../../irecovery -f iBSS.img4
+        ../../irecovery -f iBEC.img4
+        ../../irecovery -f devicetree.img4
+        ../../irecovery -c devicetree
+        ../../irecovery -f kernelcache.img4
+        ../../irecovery -c bootx &
+        cd ../../
+        exit
+    fi
 fi
 # we need a shsh file that we can use in order to boot the ios 8 ramdisk
 # in this case we are going to use the ones from SSHRD_Script https://github.com/verygenericname/SSHRD_Script
@@ -414,7 +417,7 @@ else
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/jailbreak_mnt1.tar"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/jailbreak_mnt2.tar"
     ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/kernelcache root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches
-    #ssh -p2222 root@localhost
+    ssh -p2222 root@localhost
     $(./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
 fi
 if [ -e $deviceid/$1/iBSS.img4 ]; then
