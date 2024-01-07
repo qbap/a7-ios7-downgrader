@@ -229,6 +229,7 @@ _download_root_fs() {
         sudo ./gnutar -cvf $1/$3/OS.tar -C /tmp/ios .
         hdiutil detach /tmp/ios
         rm -rf /tmp/ios
+        ./irecovery -f /dev/null
     fi
 
     rm -rf BuildManifest.plist
@@ -284,14 +285,16 @@ echo $deviceid
 # if we already have installed ios using this script we can just boot the existing kernelcache
 if [ -e $deviceid/$1/iBSS.img4 ]; then
     _wait_for_dfu
-    ./ipwnder -p
-    ./irecovery -f $deviceid/$1/iBSS.img4
-    ./irecovery -f $deviceid/$1/iBSS.img4
-    ./irecovery -f $deviceid/$1/iBEC.img4
-    ./irecovery -f $deviceid/$1/devicetree.img4
-    ./irecovery -c $deviceid/$1/devicetree
-    ./irecovery -f $deviceid/$1/kernelcache.img4
-    ./irecovery -c $deviceid/$1/bootx &
+     cd $deviceid/$1
+    ../../ipwnder -p
+    ../../irecovery -f iBSS.img4
+    ../../irecovery -f iBSS.img4
+    ../../irecovery -f iBEC.img4
+    ../../irecovery -f devicetree.img4
+    ../../irecovery -c devicetree
+    ../../irecovery -f kernelcache.img4
+    ../../irecovery -c bootx &
+    cd ../../
     exit
 fi
 # we need a shsh file that we can use in order to boot the ios 8 ramdisk
@@ -301,16 +304,18 @@ _download_ramdisk_boot_files $deviceid $replace 8.4.1
 _download_boot_files $deviceid $replace $1
 _download_root_fs $deviceid $replace $1
 _wait_for_dfu
-./ipwnder -p
-./irecovery -f ramdisk/iBSS.img4
-./irecovery -f ramdisk/iBSS.img4
-./irecovery -f ramdisk/iBEC.img4
-./irecovery -f ramdisk/ramdisk.img4
-./irecovery -c ramdisk/ramdisk
-./irecovery -f ramdisk/devicetree.img4
-./irecovery -c ramdisk/devicetree
-./irecovery -f ramdisk/kernelcache.img4
-./irecovery -c ramdisk/bootx &
+cd ramdisk
+../ipwnder -p
+../irecovery -f iBSS.img4
+../irecovery -f iBSS.img4
+../irecovery -f iBEC.img4
+../irecovery -f ramdisk.img4
+../irecovery -c ramdisk
+../irecovery -f devicetree.img4
+../irecovery -c devicetree
+../irecovery -f kernelcache.img4
+../irecovery -c bootx &
+cd ..
 read -p "pls press the enter key once device is in the ramdisk " pause1
 ./iproxy 2222 22 &
 sleep 2
@@ -404,13 +409,15 @@ else
 fi
 if [ -e $deviceid/$1/iBSS.img4 ]; then
     _wait_for_dfu
-    ./ipwnder -p
-    ./irecovery -f $deviceid/$1/iBSS.img4
-    ./irecovery -f $deviceid/$1/iBSS.img4
-    ./irecovery -f $deviceid/$1/iBEC.img4
-    ./irecovery -f $deviceid/$1/devicetree.img4
-    ./irecovery -c $deviceid/$1/devicetree
-    ./irecovery -f $deviceid/$1/kernelcache.img4
-    ./irecovery -c $deviceid/$1/bootx &
+     cd $deviceid/$1
+    ../../ipwnder -p
+    ../../irecovery -f iBSS.img4
+    ../../irecovery -f iBSS.img4
+    ../../irecovery -f iBEC.img4
+    ../../irecovery -f devicetree.img4
+    ../../irecovery -c devicetree
+    ../../irecovery -f kernelcache.img4
+    ../../irecovery -c bootx &
+    cd ../../
     exit
 fi
