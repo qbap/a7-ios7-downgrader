@@ -117,12 +117,12 @@ fn decrypt_img4(file: String, output: String, ivkey: String) {
         let _d = output.clone() + ".im4p";
         println!("[i] Decrypting {file} to {_d}");
         Command::new("img4")
-            .args(["-i", &file, &_d, &ivkey, "-D"])
+            .args(["-i", &file, "-o", &_d, "-k", &ivkey, "-D"])
             .output()
             .expect("failed to execute process is img4 in your $PATH ?");
     }
     Command::new("img4")
-        .args(["-i", &file, &output, &ivkey])
+        .args(["-i", &file, "-o", &output, "-k", &ivkey])
         .output()
         .expect("failed to execute process is img4 in your $PATH ?");
 }
