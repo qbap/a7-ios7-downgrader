@@ -277,6 +277,9 @@ fi
 if [ ! -e apticket.der ]; then
     exit
 fi
+if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+    ./dfuhelper.sh
+fi
 _wait_for_dfu
 check=$(./irecovery -q | grep CPID | sed 's/CPID: //')
 replace=$(./irecovery -q | grep MODEL | sed 's/MODEL: //')
@@ -303,6 +306,9 @@ fi
 _download_ramdisk_boot_files $deviceid $replace 8.4.1
 _download_boot_files $deviceid $replace $1
 _download_root_fs $deviceid $replace $1
+if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+    ./dfuhelper.sh
+fi
 _wait_for_dfu
 cd ramdisk
 ../ipwnder -p
@@ -328,6 +334,9 @@ if [[ "$response1" = 'yes' || "$response1" = 'y' ]]; then
     _kill_if_running iproxy
     echo "device should now reboot into recovery, pls wait"
     echo "once in recovery you should follow instructions online to go back into dfu"
+    if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+        ./dfuhelper.sh
+    fi
     _wait_for_dfu
     cd ramdisk
     ../ipwnder -p
@@ -406,10 +415,13 @@ else
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s2 /mnt2"
     ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/kernelcache root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches
-    ssh -p2222 root@localhost
+    #ssh -p2222 root@localhost
     $(./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
 fi
 if [ -e $deviceid/$1/iBSS.img4 ]; then
+    if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+        ./dfuhelper.sh
+    fi    
     _wait_for_dfu
      cd $deviceid/$1
     ../../ipwnder -p
