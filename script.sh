@@ -144,7 +144,7 @@ _download_boot_files() {
         mv $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1).im4p $1/$3/kernelcache.dec
     fi
 
-    if [ ! -e ramdisk/iBSS.dec ]; then
+    if [ ! -e $1/$3/iBSS.dec ]; then
         # Download iBSS
         ./pzb -g $(awk "/""$2""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
         # Decrypt iBSS
@@ -152,7 +152,7 @@ _download_boot_files() {
         mv $(awk "/""$2""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//') $1/$3/iBSS.dec
     fi
 
-    if [ ! -e ramdisk/iBEC.dec ]; then
+    if [ ! -e $1/$3/iBEC.dec ]; then
         # Download iBEC
         ./pzb -g $(awk "/""$2""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
         # Decrypt iBEC
@@ -160,7 +160,7 @@ _download_boot_files() {
         mv $(awk "/""$2""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//') $1/$3/iBEC.dec
     fi
 
-    if [ ! -e ramdisk/DeviceTree.dec ]; then
+    if [ ! -e $1/$3/DeviceTree.dec ]; then
         # Download DeviceTree
         ./pzb -g $(awk "/""$2""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
         # Decrypt DeviceTree
@@ -168,7 +168,7 @@ _download_boot_files() {
         mv $(awk "/""$2""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]all_flash.*production[/]//') $1/$3/DeviceTree.dec
     fi
 
-    if [ ! -e ramdisk/RestoreRamDisk.dmg ]; then
+    if [ ! -e $1/$3/RestoreRamDisk.dmg ]; then
         # Download RestoreRamDisk
         ./pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
         # Decrypt RestoreRamDisk
