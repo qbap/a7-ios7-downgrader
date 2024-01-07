@@ -98,10 +98,8 @@ _dfuhelper() {
     
     if [ "$(get_device_mode)" = "dfu" ]; then
         echo "[*] Device entered DFU!"
-        osascript -e 'tell application "Terminal" to quit' & exit 0
     else
         echo "[-] Device did not enter DFU mode"
-        osascript -e 'tell application "Terminal" to quit' & exit -1
     fi
 }
 
