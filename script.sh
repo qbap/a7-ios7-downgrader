@@ -215,19 +215,14 @@ _download_root_fs() {
 
     ./pzb -g BuildManifest.plist "$ipswurl"
 
-    if [ ! -e $1/$3/OS.dec ]; then
-        if [ ! -e $1/$3/OS.tar ]; then
-            # Download root fs
-            ./pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
-            # Decrypt root fs
-            # note that as per src/decrypt.rs it will rename the file to OS.dmg by default
-            cargo run decrypt $1 $3 "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -l
-            osfn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
-            mv $(echo $osfn | sed "s/dmg/bin/g") $1/$3/OS.dmg
-        fi
-    fi
-    
     if [ ! -e $1/$3/OS.tar ]; then
+        # Download root fs
+        ./pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
+        # Decrypt root fs
+        # note that as per src/decrypt.rs it will rename the file to OS.dmg by default
+        cargo run decrypt $1 $3 "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -l
+        osfn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
+        mv $(echo $osfn | sed "s/dmg/bin/g") $1/$3/OS.dmg
         ./dmg build $1/$3/OS.dmg $1/$3/rw.dmg
         hdiutil attach -mountpoint /tmp/ios $1/$3/rw.dmg
         sudo diskutil enableOwnership /tmp/ios
