@@ -180,7 +180,7 @@ _download_boot_files() {
     
     if [ ! -e $1/$3/iBSS.patched ]; then    
         ./ipatcher $1/$3/iBSS.dec $1/$3/iBSS.patched
-        ./ipatcher $1/$3/iBEC.dec $1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1"
+        ./ipatcher $1/$3/iBEC.dec $1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1 intcoproc_unrestricted=1 amfi_allow_any_signature=1 amfi_unrestrict_task_for_pid=1 PE_i_can_has_debugger=1 amfi_get_out_of_my_way=1 ipc_control_port_options=0"
         ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
         ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
         ./seprmvr64lite $1/$3/kcache.raw $1/$3/kcache.patched
@@ -407,6 +407,12 @@ if [[ "$response1" = 'yes' || "$response1" = 'y' ]]; then
 else
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s2 /mnt2"
+    ./sshpass -p "alpine" scp -P 2222 ./jailbreak_mnt1.tar root@localhost:/mnt2/
+    ./sshpass -p "alpine" scp -P 2222 ./jailbreak_mnt2.tar root@localhost:/mnt2/
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/jailbreak_mnt1.tar -C /mnt1"
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/jailbreak_mnt2.tar -C /mnt2"
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/jailbreak_mnt1.tar"
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/jailbreak_mnt2.tar"
     ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/kernelcache root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches
     #ssh -p2222 root@localhost
     $(./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
