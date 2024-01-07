@@ -205,7 +205,7 @@ _download_root_fs() {
         sudo ./gnutar -cvf $1/$3/OS.tar -C /tmp/ios .
         hdiutil detach /tmp/ios
         rm -rf /tmp/ios
-    fis
+    fi
 
     rm -rf BuildManifest.plist
 }
