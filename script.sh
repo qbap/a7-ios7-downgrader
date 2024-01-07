@@ -3,6 +3,7 @@ os=$(uname)
 oscheck=$(uname)
 version="$1"
 dir="$(pwd)/"
+
 _wait_for_dfu() {
     if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
         echo "[*] Waiting for device in DFU mode"
@@ -15,7 +16,6 @@ _wait_for_dfu() {
 remote_cmd() {
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "$@"
 }
-
 remote_cp() {
     ./sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P2222 $@
 }
@@ -190,7 +190,6 @@ _download_boot_files() {
         ./img4 -i $1/$3/DeviceTree.dec -o $1/$3/devicetree.img4 -A -M IM4M -T rdtr
     fi
 }
-
 _download_root_fs() {
     # $deviceid arg 1
     # $replace arg 2
@@ -217,13 +216,15 @@ _download_root_fs() {
     ./pzb -g BuildManifest.plist "$ipswurl"
 
     if [ ! -e $1/$3/OS.dec ]; then
-        # Download root fs
-        ./pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
-        # Decrypt root fs
-        # note that as per src/decrypt.rs it will rename the file to OS.dmg by default
-        cargo run decrypt $1 $3 "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -l
-        osfn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
-        mv $(echo $osfn | sed "s/dmg/bin/g") $1/$3/OS.dmg
+        if [ ! -e $1/$3/OS.tar ]; then
+            # Download root fs
+            ./pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
+            # Decrypt root fs
+            # note that as per src/decrypt.rs it will rename the file to OS.dmg by default
+            cargo run decrypt $1 $3 "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -l
+            osfn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
+            mv $(echo $osfn | sed "s/dmg/bin/g") $1/$3/OS.dmg
+        fi
     fi
     
     if [ ! -e $1/$3/OS.tar ]; then
@@ -247,6 +248,7 @@ _kill_if_running() {
         fi
     fi
 }
+
 for cmd in curl cargo ssh scp killall sudo grep; do
     if ! command -v "${cmd}" > /dev/null; then
         if [ "$cmd" = "cargo" ]; then
@@ -265,6 +267,7 @@ if [ "$cmd_not_found" = "1" ]; then
     exit 1
 fi
 cargo install taco
+cargo run
 if [ ! -e apticket.der ]; then
     echo "you need to turn on ssh&sftp over wifi on ur phone now"
     echo "https://github.com/y08wilm/a7-ios7-downgrader?tab=readme-ov-file#preparing-your-device"
