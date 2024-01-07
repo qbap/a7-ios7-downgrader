@@ -329,16 +329,18 @@ if [[ "$response1" = 'yes' || "$response1" = 'y' ]]; then
     echo "device should now reboot into recovery, pls wait"
     echo "once in recovery you should follow instructions online to go back into dfu"
     _wait_for_dfu
-    ./ipwnder -p
-    ./irecovery -f iBSS.img4
-    ./irecovery -f iBSS.img4
-    ./irecovery -f iBEC.img4
-    ./irecovery -f ramdisk.img4
-    ./irecovery -c ramdisk
-    ./irecovery -f devicetree.img4
-    ./irecovery -c devicetree
-    ./irecovery -f kernelcache.img4
-    ./irecovery -c bootx &
+    cd ramdisk
+    ../ipwnder -p
+    ../irecovery -f iBSS.img4
+    ../irecovery -f iBSS.img4
+    ../irecovery -f iBEC.img4
+    ../irecovery -f ramdisk.img4
+    ../irecovery -c ramdisk
+    ../irecovery -f devicetree.img4
+    ../irecovery -c devicetree
+    ../irecovery -f kernelcache.img4
+    ../irecovery -c bootx &
+    cd ..
     read -p "pls press the enter key once device is in the ramdisk" pause1
     ./iproxy 2222 22 &
     echo "https://ios7.iarchive.app/downgrade/installing-filesystem.html"
