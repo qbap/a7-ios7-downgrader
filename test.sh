@@ -27,6 +27,17 @@ sudo cp ./dmg /usr/bin/dmg
 sudo rm -rf /usr/local/bin/dmg
 sudo cp ./dmg /usr/local/bin/dmg
 
+rm -rf kernelcache.dec
+rm -rf iBSS.dec
+rm -rf iBEC.dec
+rm -rf DeviceTree.dec
+rm -rf OS.dec
+rm -rf RestoreRamDisk.dec
+
+rm -rf $deviceid/$1
+
+mkdir -p $deviceid/$1
+
 ./gaster pwn
 ./pzb -g BuildManifest.plist "$ipswurl"
 
@@ -38,22 +49,22 @@ echo $(pwd)/"$(awk "/""${replace}""/{x=1}x&&/kernelcache.release/{print;exit}" B
 # note that as per src/decrypt.rs it will not rename the file
 cargo run decrypt $deviceid $1 "$(awk "/""${replace}""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" -l
 # so we shall rename the file ourselves
-mv "$(awk "/""${replace}""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" kernelcache.dec
+mv "$(awk "/""${replace}""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" $deviceid/$1/kernelcache.dec
 
 # Download iBSS
 ./pzb -g "$(awk "/""${replace}""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1)" "$ipswurl"
 # Decrypt iBSS
-./gaster decrypt "$(awk "/""${replace}""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')" iBSS.dec
+./gaster decrypt "$(awk "/""${replace}""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')" $deviceid/$1/iBSS.dec
 
 # Download iBEC
 ./pzb -g "$(awk "/""${replace}""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1)" "$ipswurl"
 # Decrypt iBEC
-./gaster decrypt "$(awk "/""${replace}""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')" iBEC.dec
+./gaster decrypt "$(awk "/""${replace}""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')" $deviceid/$1/iBEC.dec
 
 # Download DeviceTree
 ./pzb -g "$(awk "/""${replace}""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1)" "$ipswurl"
 # Decrypt DeviceTree
-./gaster decrypt "$(awk "/""${replace}""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]all_flash.*production[/]//')" DeviceTree.dec
+./gaster decrypt "$(awk "/""${replace}""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]all_flash.*production[/]//')" $deviceid/$1/DeviceTree.dec
 
 # Download root fs
 ./pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
@@ -61,9 +72,9 @@ mv "$(awk "/""${replace}""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManif
 # note that as per src/decrypt.rs it will rename the file to OS.dmg by default
 cargo run decrypt $deviceid $1 "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -l
 osfn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
-mv $(echo $osfn | sed "s/dmg/bin/g") "OS.dmg"
+mv $(echo $osfn | sed "s/dmg/bin/g") $deviceid/$1/OS.dec
 
 # Download RestoreRamDisk
 ./pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
 # Decrypt RestoreRamDisk
-./gaster decrypt "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" RestoreRamDisk.dec
+./gaster decrypt "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" $deviceid/$1/RestoreRamDisk.dec
