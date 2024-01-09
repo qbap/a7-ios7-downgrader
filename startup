@@ -1,0 +1,13 @@
+#!/bin/bash
+# this is a startup script, unrelated to the cydia startup script
+# this will run every time you boot your phone using my program
+# here i am just testing, trying to get / remounted as rw
+# as of the time i am writing this i have still not gotten rw despite these cmds
+echo hello world > /var/test.txt
+echo hello world > /test.txt
+mount -uw /
+echo hello world > /var/test_2.txt
+echo hello world > /test_2.txt
+mount -o remount,rw /dev/disk0s1s1 /
+echo hello world > /var/test_3.txt
+echo hello world > /test_3.txt
