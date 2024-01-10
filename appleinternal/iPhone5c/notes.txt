@@ -1,0 +1,9 @@
+AppleInternal
+iOS 7.0
+11A93840l
+Dev kernel
+
+wilmas-MacBook-Pro:oldimgtool wilma$ perl img3dec.pl -l ../kernelcache -o kernel.lzss -iv 188f7bac4783e5762477b6359e0322ac -k b6c3e05464c2c74e45a2fb93441bdf9cf47386a3d971dace6b4621ae1416f8fc
+wilmas-MacBook-Pro:oldimgtool wilma$ ./lzssdec -o 0x180 < kernel.lzss > kernel.img
+wilmas-MacBook-Pro:oldimgtool wilma$ file kernel.img 
+kernel.img: Mach-O executable arm_v7s
