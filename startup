@@ -17,21 +17,21 @@ chown -R 501:501 /var/mobile/Library/Logs/AppleSupport
 # here i am just testing random shit
 echo hello world > /var/test.txt # works
 echo hello world > /test.txt # fails
-mount -uw /
+#mount -uw /
 echo hello world > /var/test_2.txt # works
 echo hello world > /test_2.txt # fails bcz remount as rw is blocked on a kernel level on ios 7
-mount -o remount,rw /dev/disk0s1s1 /
+#mount -o remount,rw /dev/disk0s1s1 /
 echo hello world > /var/test_3.txt # works
 echo hello world > /test_3.txt # fails presumably because missing "remount" option in mount cmd on ios 7
-mount -w -t hfs -o remount,rw /var/mobile/Library/Logs/AppleSupport/rdisk0s1s1 /
+#mount -w -t hfs -o remount,rw /var/mobile/Library/Logs/AppleSupport/rdisk0s1s1 /
 echo hello world > /var/test_4.txt # works
 echo hello world > /test_4.txt # fails presumably because "block device required" err
-mount -w -t hfs -o remount,rw /var/mobile/Library/Logs/AppleSupport/disk0s1s1 /
+#mount -w -t hfs -o remount,rw /var/mobile/Library/Logs/AppleSupport/disk0s1s1 /
 echo hello world > /var/test_5.txt # works
 echo hello world > /test_5.txt # untested but presumably will fail because missing "remount" option in mount cmd on ios 7
-mount -w -t hfs -o remount,rw /var/mobile/Library/Logs/AppleSupport/ /
+#mount -w -t hfs -o remount,rw /var/mobile/Library/Logs/AppleSupport/ /
 echo hello world > /var/test_6.txt # works
 echo hello world > /test_6.txt # fails cause AppleSupport is a directory not a block device
-cd /private && mount -t /private && fsck # random instructions from online
+#cd /private && mount -t /private && fsck # random instructions from online
 echo hello world > /var/test_7.txt # works
 echo hello world > /test_7.txt # fails due to idk

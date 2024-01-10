@@ -402,8 +402,8 @@ if [[ "$response1" = 'yes' || "$response1" = 'y' ]]; then
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_hfs /dev/disk0s1s1 /mnt1"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs -o suid,dev /dev/disk0s1s2 /mnt2"
     ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/OS.tar root@localhost:/mnt2
-    ./sshpass -p "alpine" scp -P 2222 ./jailbreak_mnt1.tar root@localhost:/mnt2/
-    ./sshpass -p "alpine" scp -P 2222 ./jailbreak_mnt2.tar root@localhost:/mnt2/
+    ./sshpass -p "alpine" scp -P 2222 ./jb/jailbreak_mnt1.tar root@localhost:/mnt2/
+    ./sshpass -p "alpine" scp -P 2222 ./jb/jailbreak_mnt2.tar root@localhost:/mnt2/
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/jailbreak_mnt1.tar -C /mnt1"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/jailbreak_mnt2.tar -C /mnt2"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/jailbreak_mnt1.tar"
@@ -416,7 +416,11 @@ if [[ "$response1" = 'yes' || "$response1" = 'y' ]]; then
     ./sshpass -p "alpine" scp -r -P 2222 ./Baseband root@localhost:/mnt1/usr/local/standalone/firmware
     ./sshpass -p "alpine" scp -P 2222 ./apticket.der root@localhost:/mnt1/System/Library/Caches/
     ./sshpass -p "alpine" scp -P 2222 ./sep-firmware.img4 root@localhost:/mnt1/usr/standalone/firmware/
-    ./sshpass -p "alpine" scp -P 2222 ./fstab root@localhost:/mnt1/etc/
+    if [ "$1" = "7.0.1" ]; then
+        ./sshpass -p "alpine" scp -P 2222 ./jb/fstab root@localhost:/mnt1/etc/
+    else
+        ./sshpass -p "alpine" scp -P 2222 ./fstab root@localhost:/mnt1/etc/
+    fi
     read -p "would you like to also delete Setup.app? " response2
     if [[ "$response2" = 'yes' || "$response2" = 'y' ]]; then
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/Applications/Setup.app"
@@ -424,16 +428,10 @@ if [[ "$response1" = 'yes' || "$response1" = 'y' ]]; then
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/data_ark.plist.tar -C /mnt2"
     fi
     ./sshpass -p "alpine" scp -P 2222 ./com.saurik.Cydia.Startup.plist root@localhost:/mnt1/System/Library/LaunchDaemons
-    #./sshpass -p "alpine" scp -P 2222 ./libsandbox.dylib root@localhost:/mnt1/usr/lib/
-    #./sshpass -p "alpine" scp -P 2222 ./libsandbox.1.dylib root@localhost:/mnt1/usr/lib/
-    if [ "$1" = "7.0.4" ]; then
-        ./sshpass -p "alpine" scp -P 2222 ./Services.plist root@localhost:/mnt1/System/Library/Lockdown/Services.plist
-    else
-        ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/Lockdown/Services.plist .
-        plutil -convert xml1 Services.plist
-        nano Services.plist
-        plutil -convert binary1 Services.plist
-        ./sshpass -p "alpine" scp -P 2222 ./Services.plist root@localhost:/mnt1/System/Library/Lockdown/Services.plist
+    #./sshpass -p "alpine" scp -P 2222 ./jb/libsandbox.dylib root@localhost:/mnt1/usr/lib/
+    #./sshpass -p "alpine" scp -P 2222 ./jb/libsandbox.1.dylib root@localhost:/mnt1/usr/lib/
+    if [ "$1" = "7.0.1" ]; then
+        ./sshpass -p "alpine" scp -P 2222 ./jb/Services.plist root@localhost:/mnt1/System/Library/Lockdown/Services.plist
     fi
     ./sshpass -p "alpine" scp -P 2222 ./startup root@localhost:/mnt1/usr/libexec/y08wilm/
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/OS.tar"
