@@ -1,0 +1,16 @@
+AppleInternal
+iOS 7.0
+11A24580o
+Development kernel
+WIP
+https://files.catbox.moe/5tw1f8.png
+release kernels can not mount / as rw
+but development kernels can
+this is merely a test to see if simply using a development kernel can avoid us having to make a whole arm64 kernel patcher for ios 7
+
+11A24580o_kernelcache is krnl img4 and gets installed to /mnt1/System/Library/Caches/com.apple.kernelcaches/
+11A24580o_kernelcache.img4 is rkrn img4 and is used with irecovery to boot ios
+11A24580o_kernelcache.dec is krnl im4p which is basically the same as kernelcache.release.n51
+11A24580o_kcache.raw is mach-o of arm64 kernel and is used for patching the kernel
+11A24580o_apticket.der is shsh2 blob and gets changed to IM4M when patching the boot chain
+mach.development.s5l8960x is similar to 11A24580o_kcache.raw (?)

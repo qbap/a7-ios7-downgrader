@@ -23,8 +23,18 @@ _download_ramdisk_boot_files() {
     # $deviceid arg 1
     # $replace arg 2
     # $version arg 3
-
-    ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | ./jq '.firmwares | .[] | select(.version=="'$3'")' | ./jq -s '.[0] | .url' --raw-output)
+    
+    if [ "$3" = "7.0" ]; then
+        if [ "$1" = "iPhone6,1" ]; then
+            ipswurl="https://secure-appldnld.apple.com/iOS7/091-9500.20130918.bgy5t/iphone6,1_7.0_11a466_restore.ipsw"
+        elif [ "$1" = "iPhone6,2" ]; then
+            ipswurl="https://secure-appldnld.apple.com/iOS7/091-9498.20130918.lllkt/iphone6,2_7.0_11a466_restore.ipsw"
+        else
+            echo "this version is not supported"
+        fi
+    else
+        ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | ./jq '.firmwares | .[] | select(.version=="'$3'")' | ./jq -s '.[0] | .url' --raw-output)
+    fi
 
     # Copy required library for taco to work to /usr/bin
     sudo rm -rf /usr/bin/img4
@@ -113,7 +123,17 @@ _download_boot_files() {
     # $replace arg 2
     # $version arg 3
 
-    ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | ./jq '.firmwares | .[] | select(.version=="'$3'")' | ./jq -s '.[0] | .url' --raw-output)
+    if [ "$3" = "7.0" ]; then
+        if [ "$1" = "iPhone6,1" ]; then
+            ipswurl="https://secure-appldnld.apple.com/iOS7/091-9500.20130918.bgy5t/iphone6,1_7.0_11a466_restore.ipsw"
+        elif [ "$1" = "iPhone6,2" ]; then
+            ipswurl="https://secure-appldnld.apple.com/iOS7/091-9498.20130918.lllkt/iphone6,2_7.0_11a466_restore.ipsw"
+        else
+            echo "this version is not supported"
+        fi
+    else
+        ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | ./jq '.firmwares | .[] | select(.version=="'$3'")' | ./jq -s '.[0] | .url' --raw-output)
+    fi
 
     # Copy required library for taco to work to /usr/bin
     sudo rm -rf /usr/bin/img4
@@ -183,6 +203,20 @@ _download_boot_files() {
         ./ipatcher $1/$3/iBEC.dec $1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1 PE_i_can_has_debugger=1"
         ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
         ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
+        if [ "$3" = "7.0" ]; then
+            if [ "$1" = "iPhone6,1" ]; then
+                echo "ok"
+            elif [ "$1" = "iPhone6,2" ]; then
+                echo "ok"
+            else
+                echo "this version is not supported"
+            fi
+            ./seprmvr64lite jb/kcache.raw $1/$3/kcache.patched
+            ./kerneldiff jb/kcache.raw $1/$3/kcache.patched $1/$3/kc.bpatch
+            ./img4 -i jb/kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
+            ./img4 -i jb/kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
+            ./img4 -i $1/$3/DeviceTree.dec -o $1/$3/devicetree.img4 -A -M IM4M -T rdtr
+        fi
         ./seprmvr64lite $1/$3/kcache.raw $1/$3/kcache.patched
         ./kerneldiff $1/$3/kcache.raw $1/$3/kcache.patched $1/$3/kc.bpatch
         ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
@@ -195,7 +229,17 @@ _download_root_fs() {
     # $replace arg 2
     # $version arg 3
 
-    ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | ./jq '.firmwares | .[] | select(.version=="'$3'")' | ./jq -s '.[0] | .url' --raw-output)
+    if [ "$3" = "7.0" ]; then
+        if [ "$1" = "iPhone6,1" ]; then
+            ipswurl="https://secure-appldnld.apple.com/iOS7/091-9500.20130918.bgy5t/iphone6,1_7.0_11a466_restore.ipsw"
+        elif [ "$1" = "iPhone6,2" ]; then
+            ipswurl="https://secure-appldnld.apple.com/iOS7/091-9498.20130918.lllkt/iphone6,2_7.0_11a466_restore.ipsw"
+        else
+            echo "this version is not supported"
+        fi
+    else
+        ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | ./jq '.firmwares | .[] | select(.version=="'$3'")' | ./jq -s '.[0] | .url' --raw-output)
+    fi
 
     # Copy required library for taco to work to /usr/bin
     sudo rm -rf /usr/bin/img4
