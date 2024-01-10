@@ -16,29 +16,28 @@ kernel_patcher: failed to find one or more patches, aborting!: Undefined error: 
 kernel_patcher: failed to find mspatch!: Undefined error: 0
 kernel_patcher: failed to find pedebugger!: Undefined error: 0
 kernel_patcher: failed to find debugger!: Undefined error: 0
-MobileSubstrate fix patch at 0.
-PE_I_can_has_debugger patch at 0.
-debugger_enabled patch at 0.
 task_for_pid 0 patch at 296ee4.
 vm_map_enter patch at f3d9c.
 mount_common patch at 131520.
+sandbox patch at 850ef0 is known to segfault, skipping..
 Total patches: 3
-Patch at 0x7982e910
+Patch at 0x7a02f320
 Name:          task_for_pid 0
 Search for:    00F01781504600F033F90525002800F0
 Replace with:  C046C046504600F033F90525002800F0
 Size:          16
-Patch at 0x7982e950
-Name:          mount_common RW support
-Search for:    00BF00BF02E0254600E02546D8F80C00
-Replace with:  C046C04602E0254600E02546D8F80C00
-Size:          16
-Patch at 0x7982e9a0
+Patch at 0x7a02f360
 Name:          vm_map_enter
 Search for:    07E04FF0040ABCF1000F28D1B9F1000F
 Replace with:  07E04FF0040ABCF1000F28D1B9F1000F
 Size:          16
+Patch at 0x7a02f3a0
+Name:          mount_common RW support
+Search for:    00BF00BF02E0254600E02546D8F80C00
+Replace with:  C046C04602E0254600E02546D8F80C00
+Size:          16
 Patching kernel *NOW*...
+100.0% done. [(3/3) mount_common RW support         ]
 
 pls someone inspect this source code for this kernel patcher
 and update it to work on arm64
