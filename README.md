@@ -52,6 +52,32 @@ dual boot support might be added in the future but is not supported rn
 
 use at your own risk
 
+# jailbreak status
+
+2024-09-01
+
+jb bootstrap tar extracts successfully onto idevice and does not kernel panic upon boot
+
+cydia is successfully installed and device functions normally
+
+cydia closes upon launch but interestingly enough the actual layout of the Cydia app does load for a split second before it closes, and if you type cydia:// into safari it opens the Cydia app also
+
+cydia launch daemon runs but only if I modify the launch daemon plist to make it run as root and then chown the file to make it owned by root instead of mobile 
+
+launch daemon script is able to modify the entirety of /var but rootfs is still write protected as of the time of writing
+
+i now know that we have to patch a check in the kernel for mount_common to be able remount / as rw
+
+the existing open source patches on the internet for this are for armv7 only and not for arm64
+
+i have aquired armv7 patches for both tfp0 and rootfs rw, but they need to be ported over to arm64
+
+once someone updates the kernel patcher to work on arm64 kernelcache, we should have tfp0 and rootfs rw
+
+see [kernel_patcher/notes.txt](https://github.com/y08wilm/a7-ios7-downgrader/blob/main/kernel_patcher/notes.txt) for more info
+
+if someone can get this done, we should be able to get jailbreak and cydia working
+
 # requirements
 
 mac os high sierra 10.13** newer versions might work but are not tested
@@ -120,13 +146,17 @@ bluetooth** tested working with airpods 2nd gen
 
 app store
 
+UnlimFileManager** an app store app that lets you download files off the internet
+
+evermusic** an app store app that can play downloaded mp3 files
+
 # not tested
 
 Evasi0n7** requires ios 7.0.6 and needs to be patched using https://github.com/UInt2048/7.0/
 
 hactivation** https://trainghiemso.vn/cach-ha-iphone-5-ipad-4-tu-10-3-3-xuong-8-4-1-khong-can-shsh-blobs/
 
-evermusic** mp3 player that supports ios 7 if you download last compatible build from the app store but i havent gotten around to testing it yet, it should work fine
+playing music with the screen locked
 
 # setup.app bypass
 
@@ -152,19 +182,15 @@ tested working on my iphone 5s on ios 7.1.2
 
 `git clone --recursive https://github.com/y08wilm/a7-ios7-downgrader && cd a7-ios7-downgrader`
 
-`git reset --hard 9af26f2233e2d6b76ac04b65e4bf064c5de4e73c`
-
 `chmod +x script.sh`
 
 `chmod +x clean.sh`
 
 connect iphone in dfu mode
 
-`./script.sh`
+`./script.sh 7.0.4`
 
-type `7.1.2` for the ios version to downgrade to
-
-and follow the steps
+and follow the steps, as it will install ios 7.0.4 onto your phone
 
 whenever the script asks for a password it is either your mac password or `alpine`
 
@@ -173,6 +199,8 @@ when the script says "waiting for device in dfu mode" it means u gotta put it ba
 uhh and when it gets to the partitioning step, make terminal full screen, it has easy to read instructions on top
 
 all you gotta do at that step is press the keys on your keyboard it tells you to
+
+cydia will be installed but wont open bcz we are missing the kernel patches to remount / as rw
 
 # credits
 
