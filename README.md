@@ -1,28 +1,18 @@
-hi fellow haters
-
-im wilma!! yeahyeah, f you too!
-
 # a7-ios7-downgrader
 
 i made this little script that lets you downgrade a7 devices to older ios
 
 as of the time of this writing this script supports
 
-iPhone 5s **iPhone6,1
+iPhone 5s
 
-and supports the following ios versions
+and supports booting any version of ios 7
 
-7.0.6
+but only ios 7.0.1 works with the jailbreak related portion of the script
 
-7.1.2
+please refer to the jailbreak section of this readme for more info
 
-preliminary support has been added for 
-
-iPhone 5s **iPhone6,2
-
-pls let me know if these devices work
-
-and
+future support may be added for newer versions
 
 8.4.1** gets stuck on slide to upgrade screen
 
@@ -36,12 +26,6 @@ use this option if you need to contact me for issues with this script
 
 do NOT abuse this option of being able to contact me, or i will take it away
 
-i am not, and will not, ever talk again on discord with any of you
-
-f you sn**lie, fing pedo. you know who you are, i dont want to speak to you ever again
-
-and all of you peasants that support them soliciting n**es from minors can all burn in hell
-
 # data loss
 
 this script deletes everything on your phone, including the main os
@@ -54,8 +38,6 @@ use at your own risk
 
 # jailbreak status
 
-2024-09-01
-
 jb bootstrap tar extracts successfully onto idevice and does not kernel panic upon boot
 
 cydia is successfully installed and device functions normally
@@ -64,19 +46,43 @@ cydia closes upon launch but interestingly enough the actual layout of the Cydia
 
 cydia launch daemon runs but only if I modify the launch daemon plist to make it run as root and then chown the file to make it owned by root instead of mobile 
 
-launch daemon script is able to modify the entirety of /var but rootfs is still write protected as of the time of writing
+~~launch daemon script is able to modify the entirety of /var but rootfs is still write protected as of the time of writing~~
 
-i now know that we have to patch a check in the kernel for mount_common to be able remount / as rw
+~~i now know that we have to patch a check in the kernel for mount_common to be able remount / as rw~~
 
-the existing open source patches on the internet for this are for armv7 only and not for arm64
+~~the existing open source patches on the internet for this are for armv7 only and not for arm64~~
 
-i have aquired armv7 patches for both tfp0 and rootfs rw, but they need to be ported over to arm64
+~~i have aquired armv7 patches for both tfp0 and rootfs rw, but they need to be ported over to arm64~~
 
-once someone updates the kernel patcher to work on arm64 kernelcache, we should have tfp0 and rootfs rw
+~~once someone updates the kernel patcher to work on arm64 kernelcache, we should have tfp0 and rootfs rw~~
 
-see [kernel_patcher/notes.txt](https://github.com/y08wilm/a7-ios7-downgrader/blob/main/kernel_patcher/notes.txt) for more info
+~~see [kernel_patcher/notes.txt](https://github.com/y08wilm/a7-ios7-downgrader/blob/main/kernel_patcher/notes.txt) for more info~~
 
-if someone can get this done, we should be able to get jailbreak and cydia working
+~~if someone can get this done, we should be able to get jailbreak and cydia working~~
+
+we now have full rootfs rw with the help of an appleinternal development kernel
+
+release kernels can not remount / as rw but development kernels can
+
+so with the help of this development kernel we can modify fstab to make / mount as rw on boot
+
+i tested writing to rootfs from a launch daemon script and it works
+
+we also got patched versions of these dylibs to work
+
+libmis.dylib "code sign bypass"
+
+libsandbox.dylib "userspace sandbox bypass"
+
+xpcd_cache.dylib "launch daemons (?)"
+
+see https://www.theiphonewiki.com/wiki/Talk:Pangu8 for more info on these dylibs
+
+now all that is left is figuring out how to bootstrap cydia properly (?) 
+
+cydia app opens but closes immediately, possibly caused by `setuid(0)` not working (?)
+
+setuid requires chown and chmod to be done properly, so it is possible that might be the issue
 
 # requirements
 
@@ -134,9 +140,9 @@ you can connect only to an OPEN wifi connection
 
 passcode and touch id does not work
 
-kernel panics if screen is locked for more then 5 minutes** might not panic if music is playing in background, havent tested that yet
+device becomes unresponsive once screen is locked or goes to sleep
 
-ios 8 gets stuck on slide to upgrade screen** cmon people pls pr a fix for this asap so i can try injecting etasonJB into the Tips.app
+ios 8 gets stuck on slide to upgrade screen** please pr a fix for this, thanks
 
 # working
 
@@ -151,8 +157,6 @@ UnlimFileManager** an app store app that lets you download files off the interne
 evermusic** an app store app that can play downloaded mp3 files
 
 # not tested
-
-Evasi0n7** requires ios 7.0.6 and needs to be patched using https://github.com/UInt2048/7.0/
 
 hactivation** https://trainghiemso.vn/cach-ha-iphone-5-ipad-4-tu-10-3-3-xuong-8-4-1-khong-can-shsh-blobs/
 
@@ -188,9 +192,9 @@ tested working on my iphone 5s on ios 7.1.2
 
 connect iphone in dfu mode
 
-`./script.sh 7.0.4`
+`./script.sh 7.0.1`
 
-and follow the steps, as it will install ios 7.0.4 onto your phone
+and follow the steps, as it will install ios 7.0.1 onto your phone
 
 whenever the script asks for a password it is either your mac password or `alpine`
 
@@ -200,7 +204,7 @@ uhh and when it gets to the partitioning step, make terminal full screen, it has
 
 all you gotta do at that step is press the keys on your keyboard it tells you to
 
-cydia will be installed but wont open bcz we are missing the kernel patches to remount / as rw
+cydia will be installed but wont open yet
 
 # credits
 
