@@ -78,11 +78,17 @@ xpcd_cache.dylib "launch daemons (?)"
 
 see https://www.theiphonewiki.com/wiki/Talk:Pangu8 for more info on these dylibs
 
-now all that is left is figuring out how to bootstrap cydia properly (?) 
+~~now all that is left is figuring out how to bootstrap cydia properly (?)~~
 
-cydia app opens but closes immediately, possibly caused by `setuid(0)` not working (?)
+~~cydia app opens but closes immediately, possibly caused by `setuid(0)` not working (?)~~
 
-setuid requires chown and chmod to be done properly, so it is possible that might be the issue
+~~setuid requires chown and chmod to be done properly, so it is possible that might be the issue~~
+
+cydia now works perfectly on ios 7.0.1 but you may need to unplug and replug the power cable on the iphone a couple dozen times
+
+when the screen goes black due to auto lock on lock screen you can just plug in a power cable and it will make the screen turn back on
+
+i highly recommend turning on assistivetouch and disabling auto lock in settings on your iphone
 
 # requirements
 
