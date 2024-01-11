@@ -84,11 +84,13 @@ see https://www.theiphonewiki.com/wiki/Talk:Pangu8 for more info on these dylibs
 
 ~~setuid requires chown and chmod to be done properly, so it is possible that might be the issue~~
 
-cydia now works perfectly on ios 7.0.1 but you may need to unplug and replug the power cable on the iphone a couple dozen times
+cydia now works perfectly on ios 7.0 ~~but you may need to unplug and replug the power cable on the iphone a couple dozen times~~
 
 when the screen goes black due to auto lock on lock screen you can just plug in a power cable and it will make the screen turn back on
 
 i highly recommend turning on assistivetouch and disabling auto lock in settings on your iphone
+
+tweaks do not work, but cydia itself does work
 
 # requirements
 
@@ -148,6 +150,14 @@ passcode and touch id does not work
 
 device becomes unresponsive once screen is locked or goes to sleep
 
+home button does not work when jailbroken, but works fine unjailbroken on ios 7.0.4-7.1.2
+
+safari does not work when jailbroken
+
+mail app does not work when jailbroken
+
+app store does not work when jailbroken, but works fine unjailbroken on ios 7.0.4-7.1.2
+
 ios 8 gets stuck on slide to upgrade screen** please pr a fix for this, thanks
 
 # working
@@ -156,11 +166,7 @@ wifi, if using a wifi connection that does not have a password
 
 bluetooth** tested working with airpods 2nd gen
 
-app store
-
-UnlimFileManager** an app store app that lets you download files off the internet
-
-evermusic** an app store app that can play downloaded mp3 files
+app store when unjailbroken on ios 7.0.4-7.1.2
 
 # not tested
 
