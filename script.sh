@@ -108,7 +108,7 @@ _download_ramdisk_boot_files() {
         ./img4 -i ramdisk/devicetree.dec -o ramdisk/devicetree.img4 -A -M IM4M -T rdtr
     fi
 }
-_download_boot_files_jb {
+_download_boot_files_jb() {
     # $deviceid arg 1
     # $replace arg 2
     # $version arg 3
