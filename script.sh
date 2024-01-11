@@ -108,6 +108,60 @@ _download_ramdisk_boot_files() {
         ./img4 -i ramdisk/devicetree.dec -o ramdisk/devicetree.img4 -A -M IM4M -T rdtr
     fi
 }
+_download_boot_files_jb {
+    # $deviceid arg 1
+    # $replace arg 2
+    # $version arg 3
+    
+    mkdir -p $1/$3
+
+    if [ "$1" = "iPhone6,1" ]; then
+        ipswurl="https://secure-appldnld.apple.com/iOS7/091-9500.20130918.bgy5t/iphone6,1_7.0_11a466_restore.ipsw"
+        if [ ! -e $1/$3/kernelcache.dec ]; then
+            ./pzb -g Firmware/dfu/iBSS.n51ap.RELEASE.im4p "$ipswurl"
+            ./pzb -g Firmware/dfu/iBEC.n51ap.RELEASE.im4p "$ipswurl"
+            ./pzb -g kernelcache.release.n51 "$ipswurl"
+            ./pzb -g Firmware/all_flash/all_flash.n51ap.production/DeviceTree.n51ap.im4p "$ipswurl"
+            mv iBSS.n51ap.RELEASE.im4p $1/$3/iBSS.n51ap.RELEASE.im4p
+            mv iBEC.n51ap.RELEASE.im4p $1/$3/iBEC.n51ap.RELEASE.im4p
+            mv kernelcache.release.n51 $1/$3/kernelcache.release.n51
+            mv DeviceTree.n51ap.im4p $1/$3/DeviceTree.n51ap.im4p
+            ./img4 -i $1/$3/iBSS.n51ap.RELEASE.im4p -o $1/$3/iBSS.dec -k 7e90fe7330257620f0213dff247d9f28e6bbba5ec2868c369e47cd47e75f1d352f20228c0bee22a756b9a934cec1b584
+            ./img4 -i $1/$3/iBEC.n51ap.RELEASE.im4p -o $1/$3/iBEC.dec -k 230c1b4044e61af6f4039dd506e0a4fcff2ebe36b5cad824a68560cc8e351d37d17fc5356564dc493f80d339ce982964
+            ./ipatcher $1/$3/iBSS.dec $1/$3/iBSS.patched
+            ./ipatcher $1/$3/iBEC.dec $1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1 PE_i_can_has_debugger=1"
+            ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
+            ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
+            ./img4 -i $1/$3/kernelcache.release.n51 -o $1/$3/kernelcache.dec -k 1f002ce72b2bd39660ed5c5efb9bcd22d32e8ec93e2f53ebf5a6a3089b4a7575e41c5846803c5f374a734d5711e537b5 -D
+            ./img4 -i $1/$3/kernelcache.release.n51 -o $1/$3/kcache.raw -k 1f002ce72b2bd39660ed5c5efb9bcd22d32e8ec93e2f53ebf5a6a3089b4a7575e41c5846803c5f374a734d5711e537b5
+            ./seprmvr64lite jb/11A24580o_kcache.raw $1/$3/kcache.patched
+            ./kerneldiff jb/11A24580o_kcache.raw $1/$3/kcache.patched $1/$3/kc.bpatch
+            ./img4 -i jb/11A24580o_kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
+            ./img4 -i jb/11A24580o_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
+            ./img4 -i $1/$3/DeviceTree.n51ap.im4p -o $1/$3/dtree.raw -k a0c6cda2b9735cd54d394b7f3d6f51c6f23becd34081751134cc8d1bbcf7eb1bcfa5993c612007aecb0b27de05ae6ee8
+            ./img4 -i $1/$3/dtree.raw -o $1/$3/devicetree.img4 -A -M IM4M -T rdtr
+            ./pzb -g 058-2384-003.dmg "$ipswurl"
+            mv 058-2384-003.dmg $1/$3/058-2384-003.dmg
+            ./dmg extract $1/$3/058-2384-003.dmg $1/$3/OS.dmg -k 170dd7944f0583cb1356022c55de3c950bf97743eeee600cbe6c9586ad9b93dfeb27951f
+            ./dmg build $1/$3/OS.dmg $1/$3/rw.dmg
+            hdiutil attach -mountpoint /tmp/ios $1/$3/rw.dmg
+            sudo diskutil enableOwnership /tmp/ios
+            sudo mkdir /tmp/ios2
+            sudo rm -rf /tmp/ios2
+            sudo cp -a /tmp/ios/. /tmp/ios2/
+            sudo tar --lzma -xvf ./jb/cydia.tar.lzma -C /tmp/ios2
+            sudo ./gnutar -cvf $1/$3/OS.tar -C /tmp/ios2 .
+            hdiutil detach /tmp/ios
+            rm -rf /tmp/ios
+            sudo rm -rf /tmp/ios2
+        fi
+    elif [ "$1" = "iPhone6,2" ]; then
+        ipswurl="https://secure-appldnld.apple.com/iOS7/091-9498.20130918.lllkt/iphone6,2_7.0_11a466_restore.ipsw"
+        if [ ! -e $1/$3/kernelcache.dec ]; then
+            echo "not supported"
+        fi
+    fi
+}
 _download_boot_files() {
     # $deviceid arg 1
     # $replace arg 2
@@ -179,34 +233,15 @@ _download_boot_files() {
     rm -rf BuildManifest.plist
     
     if [ ! -e $1/$3/iBSS.patched ]; then    
-        if [ "$3" = "7.0.1" ]; then
-            if [ "$1" = "iPhone6,1" ]; then
-                echo "ok"
-            elif [ "$1" = "iPhone6,2" ]; then
-                echo "ok"
-            else
-                echo "this version is not supported"
-            fi
-            ./ipatcher $1/$3/iBSS.dec $1/$3/iBSS.patched
-            ./ipatcher $1/$3/iBEC.dec $1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1 PE_i_can_has_debugger=1"
-            ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
-            ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
-            ./seprmvr64lite jb/11A24580o_kcache.raw $1/$3/kcache.patched
-            ./kerneldiff jb/11A24580o_kcache.raw $1/$3/kcache.patched $1/$3/kc.bpatch
-            ./img4 -i jb/11A24580o_kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
-            ./img4 -i jb/11A24580o_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
-            ./img4 -i $1/$3/DeviceTree.dec -o $1/$3/devicetree.img4 -A -M IM4M -T rdtr
-        else
-            ./ipatcher $1/$3/iBSS.dec $1/$3/iBSS.patched
-            ./ipatcher $1/$3/iBEC.dec $1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1 PE_i_can_has_debugger=1"
-            ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
-            ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
-            ./seprmvr64lite $1/$3/kcache.raw $1/$3/kcache.patched
-            ./kerneldiff $1/$3/kcache.raw $1/$3/kcache.patched $1/$3/kc.bpatch
-            ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
-            ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
-            ./img4 -i $1/$3/DeviceTree.dec -o $1/$3/devicetree.img4 -A -M IM4M -T rdtr
-        fi
+        ./ipatcher $1/$3/iBSS.dec $1/$3/iBSS.patched
+        ./ipatcher $1/$3/iBEC.dec $1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1 PE_i_can_has_debugger=1"
+        ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
+        ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
+        ./seprmvr64lite $1/$3/kcache.raw $1/$3/kcache.patched
+        ./kerneldiff $1/$3/kcache.raw $1/$3/kcache.patched $1/$3/kc.bpatch
+        ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
+        ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
+        ./img4 -i $1/$3/DeviceTree.dec -o $1/$3/devicetree.img4 -A -M IM4M -T rdtr
     fi
 }
 _download_root_fs() {
@@ -245,15 +280,7 @@ _download_root_fs() {
         ./dmg build $1/$3/OS.dmg $1/$3/rw.dmg
         hdiutil attach -mountpoint /tmp/ios $1/$3/rw.dmg
         sudo diskutil enableOwnership /tmp/ios
-        if [ "$3" = "7.0.1" ]; then
-            sudo mkdir /tmp/ios2
-            sudo rm -rf /tmp/ios2
-            sudo cp -a /tmp/ios/. /tmp/ios2/
-            sudo tar --lzma -xvf ./jb/cydia.tar.lzma -C /tmp/ios2
-            sudo ./gnutar -cvf $1/$3/OS.tar -C /tmp/ios2 .
-        else
-            sudo ./gnutar -cvf $1/$3/OS.tar -C /tmp/ios /tmp/ios2 .
-        fi
+        sudo ./gnutar -cvf $1/$3/OS.tar -C /tmp/ios /tmp/ios2 .
         hdiutil detach /tmp/ios
         rm -rf /tmp/ios
         sudo rm -rf /tmp/ios2
@@ -335,8 +362,12 @@ fi
 # in this case we are going to use the ones from SSHRD_Script https://github.com/verygenericname/SSHRD_Script
 ./img4tool -e -s other/shsh/"${check}".shsh -m IM4M
 _download_ramdisk_boot_files $deviceid $replace 8.4.1
-_download_boot_files $deviceid $replace $1
-_download_root_fs $deviceid $replace $1
+if [ "$1" = "7.0" ]; then
+    _download_boot_files_jb $deviceid $replace $1
+else
+    _download_boot_files $deviceid $replace $1
+    _download_root_fs $deviceid $replace $1
+fi
 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
     ./dfuhelper.sh
 fi
@@ -411,12 +442,6 @@ if [[ "$response1" = 'yes' || "$response1" = 'y' ]]; then
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_hfs /dev/disk0s1s1 /mnt1"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs -o suid,dev /dev/disk0s1s2 /mnt2"
     ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/OS.tar root@localhost:/mnt2
-    #./sshpass -p "alpine" scp -P 2222 ./jb/jailbreak_mnt1.tar root@localhost:/mnt2/
-    #./sshpass -p "alpine" scp -P 2222 ./jb/jailbreak_mnt2.tar root@localhost:/mnt2/
-    #./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/jailbreak_mnt1.tar -C /mnt1"
-    #./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/jailbreak_mnt2.tar -C /mnt2"
-    #./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/jailbreak_mnt1.tar"
-    #./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/jailbreak_mnt2.tar"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/OS.tar -C /mnt1"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mv -v /mnt1/private/var/* /mnt2"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt1/usr/local/standalone/firmware/Baseband"
@@ -425,7 +450,7 @@ if [[ "$response1" = 'yes' || "$response1" = 'y' ]]; then
     ./sshpass -p "alpine" scp -r -P 2222 ./Baseband root@localhost:/mnt1/usr/local/standalone/firmware
     ./sshpass -p "alpine" scp -P 2222 ./apticket.der root@localhost:/mnt1/System/Library/Caches/
     ./sshpass -p "alpine" scp -P 2222 ./sep-firmware.img4 root@localhost:/mnt1/usr/standalone/firmware/
-    if [ "$1" = "7.0.1" ]; then
+    if [ "$1" = "7.0" ]; then
         ./sshpass -p "alpine" scp -P 2222 ./jb/fstab root@localhost:/mnt1/etc/
     else
         ./sshpass -p "alpine" scp -P 2222 ./fstab root@localhost:/mnt1/etc/
@@ -437,7 +462,7 @@ if [[ "$response1" = 'yes' || "$response1" = 'y' ]]; then
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/data_ark.plist.tar -C /mnt2"
     fi
     #./sshpass -p "alpine" scp -P 2222 ./com.saurik.Cydia.Startup.plist root@localhost:/mnt1/System/Library/LaunchDaemons
-    if [ "$1" = "7.0.1" ]; then
+    if [ "$1" = "7.0" ]; then
         ./sshpass -p "alpine" scp -P 2222 ./jb/Services.plist root@localhost:/mnt1/System/Library/Lockdown/Services.plist
     fi
     #./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir /mnt1/usr/libexec/y08wilm/"
@@ -453,7 +478,7 @@ if [[ "$response1" = 'yes' || "$response1" = 'y' ]]; then
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/usr/lib/libmis.dylib"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram oblit-inprogress=5"
     $(./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
-    if [ "$1" = "7.0.1" ]; then
+    if [ "$1" = "7.0" ]; then
         if [ -e $deviceid/$1/iBSS.img4 ]; then
             if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
                 ./dfuhelper.sh
