@@ -134,10 +134,10 @@ _download_boot_files_jb() {
             ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
             ./img4 -i $1/$3/kernelcache.release.n51 -o $1/$3/kernelcache.dec -k 1f002ce72b2bd39660ed5c5efb9bcd22d32e8ec93e2f53ebf5a6a3089b4a7575e41c5846803c5f374a734d5711e537b5 -D
             ./img4 -i $1/$3/kernelcache.release.n51 -o $1/$3/kcache.raw -k 1f002ce72b2bd39660ed5c5efb9bcd22d32e8ec93e2f53ebf5a6a3089b4a7575e41c5846803c5f374a734d5711e537b5
-            ./seprmvr64lite jb/11A24580o_kcache.raw $1/$3/kcache.patched
-            ./kerneldiff jb/11A24580o_kcache.raw $1/$3/kcache.patched $1/$3/kc.bpatch
-            ./img4 -i jb/11A24580o_kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
-            ./img4 -i jb/11A24580o_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
+            ./seprmvr64lite jb/11A24581c_kcache.raw $1/$3/kcache.patched
+            ./kerneldiff jb/11A24581c_kcache.raw $1/$3/kcache.patched $1/$3/kc.bpatch
+            ./img4 -i jb/11A24581c_kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
+            ./img4 -i jb/11A24581c_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
             ./img4 -i $1/$3/DeviceTree.n51ap.im4p -o $1/$3/dtree.raw -k a0c6cda2b9735cd54d394b7f3d6f51c6f23becd34081751134cc8d1bbcf7eb1bcfa5993c612007aecb0b27de05ae6ee8
             ./img4 -i $1/$3/dtree.raw -o $1/$3/devicetree.img4 -A -M IM4M -T rdtr
         fi
@@ -160,10 +160,10 @@ _download_boot_files_jb() {
             ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
             ./img4 -i $1/$3/kernelcache.release.n53 -o $1/$3/kernelcache.dec -k 2af87a1af1b954ea84b24384e35d96d87434e7f374f5366a6f25814a0ea04a0865e9b1348f1885816adfdab84cfe6b4b -D
             ./img4 -i $1/$3/kernelcache.release.n53 -o $1/$3/kcache.raw -k 2af87a1af1b954ea84b24384e35d96d87434e7f374f5366a6f25814a0ea04a0865e9b1348f1885816adfdab84cfe6b4b
-            ./seprmvr64lite jb/11A24580o_kcache.raw $1/$3/kcache.patched
-            ./kerneldiff jb/11A24580o_kcache.raw $1/$3/kcache.patched $1/$3/kc.bpatch
-            ./img4 -i jb/11A24580o_kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
-            ./img4 -i jb/11A24580o_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
+            ./seprmvr64lite jb/11A24581c_kcache.raw $1/$3/kcache.patched
+            ./kerneldiff jb/11A24581c_kcache.raw $1/$3/kcache.patched $1/$3/kc.bpatch
+            ./img4 -i jb/11A24581c_kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
+            ./img4 -i jb/11A24581c_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
             ./img4 -i $1/$3/DeviceTree.n53ap.im4p -o $1/$3/dtree.raw -k e556e32fe658e374e5fda8e0d0cd7d10fed7a316853e51005b9bcad9442a1a1432d2ddf04ec163279601b6aad982edca
             ./img4 -i $1/$3/dtree.raw -o $1/$3/devicetree.img4 -A -M IM4M -T rdtr
         fi
