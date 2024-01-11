@@ -140,9 +140,9 @@ _download_boot_files_jb() {
             ./img4 -i jb/11A24580o_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
             ./img4 -i $1/$3/DeviceTree.n51ap.im4p -o $1/$3/dtree.raw -k a0c6cda2b9735cd54d394b7f3d6f51c6f23becd34081751134cc8d1bbcf7eb1bcfa5993c612007aecb0b27de05ae6ee8
             ./img4 -i $1/$3/dtree.raw -o $1/$3/devicetree.img4 -A -M IM4M -T rdtr
-            ./pzb -g 058-2384-003.dmg "$ipswurl"
-            mv 058-2384-003.dmg $1/$3/058-2384-003.dmg
-            ./dmg extract $1/$3/058-2384-003.dmg $1/$3/OS.dmg -k 170dd7944f0583cb1356022c55de3c950bf97743eeee600cbe6c9586ad9b93dfeb27951f
+            ./pzb -g 038-4572-394.dmg "$ipswurl"
+            mv 038-4572-394.dmg $1/$3/038-4572-394.dmg
+            ./dmg extract $1/$3/038-4572-394.dmg $1/$3/OS.dmg -k 170dd7944f0583cb1356022c55de3c950bf97743eeee600cbe6c9586ad9b93dfeb27951f
             ./dmg build $1/$3/OS.dmg $1/$3/rw.dmg
             hdiutil attach -mountpoint /tmp/ios $1/$3/rw.dmg
             sudo diskutil enableOwnership /tmp/ios
