@@ -140,6 +140,45 @@ _download_boot_files_jb() {
             ./img4 -i jb/11A24580o_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
             ./img4 -i $1/$3/DeviceTree.n51ap.im4p -o $1/$3/dtree.raw -k a0c6cda2b9735cd54d394b7f3d6f51c6f23becd34081751134cc8d1bbcf7eb1bcfa5993c612007aecb0b27de05ae6ee8
             ./img4 -i $1/$3/dtree.raw -o $1/$3/devicetree.img4 -A -M IM4M -T rdtr
+        fi
+    elif [ "$1" = "iPhone6,2" ]; then
+        ipswurl="https://secure-appldnld.apple.com/iOS7/091-9498.20130918.lllkt/iphone6,2_7.0_11a466_restore.ipsw"
+        if [ ! -e $1/$3/kernelcache.dec ]; then
+            ./pzb -g Firmware/dfu/iBSS.n53ap.RELEASE.im4p "$ipswurl"
+            ./pzb -g Firmware/dfu/iBEC.n53ap.RELEASE.im4p "$ipswurl"
+            ./pzb -g kernelcache.release.n53 "$ipswurl"
+            ./pzb -g Firmware/all_flash/all_flash.n53ap.production/DeviceTree.n53ap.im4p "$ipswurl"
+            mv iBSS.n53ap.RELEASE.im4p $1/$3/iBSS.n53ap.RELEASE.im4p
+            mv iBEC.n53ap.RELEASE.im4p $1/$3/iBEC.n53ap.RELEASE.im4p
+            mv kernelcache.release.n53 $1/$3/kernelcache.release.n53
+            mv DeviceTree.n53ap.im4p $1/$3/DeviceTree.n53ap.im4p
+            ./img4 -i $1/$3/iBSS.n53ap.RELEASE.im4p -o $1/$3/iBSS.dec -k b44f3bcd69620c181a8783ca5bfc60b0fefac2548bf1855b97a8b9569e31c87e175c5ee4d21c073a19d23ce3df6cee90
+            ./img4 -i $1/$3/iBEC.n53ap.RELEASE.im4p -o $1/$3/iBEC.dec -k e08ff10d31b4c68673aabf5a2c22ce3cd41927285caaac1659ccf11cbd4c081948aeaf014497e6f8cdf77a371782879c
+            ./ipatcher $1/$3/iBSS.dec $1/$3/iBSS.patched
+            ./ipatcher $1/$3/iBEC.dec $1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1 PE_i_can_has_debugger=1"
+            ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
+            ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
+            ./img4 -i $1/$3/kernelcache.release.n53 -o $1/$3/kernelcache.dec -k 2af87a1af1b954ea84b24384e35d96d87434e7f374f5366a6f25814a0ea04a0865e9b1348f1885816adfdab84cfe6b4b -D
+            ./img4 -i $1/$3/kernelcache.release.n53 -o $1/$3/kcache.raw -k 2af87a1af1b954ea84b24384e35d96d87434e7f374f5366a6f25814a0ea04a0865e9b1348f1885816adfdab84cfe6b4b
+            ./seprmvr64lite jb/11A24580o_kcache.raw $1/$3/kcache.patched
+            ./kerneldiff jb/11A24580o_kcache.raw $1/$3/kcache.patched $1/$3/kc.bpatch
+            ./img4 -i jb/11A24580o_kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
+            ./img4 -i jb/11A24580o_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
+            ./img4 -i $1/$3/DeviceTree.n53ap.im4p -o $1/$3/dtree.raw -k e556e32fe658e374e5fda8e0d0cd7d10fed7a316853e51005b9bcad9442a1a1432d2ddf04ec163279601b6aad982edca
+            ./img4 -i $1/$3/dtree.raw -o $1/$3/devicetree.img4 -A -M IM4M -T rdtr
+        fi
+    fi
+}
+_download_root_fs_jb() {
+    # $deviceid arg 1
+    # $replace arg 2
+    # $version arg 3
+    
+    mkdir -p $1/$3
+
+    if [ "$1" = "iPhone6,1" ]; then
+        ipswurl="https://secure-appldnld.apple.com/iOS7/091-9500.20130918.bgy5t/iphone6,1_7.0_11a466_restore.ipsw"
+        if [ ! -e $1/$3/OS.tar ]; then
             ./pzb -g 038-4572-394.dmg "$ipswurl"
             mv 038-4572-394.dmg $1/$3/038-4572-394.dmg
             ./dmg extract $1/$3/038-4572-394.dmg $1/$3/OS.dmg -k 170dd7944f0583cb1356022c55de3c950bf97743eeee600cbe6c9586ad9b93dfeb27951f
@@ -157,8 +196,21 @@ _download_boot_files_jb() {
         fi
     elif [ "$1" = "iPhone6,2" ]; then
         ipswurl="https://secure-appldnld.apple.com/iOS7/091-9498.20130918.lllkt/iphone6,2_7.0_11a466_restore.ipsw"
-        if [ ! -e $1/$3/kernelcache.dec ]; then
-            echo "not supported"
+        if [ ! -e $1/$3/OS.tar ]; then
+            ./pzb -g 038-6622-334.dmg "$ipswurl"
+            mv 038-6622-334.dmg $1/$3/038-6622-334.dmg
+            ./dmg extract $1/$3/038-6622-334.dmg $1/$3/OS.dmg -k 9012b18043cab2fc9df516b71ac2f9f9403bfdb732fc99f01e73cbe0095635b5df92c9fb
+            ./dmg build $1/$3/OS.dmg $1/$3/rw.dmg
+            hdiutil attach -mountpoint /tmp/ios $1/$3/rw.dmg
+            sudo diskutil enableOwnership /tmp/ios
+            sudo mkdir /tmp/ios2
+            sudo rm -rf /tmp/ios2
+            sudo cp -a /tmp/ios/. /tmp/ios2/
+            sudo tar --lzma -xvf ./jb/cydia.tar.lzma -C /tmp/ios2
+            sudo ./gnutar -cvf $1/$3/OS.tar -C /tmp/ios2 .
+            hdiutil detach /tmp/ios
+            rm -rf /tmp/ios
+            sudo rm -rf /tmp/ios2
         fi
     fi
 }
@@ -364,6 +416,7 @@ fi
 _download_ramdisk_boot_files $deviceid $replace 8.4.1
 if [ "$1" = "7.0" ]; then
     _download_boot_files_jb $deviceid $replace $1
+    _download_root_fs_jb $deviceid $replace $1
 else
     _download_boot_files $deviceid $replace $1
     _download_root_fs $deviceid $replace $1
