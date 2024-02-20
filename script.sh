@@ -561,11 +561,7 @@ if [[ "$response1" = 'yes' || "$response1" = 'y' ]]; then
     ./sshpass -p "alpine" scp -r -P 2222 ./Baseband root@localhost:/mnt1/usr/local/standalone/firmware
     ./sshpass -p "alpine" scp -P 2222 ./apticket.der root@localhost:/mnt1/System/Library/Caches/
     ./sshpass -p "alpine" scp -P 2222 ./sep-firmware.img4 root@localhost:/mnt1/usr/standalone/firmware/
-    if [ "$1" = "7.0.4" ]; then
-        ./sshpass -p "alpine" scp -P 2222 ./jb/fstab root@localhost:/mnt1/etc/
-    else
-        ./sshpass -p "alpine" scp -P 2222 ./fstab root@localhost:/mnt1/etc/
-    fi
+    ./sshpass -p "alpine" scp -P 2222 ./fstab root@localhost:/mnt1/etc/
     read -p "would you like to also delete Setup.app? " response2
     if [[ "$response2" = 'yes' || "$response2" = 'y' ]]; then
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/Applications/Setup.app"
@@ -631,6 +627,11 @@ if [[ "$response1" = 'yes' || "$response1" = 'y' ]]; then
         ./iproxy 2222 22 &
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1"
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs -o suid,dev /dev/disk0s1s2 /mnt2"
+        if [ "$1" = "7.0.4" ]; then
+            ./sshpass -p "alpine" scp -P 2222 ./jb/fstab root@localhost:/mnt1/etc/
+        else
+            ./sshpass -p "alpine" scp -P 2222 ./fstab root@localhost:/mnt1/etc/
+        fi
         ./sshpass -p "alpine" scp -P 2222 ./jb/libmis.dylib root@localhost:/mnt1/usr/lib/
         ./sshpass -p "alpine" scp -P 2222 ./jb/libsandbox.dylib root@localhost:/mnt1/usr/lib/
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir /mnt1/System/Library/Caches/com.apple.xpcd/"
@@ -644,6 +645,12 @@ else
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs -o suid,dev /dev/disk0s1s2 /mnt2"
     if [ "$1" = "7.0.4" ]; then
         ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/kernelcache2 root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches
+        ./sshpass -p "alpine" scp -P 2222 ./jb/libmis.dylib root@localhost:/mnt1/usr/lib/
+        ./sshpass -p "alpine" scp -P 2222 ./jb/libsandbox.dylib root@localhost:/mnt1/usr/lib/
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir /mnt1/System/Library/Caches/com.apple.xpcd/"
+        ./sshpass -p "alpine" scp -P 2222 ./jb/xpcd_cache.dylib root@localhost:/mnt1/System/Library/Caches/com.apple.xpcd/
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mv /mnt1/System/Library/LaunchDaemons/com.apple.CommCenter.plist /mnt1/System/Library/LaunchDaemons/com.apple.CommCenter.plis_"
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt1/System/Library/Caches/com.apple.dyld/enable-dylibs-to-override-cache"
     else
         ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/kernelcache root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches
     fi
