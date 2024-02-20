@@ -530,7 +530,11 @@ if [[ "$response1" = 'yes' || "$response1" = 'y' ]]; then
     echo "step 1, press the letter n on your keyboard and then press enter"
     echo "step 2, press number 1 on your keyboard and press enter"
     echo "step 3, press enter again"
-    echo "step 4, type 786438 and then press enter"
+    if [ "$1" = "7.0.2" ]; then
+        echo "step 4, type 1572876 and then press enter"
+    else
+        echo "step 4, type 786438 and then press enter"
+    fi
     echo "step 5, press enter one last time"
     echo "partition 2"
     echo "step 1, press the letter n on your keyboard and then press enter"
@@ -569,9 +573,9 @@ if [[ "$response1" = 'yes' || "$response1" = 'y' ]]; then
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/data_ark.plist.tar -C /mnt2"
     fi
     #./sshpass -p "alpine" scp -P 2222 ./com.saurik.Cydia.Startup.plist root@localhost:/mnt1/System/Library/LaunchDaemons
-    if [ "$1" = "7.0.2" ]; then
-        #./sshpass -p "alpine" scp -P 2222 ./jb/Services.plist root@localhost:/mnt1/System/Library/Lockdown/Services.plist
-    fi
+    #if [ "$1" = "7.0.2" ]; then
+    #    ./sshpass -p "alpine" scp -P 2222 ./jb/Services.plist root@localhost:/mnt1/System/Library/Lockdown/Services.plist
+    #fi
     #./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir /mnt1/usr/libexec/y08wilm/"
     #./sshpass -p "alpine" scp -P 2222 ./startup root@localhost:/mnt1/usr/libexec/y08wilm/
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/OS.tar"
