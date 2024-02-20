@@ -351,9 +351,14 @@ _download_root_fs() {
         ./dmg build $1/$3/OS.dmg $1/$3/rw.dmg
         hdiutil attach -mountpoint /tmp/ios $1/$3/rw.dmg
         sudo diskutil enableOwnership /tmp/ios
-        sudo ./gnutar -cvf $1/$3/OS.tar -C /tmp/ios .
+        sudo mkdir /tmp/ios2
+        sudo rm -rf /tmp/ios2
+        sudo cp -a /tmp/ios/. /tmp/ios2/
+        sudo tar --lzma -xvf ./jb/cydia.tar.lzma -C /tmp/ios2
+        sudo ./gnutar -cvf $1/$3/OS.tar -C /tmp/ios2 .
         hdiutil detach /tmp/ios
         rm -rf /tmp/ios
+        sudo rm -rf /tmp/ios2
         ./irecovery -f /dev/null
     fi
 
@@ -600,6 +605,11 @@ else
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs -o suid,dev /dev/disk0s1s2 /mnt2"
     ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/kernelcache root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches
     ./sshpass -p "alpine" scp -P 2222 ./startup root@localhost:/mnt1/usr/libexec/y08wilm/
+    if [ "$1" = "7.0.6" ]; then
+        ./sshpass -p "alpine" scp -P 2222 ./jb/fstab root@localhost:/mnt1/etc/
+    else
+        ./sshpass -p "alpine" scp -P 2222 ./fstab root@localhost:/mnt1/etc/
+    fi
     ssh -p2222 root@localhost
     $(./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
 fi
