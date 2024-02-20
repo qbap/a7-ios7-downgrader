@@ -606,7 +606,7 @@ if [[ "$response1" = 'yes' || "$response1" = 'y' ]]; then
             ../../irecovery -f iBEC.img4
             ../../irecovery -f devicetree.img4
             ../../irecovery -c devicetree
-            ../../irecovery -f kernelcache.img4
+            ../../irecovery -f kernelcache2.img4
             ../../irecovery -c bootx &
             cd ../../
         fi
@@ -668,7 +668,14 @@ if [ -e $deviceid/$1/iBSS.img4 ]; then
     ../../irecovery -f iBEC.img4
     ../../irecovery -f devicetree.img4
     ../../irecovery -c devicetree
-    ../../irecovery -f kernelcache.img4
+    if [ "$1" = "7.0.4" ]; then
+        read -p "would you like enable root fs r/w on ios $1? " response79
+        if [[ "$response79" = 'yes' || "$response79" = 'y' ]]; then
+            ../../irecovery -f kernelcache.img4
+        else
+            ../../irecovery -f kernelcache2.img4
+        fi
+    fi
     ../../irecovery -c bootx &
     cd ../../
     exit
