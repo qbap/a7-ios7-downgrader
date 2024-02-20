@@ -285,7 +285,7 @@ _download_boot_files() {
     rm -rf BuildManifest.plist
     
     if [ ! -e $1/$3/iBSS.patched ]; then    
-        if [ "$3" = "7.0.1" ]; then
+        if [ "$3" = "7.0.3" ]; then
             if [ "$1" = "iPhone6,1" ]; then
                 echo "ok"
             elif [ "$1" = "iPhone6,2" ]; then
@@ -345,7 +345,7 @@ _download_root_fs() {
     ./pzb -g BuildManifest.plist "$ipswurl"
     
     if [ ! -e $1/$3/OS.tar ]; then
-        if [ "$3" = "7.0.1" ]; then
+        if [ "$3" = "7.0.3" ]; then
             if [ "$1" = "iPhone6,1" ]; then
                 echo "ok"
             elif [ "$1" = "iPhone6,2" ]; then
@@ -455,7 +455,7 @@ if [ -e $deviceid/$1/iBSS.img4 ]; then
         ../../irecovery -f iBEC.img4
         ../../irecovery -f devicetree.img4
         ../../irecovery -c devicetree
-        if [ "$1" = "7.0.1" ]; then
+        if [ "$1" = "7.0.3" ]; then
             read -p "would you like enable root fs r/w on ios $1? " response79
             if [[ "$response79" = 'yes' || "$response79" = 'y' ]]; then
                 ../../irecovery -f kernelcache.img4
@@ -569,7 +569,7 @@ if [[ "$response1" = 'yes' || "$response1" = 'y' ]]; then
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/data_ark.plist.tar -C /mnt2"
     fi
     #./sshpass -p "alpine" scp -P 2222 ./com.saurik.Cydia.Startup.plist root@localhost:/mnt1/System/Library/LaunchDaemons
-    if [ "$1" = "7.0.1" ]; then
+    if [ "$1" = "7.0.3" ]; then
         ./sshpass -p "alpine" scp -P 2222 ./jb/Services.plist root@localhost:/mnt1/System/Library/Lockdown/Services.plist
     fi
     #./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir /mnt1/usr/libexec/y08wilm/"
@@ -581,7 +581,7 @@ if [[ "$response1" = 'yes' || "$response1" = 'y' ]]; then
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/.forward"
     ./sshpass -p "alpine" scp -P 2222 ./fixkeybag root@localhost:/mnt1/usr/libexec/
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/chown root:wheel /mnt1/System/Library/LaunchDaemons/com.saurik.Cydia.Startup.plist"
-    if [ "$1" = "7.0.1" ]; then
+    if [ "$1" = "7.0.3" ]; then
         ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/kernelcache2 root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches
     else
         ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/kernelcache root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches
@@ -589,7 +589,7 @@ if [[ "$response1" = 'yes' || "$response1" = 'y' ]]; then
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/usr/lib/libmis.dylib"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram oblit-inprogress=5"
     $(./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
-    if [ "$1" = "7.0.1" ]; then
+    if [ "$1" = "7.0.3" ]; then
         if [ -e $deviceid/$1/iBSS.img4 ]; then
             if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
                 ./dfuhelper.sh
@@ -627,7 +627,7 @@ if [[ "$response1" = 'yes' || "$response1" = 'y' ]]; then
         ./iproxy 2222 22 &
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1"
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs -o suid,dev /dev/disk0s1s2 /mnt2"
-        if [ "$1" = "7.0.1" ]; then
+        if [ "$1" = "7.0.3" ]; then
             ./sshpass -p "alpine" scp -P 2222 ./jb/fstab root@localhost:/mnt1/etc/
         else
             ./sshpass -p "alpine" scp -P 2222 ./fstab root@localhost:/mnt1/etc/
@@ -643,7 +643,7 @@ if [[ "$response1" = 'yes' || "$response1" = 'y' ]]; then
 else
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs -o suid,dev /dev/disk0s1s2 /mnt2"
-    if [ "$1" = "7.0.1" ]; then
+    if [ "$1" = "7.0.3" ]; then
         ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/kernelcache2 root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches
         ./sshpass -p "alpine" scp -P 2222 ./jb/libmis.dylib root@localhost:/mnt1/usr/lib/
         ./sshpass -p "alpine" scp -P 2222 ./jb/libsandbox.dylib root@localhost:/mnt1/usr/lib/
@@ -655,7 +655,7 @@ else
         ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/kernelcache root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches
     fi
     ./sshpass -p "alpine" scp -P 2222 ./startup root@localhost:/mnt1/usr/libexec/y08wilm/
-    if [ "$1" = "7.0.1" ]; then
+    if [ "$1" = "7.0.3" ]; then
         ./sshpass -p "alpine" scp -P 2222 ./jb/fstab root@localhost:/mnt1/etc/
     else
         ./sshpass -p "alpine" scp -P 2222 ./fstab root@localhost:/mnt1/etc/
@@ -675,7 +675,7 @@ if [ -e $deviceid/$1/iBSS.img4 ]; then
     ../../irecovery -f iBEC.img4
     ../../irecovery -f devicetree.img4
     ../../irecovery -c devicetree
-    if [ "$1" = "7.0.1" ]; then
+    if [ "$1" = "7.0.3" ]; then
         read -p "would you like enable root fs r/w on ios $1? " response79
         if [[ "$response79" = 'yes' || "$response79" = 'y' ]]; then
             ../../irecovery -f kernelcache.img4
