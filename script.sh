@@ -531,7 +531,7 @@ if [[ "$response1" = 'yes' || "$response1" = 'y' ]]; then
     echo "step 2, press number 1 on your keyboard and press enter"
     echo "step 3, press enter again"
     if [ "$1" = "7.0.2" ]; then
-        echo "step 4, type 1572876 and then press enter"
+        echo "step 4, type 864563 and then press enter"
     else
         echo "step 4, type 786438 and then press enter"
     fi
