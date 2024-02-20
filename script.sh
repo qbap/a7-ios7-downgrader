@@ -570,7 +570,7 @@ if [[ "$response1" = 'yes' || "$response1" = 'y' ]]; then
     fi
     #./sshpass -p "alpine" scp -P 2222 ./com.saurik.Cydia.Startup.plist root@localhost:/mnt1/System/Library/LaunchDaemons
     if [ "$1" = "7.0.2" ]; then
-        ./sshpass -p "alpine" scp -P 2222 ./jb/Services.plist root@localhost:/mnt1/System/Library/Lockdown/Services.plist
+        #./sshpass -p "alpine" scp -P 2222 ./jb/Services.plist root@localhost:/mnt1/System/Library/Lockdown/Services.plist
     fi
     #./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir /mnt1/usr/libexec/y08wilm/"
     #./sshpass -p "alpine" scp -P 2222 ./startup root@localhost:/mnt1/usr/libexec/y08wilm/
@@ -588,6 +588,7 @@ if [[ "$response1" = 'yes' || "$response1" = 'y' ]]; then
         ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/kernelcache root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches
     fi
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/usr/lib/libmis.dylib"
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt1/.cydia_no_stash"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram oblit-inprogress=5"
     $(./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
     if [ "$1" = "7.0.2" ]; then
