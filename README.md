@@ -8,7 +8,7 @@ iPhone 5s
 
 and supports booting any version of ios 7
 
-but only ios 7.0.1 works with the jailbreak related portion of the script
+but only ios 7.0.2 works with the jailbreak related portion of the script
 
 please refer to the jailbreak section of this readme for more info
 
@@ -42,7 +42,7 @@ jb bootstrap tar extracts successfully onto idevice and does not kernel panic up
 
 cydia is successfully installed and device functions normally
 
-cydia closes upon launch but interestingly enough the actual layout of the Cydia app does load for a split second before it closes, and if you type cydia:// into safari it opens the Cydia app also
+~~cydia closes upon launch but interestingly enough the actual layout of the Cydia app does load for a split second before it closes, and if you type cydia:// into safari it opens the Cydia app also~~
 
 cydia launch daemon runs but only if I modify the launch daemon plist to make it run as root and then chown the file to make it owned by root instead of mobile 
 
@@ -84,7 +84,7 @@ see https://www.theiphonewiki.com/wiki/Talk:Pangu8 for more info on these dylibs
 
 ~~setuid requires chown and chmod to be done properly, so it is possible that might be the issue~~
 
-cydia now works perfectly on ios 7.0 ~~but you may need to unplug and replug the power cable on the iphone a couple dozen times~~
+cydia now works perfectly on ios ~~7.0~~ 7.0.2 ~~but you may need to unplug and replug the power cable on the iphone a couple dozen times~~
 
 when the screen goes black due to auto lock on lock screen you can just plug in a power cable and it will make the screen turn back on
 
@@ -152,11 +152,11 @@ device becomes unresponsive once screen is locked or goes to sleep
 
 home button does not work when jailbroken, but works fine unjailbroken on ios 7.0.4-7.1.2
 
-safari does not work when jailbroken
+~~safari does not work when jailbroken~~ might be fixed on latest commit
 
-mail app does not work when jailbroken
+~~mail app does not work when jailbroken~~ might be fixed on latest commit
 
-app store does not work when jailbroken, but works fine unjailbroken on ios 7.0.4-7.1.2
+~~app store does not work when jailbroken, but works fine unjailbroken on ios 7.0.4-7.1.2~~ might be fixed on latest commit
 
 ios 8 gets stuck on slide to upgrade screen** please pr a fix for this, thanks
 
@@ -166,7 +166,7 @@ wifi, if using a wifi connection that does not have a password
 
 bluetooth** tested working with airpods 2nd gen
 
-app store when unjailbroken on ios 7.0.4-7.1.2
+~~app store when unjailbroken on ios 7.0.4-7.1.2~~ might work on latest commit regardless
 
 # not tested
 
@@ -204,9 +204,9 @@ tested working on my iphone 5s on ios 7.1.2
 
 connect iphone in dfu mode
 
-`./script.sh 7.0.1`
+`./script.sh 7.0.2`
 
-and follow the steps, as it will install ios 7.0.1 onto your phone
+and follow the steps, as it will install ios 7.0.2 onto your phone
 
 whenever the script asks for a password it is either your mac password or `alpine`
 
@@ -216,7 +216,61 @@ uhh and when it gets to the partitioning step, make terminal full screen, it has
 
 all you gotta do at that step is press the keys on your keyboard it tells you to
 
-cydia will be installed but wont open yet
+cydia will be installed and work as normal, just tweaks do not work yet
+
+# technical breakdown 
+
+newer cydia does check `/.cydia_no_stash`
+
+https://github.com/sbingner/cydia/blob/master/MobileCydia.mm#L8981
+
+if that file is present it SKIPS stashing
+
+ios 7 cydia does NOT check `/.cydia_no_stash`
+
+https://github.com/sbingner/cydia/blob/2b6abb5670bfa1bb1cb3273e3e7531bcab0e418c/MobileCydia.mm#L10207
+
+stashing is the process of moving critical system files from the system partition to the user partition to free up disk space on the system partition
+this process of moving critical system files breaks safari, maps, mail, among other things such as app store on ios 7
+the only way to fix this, as it turns out, is to follow this chain of command
+
+first boot
+
+use RELEASE kernel, no rootfs r/w, no libmis.dylib, and no libsandbox.dylib
+
+this effectively means a stock oem first boot on ios 7.0.2
+
+the only difference from stock being that we are disabling CommCenter and hacktivating the device. CommCenter, if left enabled, causes the entire os to become extremely slow and unoperable. according to online docs, CommCenter is only used for calling but cellular is not possible since the device is hacktivated as it is
+
+once booted, enable assistive touch and disable screen lock timer then put the phone back into dfu
+
+second boot
+
+boot into ssh and copy over libmis.dylib, libsandbox.dylib, and updated fstab to remount / as rw
+
+then boot into ios but with DEVELOPMENT kernel instead of RELEASE kernel
+
+this jailbreaks the device 
+
+now the user MUST connect the device to an open wifi network, and open cydia
+
+once cydia is opened it will prepare filesystem, once done open cydia again
+
+refresh sources and update cydia to the latest version
+
+this should then, in theory, let us use cydia without having to stash critical system files
+
+put the phone back into dfu
+
+third boot
+
+unstash /Applications, /Library/Ringtones, and /usr/share and ensure `/.cydia_no_stash` is present and readable
+
+this enables a manual stashing mode on cydia
+
+reboot back into ios
+
+safari, maps, mail, etc should now be working
 
 # credits
 
