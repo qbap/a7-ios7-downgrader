@@ -276,14 +276,14 @@ safari, maps, mail, etc should now be working
 
 # chart of compatibility
 
-| Firmware | App Store | Safari  | Home button  | Vol keys& pwr btn | CommCenter | Root fs r/w | Jailbreak |
-|----------|-----------|---------|--------------|-------------------|------------|-------------|-----------|
-| 7.0.1    | &#9745;   | &#9745; | &#9744;      | &#9744;           | &#9744;    | &#9744;     | &#9744;
-| 7.0.2    | &#9745;   | &#9745; | &#9744;      | &#9744;           | &#9744;    | &#9745;     | &#9745;
-| 7.0.3    | &#9745;   | &#9745; | &#9745;      | &#9745;           | &#9744;    | &#9744;     | &#9744;
-| 7.0.4    | &#9745;   | &#9745; | &#9745;      | &#9745;           | &#9744;    | &#9744;     | &#9744;
-| 7.0.6    | &#9745;   | &#9745; | &#9745;      | &#9745;           | &#9744;    | &#9744;     | &#9744;
-| 7.1.2    | &#9745;   | &#9745; | &#9745;      | &#9745;           | &#9745;    | &#9744;     | &#9744;
+| Firmware | App Store | Safari  | Home button  | Vol keys | Pwr button | CommCenter | Root fs r/w | Jailbreak |
+|----------|-----------|---------|--------------|-----------------------|------------|-------------|-----------|
+| 7.0.1    | &#9745;   | &#9745; | &#9744;      | &#9744;  | &#9744;    | &#9744;    | &#9744;     | &#9744;
+| 7.0.2    | &#9745;   | &#9745; | &#9744;      | &#9745;  | &#9744;    | &#9744;    | &#9745;     | &#9745;
+| 7.0.3    | &#9745;   | &#9745; | &#9745;      | &#9745;  | &#9745;    | &#9744;    | &#9744;     | &#9744;
+| 7.0.4    | &#9745;   | &#9745; | &#9745;      | &#9745;  | &#9745;    | &#9744;    | &#9744;     | &#9744;
+| 7.0.6    | &#9745;   | &#9745; | &#9745;      | &#9745;  | &#9745;    | &#9744;    | &#9744;     | &#9744;
+| 7.1.2    | &#9745;   | &#9745; | &#9745;      | &#9745;  | &#9745;    | &#9745;    | &#9744;     | &#9744;
 
 # chart technical breakdown
 
@@ -291,7 +291,7 @@ safari, maps, mail, etc should now be working
 
 7.0.3 & 7.0.4 boots fine unjailbroken, home button, safari, siri, app store all working. ~~when booting dev kernel it results in flickering screen~~ if you delete `xpcd_cache.dylib` it boots into an infinite spin lock when using the dev kernel. this means no jailbreak on this version is possible.
 
-7.0.2 boots fine unjailbroken, safari is working. home button, pwr button and volume keys do NOT work. ~~when booting dev kernel it results in flickering screen~~ if you delete `xpcd_cache.dylib` it boots fine with the dev kernel with no flickering screen. this means working safari while jailbroken but again home button, pwr button and volume keys are not working. 
+7.0.2 boots fine unjailbroken, safari is working. home button, pwr button and volume keys do NOT work. ~~when booting dev kernel it results in flickering screen~~ if you delete `xpcd_cache.dylib` it boots fine with the dev kernel with no flickering screen. this means working safari while jailbroken but again home button, pwr button and volume keys are not working.** vol keys are now working with the help of appleinternal shit
 
 7.0.1 & 7.0 boots fine unjailbroken, safari is working. home button, pwr button and volume keys do NOT work. when booting dev kernel it boots fine and cydia functions as normal, but tweak injection does not work. if `xpcd_cache.dylib` is installed, the wallpaper is black, but there is no flickering screen.
 
