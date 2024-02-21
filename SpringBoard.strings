@@ -1,0 +1,1007 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>ACCEPT</key>
+	<string>Accept</string>
+	<key>ACTIVATION_FAILED_BODY</key>
+	<string>Contact your carrier if this problem continues to occur.</string>
+	<key>ACTIVATION_FAILED_BODY_SUPPORT</key>
+	<string>Contact your carrier on %@ from another phone if this problem continues to occur.</string>
+	<key>ACTIVATION_FAILED_IGNORE_BUTTON</key>
+	<string>Ignore</string>
+	<key>ACTIVATION_FAILED_RETRY_BUTTON</key>
+	<string>Try Again</string>
+	<key>ACTIVATION_FAILED_TITLE</key>
+	<string>iPhone is not Activated</string>
+	<key>ACTIVATION_REQUIRED</key>
+	<string>Activation Required</string>
+	<key>AFTER_CLTM_SHUTDOWN_BODY_IPAD</key>
+	<string>iPad shut down due to temperature.</string>
+	<key>AFTER_CLTM_SHUTDOWN_BODY_IPHONE</key>
+	<string>iPhone shut down due to temperature.</string>
+	<key>AFTER_CLTM_SHUTDOWN_BODY_IPOD</key>
+	<string>iPod shut down due to temperature.</string>
+	<key>AIRDROP</key>
+	<string>AirDrop</string>
+	<key>AIRPLANE_CELL_PROMPT</key>
+	<string>You must disable Airplane Mode to access data.</string>
+	<key>AIRPLANE_CELL_PROMPT_SMS</key>
+	<string>You must disable Airplane Mode to send or receive messages.</string>
+	<key>AIRPLANE_DATA_OK</key>
+	<string>OK</string>
+	<key>AIRPLANE_DATA_PROMPT</key>
+	<string>Turn Off Airplane Mode or Use Wi-Fi to Access Data</string>
+	<key>AIRPLANE_DATA_PROMPT_NO_WIFI</key>
+	<string>Turn Off Airplane Mode to Access Data</string>
+	<key>AIRPLANE_DATA_PROMPT_WLAN</key>
+	<string>Turn Off Airplane Mode or Use WLAN to Access Data</string>
+	<key>AIRPLANE_DATA_SETTINGS</key>
+	<string>Settings</string>
+	<key>AIRPLAY</key>
+	<string>AirPlay</string>
+	<key>ALARM_OTHER_TIMEZONE_FORMAT</key>
+	<string>%1$@ (%2$@)</string>
+	<key>ALARM_SNOOZE</key>
+	<string>Snooze</string>
+	<key>ALARM_SNOOZE_TIME_REMAINING</key>
+	<string>%@ remaining</string>
+	<key>ALARM_SNOOZING</key>
+	<string>Snoozing:</string>
+	<key>ALL_PENDING_DOWNLOADS_REMOVED_BODY</key>
+	<string>All downloads have been completed in iTunes on your computer.</string>
+	<key>ALL_PENDING_DOWNLOADS_REMOVED_OK</key>
+	<string>Dismiss</string>
+	<key>ALL_PENDING_DOWNLOADS_REMOVED_TITLE</key>
+	<string>Downloads Completed</string>
+	<key>ALPHANUMERIC_PASSCODE_CANCEL</key>
+	<string>Cancel</string>
+	<key>ALPHANUMERIC_PASSCODE_OK</key>
+	<string>OK</string>
+	<key>APPLICATION_SWITCHER_CANCEL</key>
+	<string>Cancel</string>
+	<key>APPLICATION_SWITCHER_QUITAPP</key>
+	<string>Quit</string>
+	<key>APPLICATION_SWITCHER_TITLE</key>
+	<string>Applications</string>
+	<key>APP_DOWNLOAD_QUEUE_ERROR</key>
+	<string>Cannot retrieve download information.  Please connect with iTunes.</string>
+	<key>APP_PROFILE_EXPIRED_BODY</key>
+	<string>The application “%@” cannot be opened because the provisioning profile has expired.</string>
+	<key>APP_PROFILE_EXPIRED_OK</key>
+	<string>OK</string>
+	<key>APP_PROFILE_NOT_TRUSTED_BODY</key>
+	<string>Are You Sure You Want to Open the Application “%@” from the Developer “%@”?</string>
+	<key>APP_PROFILE_NOT_TRUSTED_CANCEL</key>
+	<string>Quit</string>
+	<key>APP_PROFILE_NOT_TRUSTED_CONFIRM</key>
+	<string>Continue</string>
+	<key>AUTO_WIFI_SYNC_LOW_POWER</key>
+	<string>Automatic iTunes Wi-Fi Sync will resume when charged.</string>
+	<key>AUTO_WLAN_SYNC_LOW_POWER</key>
+	<string>Automatic iTunes WLAN Sync will resume when charged.</string>
+	<key>AWAY_CALENDAR_LABEL</key>
+	<string>Event</string>
+	<key>AWAY_CAMERA_LABEL</key>
+	<string>slide to camera</string>
+	<key>AWAY_EMPTY_CALL</key>
+	<string>Unknown</string>
+	<key>AWAY_EMPTY_SMS</key>
+	<string>Unknown</string>
+	<key>AWAY_EMPTY_VM</key>
+	<string>Unknown</string>
+	<key>AWAY_LOCK_EMERGENCY_LABEL</key>
+	<string>slide for emergency</string>
+	<key>AWAY_LOCK_LABEL</key>
+	<string>slide to unlock</string>
+	<key>AWAY_LOCK_LABEL_FORMAT</key>
+	<string>slide to %@</string>
+	<key>AWAY_LOCK_LABEL_SHORT</key>
+	<string>unlock</string>
+	<key>AWAY_MASKED_SMSES_LABEL</key>
+	<string>Messages</string>
+	<key>AWAY_MASKED_SMS_LABEL</key>
+	<string>Message</string>
+	<key>AWAY_MISSED_CALL_LABEL</key>
+	<string>Missed Call</string>
+	<key>AWAY_MISSED_VOICEMAIL_LABEL</key>
+	<string>Voicemail</string>
+	<key>AWAY_SMS_LABEL</key>
+	<string>Text</string>
+	<key>BACK</key>
+	<string>Back</string>
+	<key>BAD_SIM</key>
+	<string>Invalid SIM</string>
+	<key>BAD_SIM_STRING</key>
+	<string>Your SIM needs to be replaced.  Please contact your service provider.</string>
+	<key>BAD_SIM_TITLE</key>
+	<string>SIM Failure</string>
+	<key>BATTERY_CHARGE_PERCENTAGE</key>
+	<string>%@ Charged</string>
+	<key>BATTERY_CHARGING</key>
+	<string>Battery Charging</string>
+	<key>BLOCKED</key>
+	<string>No Caller ID</string>
+	<key>BLUETOOTH_VOLUME</key>
+	<string>Bluetooth</string>
+	<key>BRICKED_AND_SIM_LOCKED_STRING_IPAD</key>
+	<string>Insert a valid SIM with no PIN lock to activate iPad.</string>
+	<key>BRICKED_AND_SIM_LOCKED_STRING_IPHONE</key>
+	<string>Insert a valid SIM with no PIN lock to activate iPhone.</string>
+	<key>BULLETIN_LIST_CLEAR</key>
+	<string>Clear</string>
+	<key>BULLETIN_LIST_DONE</key>
+	<string>Done</string>
+	<key>BULLETIN_LIST_NO_NEW_NOTIFICATIONS</key>
+	<string>No New Notifications</string>
+	<key>BULLETIN_TO_DATE_FORMAT</key>
+	<string>to %@</string>
+	<key>BULLETIN_TO_DATE_FORMAT_NEW</key>
+	<string> - %@</string>
+	<key>BULLETIN_TO_TIME_FORMAT</key>
+	<string>to %@</string>
+	<key>CALENDAR_SNOOZE</key>
+	<string>Snooze</string>
+	<key>CALL</key>
+	<string>Call</string>
+	<key>CALLING</key>
+	<string>calling…</string>
+	<key>CALLING_LABEL_FORMAT</key>
+	<string>calling %@…</string>
+	<key>CALL_BACK</key>
+	<string>Call Back</string>
+	<key>CALL_FAILURE</key>
+	<string>Call Failure</string>
+	<key>CALL_FORWARDING_ACTIVE</key>
+	<string>Call Forwarding Active</string>
+	<key>CALL_PERMISSION_ALERT_CALL</key>
+	<string>Call</string>
+	<key>CALL_PERMISSION_ALERT_CANCEL</key>
+	<string>Cancel</string>
+	<key>CALL_WITH</key>
+	<string>Call with %@: %@</string>
+	<key>CANCEL</key>
+	<string>Cancel</string>
+	<key>CARRIER_DEBUGGING_BODY</key>
+	<string>This device is configured to send diagnostic information to Apple.
+All usage information, including your personal information, will appear in the reports sent to Apple. Testers of this pre-release software are expected to submit this data.
+Should you have a business need to disable this feature, please contact your employer for instructions.</string>
+	<key>CARRIER_DEBUGGING_TITLE</key>
+	<string>Configured for Diagnostics</string>
+	<key>CHARS_REMAINING</key>
+	<string>%@ characters remaining</string>
+	<key>CHAR_REMAINING</key>
+	<string>%@ character remaining</string>
+	<key>CLASS_0_ALERT_MESSAGE_FROM</key>
+	<string>Message from %@:</string>
+	<key>CLEANING_ICON_LABEL</key>
+	<string>Cleaning…</string>
+	<key>CLOSE</key>
+	<string>Close</string>
+	<key>CONFERENCE_CALL</key>
+	<string>Conference</string>
+	<key>CONFIRM_NEW_PASSCODE</key>
+	<string>Re-enter your new passcode</string>
+	<key>CONFIRM_NEW_PASSCODE_MISMATCH</key>
+	<string>The new passcodes did not match. %@</string>
+	<key>CONNECT_TO_ITUNES</key>
+	<string>connect to iTunes</string>
+	<key>CONTROL_CENTER_AIRDROP_CONTACTS_ONE_LINE</key>
+	<string>AirDrop: Contacts Only</string>
+	<key>CONTROL_CENTER_AIRDROP_CONTACTS_TWO_LINES</key>
+	<string>AirDrop:
+Contacts Only</string>
+	<key>CONTROL_CENTER_AIRDROP_EVERYONE_ONE_LINE</key>
+	<string>AirDrop: Everyone</string>
+	<key>CONTROL_CENTER_AIRDROP_EVERYONE_TWO_LINES</key>
+	<string>AirDrop:
+Everyone</string>
+	<key>CONTROL_CENTER_STATUS_AIRPLANE_MODE_OFF</key>
+	<string>Airplane Mode: Off</string>
+	<key>CONTROL_CENTER_STATUS_AIRPLANE_MODE_ON</key>
+	<string>Airplane Mode: On</string>
+	<key>CONTROL_CENTER_STATUS_BLUETOOTH_OFF</key>
+	<string>Bluetooth: Off</string>
+	<key>CONTROL_CENTER_STATUS_BLUETOOTH_ON</key>
+	<string>Bluetooth: On</string>
+	<key>CONTROL_CENTER_STATUS_DND_OFF</key>
+	<string>Do Not Disturb: Off</string>
+	<key>CONTROL_CENTER_STATUS_DND_ON</key>
+	<string>Do Not Disturb: On</string>
+	<key>CONTROL_CENTER_STATUS_MUTE_OFF</key>
+	<string>Mute: Off</string>
+	<key>CONTROL_CENTER_STATUS_MUTE_ON</key>
+	<string>Mute: On</string>
+	<key>CONTROL_CENTER_STATUS_ORIENTATION_LOCK_OFF</key>
+	<string>Orientation Lock: Off</string>
+	<key>CONTROL_CENTER_STATUS_ORIENTATION_LOCK_ON</key>
+	<string>Orientation Lock: On</string>
+	<key>CONTROL_CENTER_STATUS_PORTRAIT_ORIENTATION_LOCK_OFF</key>
+	<string>Portrait Orientation Lock: Off</string>
+	<key>CONTROL_CENTER_STATUS_PORTRAIT_ORIENTATION_LOCK_ON</key>
+	<string>Portrait Orientation Lock: On</string>
+	<key>CONTROL_CENTER_STATUS_WIFI_OFF</key>
+	<string>Wi-Fi: Off</string>
+	<key>CONTROL_CENTER_STATUS_WIFI_ON</key>
+	<string>Wi-Fi: On</string>
+	<key>CORPORATE_LOCKED_LABEL</key>
+	<string>corporate personalisation</string>
+	<key>CORPORATE_LOCKED_SIM_STRING</key>
+	<string>Your phone is tied to specific corporate-issued SIM cards.</string>
+	<key>COUNT_DOWN_TIMER_ENDED</key>
+	<string>Ended</string>
+	<key>COUNT_DOWN_TIMER_ENDS</key>
+	<string>Ends</string>
+	<key>COUNT_DOWN_TIMER_HMMSS_FORMAT</key>
+	<string>%1$@hr %2$@min %3$@sec</string>
+	<key>COUNT_DOWN_TIMER_MMSS_FORMAT</key>
+	<string>%1$@min %2$@sec</string>
+	<key>COUNT_DOWN_TIME_REACHED</key>
+	<string>Timer done</string>
+	<key>Call Failure
+%@
+%@</key>
+	<string>Call Failure
+%@
+%@</string>
+	<key>Call failed</key>
+	<string>Call failed</string>
+	<key>DATA_PLAN_ACTIVATED_FORMAT</key>
+	<string>Your %@ mobile data plan has been successfully activated.</string>
+	<key>DATA_PLAN_ACTIVATED_TITLE</key>
+	<string>Data Plan Activated</string>
+	<key>DATA_PLAN_ADD_EMPTY_BODY</key>
+	<string>There is no data remaining on your current plan. Would you like to extend your data plan now? If you don't do so now, you can do it later in Settings.</string>
+	<key>DATA_PLAN_ADD_EXPIRATION_BODY_LESS_THAN_MULTIPLE_DAYS</key>
+	<string>Your data plan expires in less than %@ days. Would you like to add more time to your plan now? If you don't add now, you can do it later in Settings.</string>
+	<key>DATA_PLAN_ADD_EXPIRATION_BODY_MULTIPLE_DAYS</key>
+	<string>Your data plan expires in %@ days. Would you like to add more time to your plan now? If you don't add now, you can do it later in Settings.</string>
+	<key>DATA_PLAN_ADD_EXPIRATION_BODY_MULTIPLE_HOURS</key>
+	<string>Your data plan expires in about %@ hours. Would you like to add more time to your plan now? If you don't add now, you can do it later in Settings.</string>
+	<key>DATA_PLAN_ADD_EXPIRATION_BODY_MULTIPLE_MINUTES</key>
+	<string>Your data plan expires in about %@ minutes. Would you like to add more time to your plan now? If you don't add now, you can do it later in Settings.</string>
+	<key>DATA_PLAN_ADD_EXPIRATION_BODY_ONE_DAY</key>
+	<string>Your data plan expires in 1 day. Would you like to add more time to your plan now? If you don't add now, you can do it later in Settings.</string>
+	<key>DATA_PLAN_ADD_EXPIRATION_BODY_ONE_HOUR</key>
+	<string>Your data plan expires in about 1 hour. Would you like to add more time to your plan now? If you don't add now, you can do it later in Settings.</string>
+	<key>DATA_PLAN_ADD_LOW_BODY</key>
+	<string>Only %@ of your data plan remains. Would you like to extend your data plan now? If you don't do so now, you can do it later in Settings.</string>
+	<key>DATA_PLAN_ADD_TITLE</key>
+	<string>Mobile Data Plan Usage</string>
+	<key>DATA_PLAN_DISABLE_BODY</key>
+	<string>If you do not want to be asked about a mobile data plan, you can turn off Mobile Data in Settings.</string>
+	<key>DATA_PLAN_DISABLE_TITLE</key>
+	<string>Mobile Data</string>
+	<key>DATA_PLAN_FAILED_ACTIVATE_FORMAT</key>
+	<string>Your %@ mobile data plan did not successfully activate.</string>
+	<key>DATA_PLAN_FAILED_TITLE</key>
+	<string>Data Plan Activation Failure</string>
+	<key>DATA_PLAN_FAILED_TRY_AGAIN</key>
+	<string>Try Again</string>
+	<key>DATA_PLAN_FAILED_TRY_LATER</key>
+	<string>Cancel</string>
+	<key>DATA_PLAN_FAILED_UPDATE_FORMAT</key>
+	<string>Your %@ mobile data plan did not successfully update.</string>
+	<key>DATA_PLAN_LATER</key>
+	<string>Later</string>
+	<key>DATA_PLAN_NEW_ACCOUNT_BODY</key>
+	<string>You have not signed up for a data plan. Would you like to set up a new account? If you don't, you can do it later in Settings.</string>
+	<key>DATA_PLAN_NEW_ACCOUNT_TITLE</key>
+	<string>Mobile Data Account</string>
+	<key>DATA_PLAN_NOW</key>
+	<string>Now</string>
+	<key>DATA_PLAN_UPDATED_FORMAT</key>
+	<string>Your %@ mobile data plan has been successfully updated.</string>
+	<key>DATA_PLAN_UPDATED_TITLE</key>
+	<string>Mobile Data Plan Updated</string>
+	<key>DEAD_RADIO_MESSAGE_DATA_ONLY</key>
+	<string>iPad cannot use mobile data. Restore from iTunes.
+www.apple.com/uk/support</string>
+	<key>DEAD_RADIO_MESSAGE_TELEPHONY</key>
+	<string>iPhone cannot make or receive calls. Restore from iTunes.
+www.apple.com/uk/support</string>
+	<key>DEAD_RADIO_TITLE</key>
+	<string>Restore Needed</string>
+	<key>DELETE_ICON_BODY</key>
+	<string>Are you sure you want to delete the bookmark “%@”?</string>
+	<key>DELETE_ICON_CANCEL</key>
+	<string>Cancel</string>
+	<key>DELETE_ICON_CONFIRM</key>
+	<string>Delete</string>
+	<key>DELETE_ICON_TITLE</key>
+	<string>Delete Icon</string>
+	<key>DELETE_WIDGET_BODY</key>
+	<string>Are you sure you want to delete “%@”?</string>
+	<key>DELETE_WIDGET_CANCEL</key>
+	<string>Cancel</string>
+	<key>DELETE_WIDGET_CONFIRM</key>
+	<string>Delete</string>
+	<key>DELETE_WIDGET_TITLE</key>
+	<string>Delete “%@”</string>
+	<key>DEVICE_BLOCKED</key>
+	<string>%@ is disabled</string>
+	<key>DIAL</key>
+	<string>Dial</string>
+	<key>DISMISS_ALERT</key>
+	<string>Dismiss</string>
+	<key>DONE</key>
+	<string>Done</string>
+	<key>DOWNLOADING_ICON_LABEL</key>
+	<string>Loading…</string>
+	<key>DURATION_PREAMBLE</key>
+	<string>Touch to return to call</string>
+	<key>EDGE_FAILURE</key>
+	<string>Could not activate mobile data network</string>
+	<key>EDGE_FAILURE_SETTINGS</key>
+	<string>Settings</string>
+	<key>EDGE_OFF_FAILURE_BODY</key>
+	<string>Turn on mobile data or use Wi-Fi to access data.</string>
+	<key>EDGE_OFF_FAILURE_BODY_IPAD</key>
+	<string>Turn on mobile data or use Wi-Fi to access data.</string>
+	<key>EDGE_OFF_FAILURE_BODY_IPAD_NO_WIFI</key>
+	<string>Turn on mobile data to access data.</string>
+	<key>EDGE_OFF_FAILURE_BODY_IPAD_WLAN</key>
+	<string>Turn on mobile data or use WLAN to access data</string>
+	<key>EDGE_OFF_FAILURE_BODY_NO_WIFI</key>
+	<string>Turn on mobile data to access data.</string>
+	<key>EDGE_OFF_FAILURE_BODY_WLAN</key>
+	<string>Turn on mobile data or use WLAN to access data</string>
+	<key>EDGE_OFF_FAILURE_TITLE</key>
+	<string>Mobile Data is Turned Off</string>
+	<key>EDGE_OK</key>
+	<string>OK</string>
+	<key>EDGE_ROAMING_FAILURE_BODY</key>
+	<string>Use Wi-Fi or enable data roaming in Settings &gt; Mobile. Additional fees may apply.</string>
+	<key>EDGE_ROAMING_FAILURE_BODY_IPAD</key>
+	<string>Use Wi-Fi or enable data roaming in Settings &gt; Mobile Data. Additional fees may apply.</string>
+	<key>EDGE_ROAMING_FAILURE_BODY_IPAD_NO_WIFI</key>
+	<string>Enable data roaming in Settings &gt; Mobile Data. Additional fees may apply.</string>
+	<key>EDGE_ROAMING_FAILURE_BODY_IPAD_WLAN</key>
+	<string>Use WLAN or enable data roaming in Settings &gt; Mobile Data. Additional fees may apply.</string>
+	<key>EDGE_ROAMING_FAILURE_BODY_NO_WIFI</key>
+	<string>Enable data roaming in Settings &gt; Mobile. Additional fees may apply.</string>
+	<key>EDGE_ROAMING_FAILURE_BODY_WLAN</key>
+	<string>Use WLAN or enable data roaming in Settings &gt; Mobile. Additional fees may apply.</string>
+	<key>EDGE_ROAMING_FAILURE_TITLE</key>
+	<string>Data Roaming is turned off</string>
+	<key>EMERGENCY_CALL</key>
+	<string>Emergency call</string>
+	<key>EMERGENCY_CALL_TITLE</key>
+	<string>Emergency
+Call</string>
+	<key>EMPTY_SEARCH_RESULT</key>
+	<string>(untitled)</string>
+	<key>ENTER_CURRENT_PASSCODE</key>
+	<string>To change your passcode, first enter your current passcode.</string>
+	<key>ENTER_NEW_PASSCODE</key>
+	<string>New passcode</string>
+	<key>ENTER_PASSCODE</key>
+	<string>Enter Passcode</string>
+	<key>ENTER_PIN_TITLE</key>
+	<string>Enter PIN</string>
+	<key>ENTER_PUK_TITLE</key>
+	<string>Enter PUK</string>
+	<key>EXPIRED_FORMAT</key>
+	<string>Your rental period for “%@” has expired</string>
+	<key>FIXED_DIALING_LOCKED_SIM_STRING</key>
+	<string>Your SIM has fixed number dialling active.  You will only be able to make emergency calls.</string>
+	<key>FIXED_DIALING_LOCKED_SIM_TITLE</key>
+	<string>Fixed Number Dialling Active</string>
+	<key>GAMECENTER_DELETE_STATS_BODY</key>
+	<string>You will no longer be listed on leaderboards for "%@".</string>
+	<key>GAMECENTER_DELETE_STATS_CANCEL</key>
+	<string>Keep</string>
+	<key>GAMECENTER_DELETE_STATS_DELETE</key>
+	<string>Remove</string>
+	<key>GAMECENTER_DELETE_STATS_TITLE</key>
+	<string>Remove "%@" from Game Center?</string>
+	<key>HEADPHONES_VOLUME</key>
+	<string>Headphones</string>
+	<key>HIGH_VOLUME</key>
+	<string>High Volume</string>
+	<key>INCOMING_CALL_FORWARDED</key>
+	<string>Incoming Call Forwarded</string>
+	<key>INSTALLING_ICON_LABEL</key>
+	<string>Installing…</string>
+	<key>INTERNET_TETHERING_MULTIPLE_HOSTS</key>
+	<string>Personal Hotspot: %@ Connections</string>
+	<key>INTERNET_TETHERING_SINGLE_HOST</key>
+	<string>Personal Hotspot: 1 Connection</string>
+	<key>IN_CALL_LAUNCH_ALERT</key>
+	<string>Mobile data connections are not available during this call.</string>
+	<key>IN_CALL_LAUNCH_OK</key>
+	<string>OK</string>
+	<key>IPHONE_TOO_HOT</key>
+	<string>Temperature</string>
+	<key>IPOD</key>
+	<string>iPod</string>
+	<key>IPOD_ONLY</key>
+	<string>iPod</string>
+	<key>LISTEN</key>
+	<string>Listen</string>
+	<key>LOCKED_SIM</key>
+	<string>Locked SIM</string>
+	<key>LOCKED_SIM_TITLE</key>
+	<string>Incorrect SIM</string>
+	<key>LOW_BATT_MSG_LEVEL</key>
+	<string>%@ of battery remaining</string>
+	<key>LOW_BATT_TITLE</key>
+	<string>Low Battery</string>
+	<key>LOW_DISK_SPACE_DISMISS</key>
+	<string>Done</string>
+	<key>LOW_DISK_SPACE_MESSAGE</key>
+	<string>You can manage your storage in Settings.</string>
+	<key>LOW_DISK_SPACE_SETTINGS</key>
+	<string>Settings</string>
+	<key>LOW_DISK_SPACE_TITLE</key>
+	<string>Storage Almost Full</string>
+	<key>MISMATCHED_SIM_BODY</key>
+	<string>Please connect to iTunes</string>
+	<key>MISMATCHED_SIM_TITLE</key>
+	<string>Different SIM detected</string>
+	<key>MISSING_SIM_TITLE</key>
+	<string>No SIM Card Installed</string>
+	<key>MOBILITY_MANAGEMENT_FORMAT_STRING</key>
+	<string>MM No. %d</string>
+	<key>MULTIPLE_CALLS</key>
+	<string>Multiple Calls</string>
+	<key>MULTIPLE_MINUTES_TO_UNBLOCK</key>
+	<string>try again in %@ minutes</string>
+	<key>MULTIPLE_NEW_MESSAGE_HIDDEN_PREVIEW</key>
+	<string>%@ New Messages</string>
+	<key>MULTIPLE_UPCOMING_ALARMS_SET</key>
+	<string>You have an alarm set for %@.</string>
+	<key>MUSIC</key>
+	<string>Music</string>
+	<key>MUTE_OFF</key>
+	<string>Mute Off</string>
+	<key>MUTE_ON</key>
+	<string>Mute On</string>
+	<key>MUTE_VOLUME</key>
+	<string>Mute</string>
+	<key>NETWORK_LOCKED_LABEL</key>
+	<string>network personalisation</string>
+	<key>NETWORK_LOCKED_SIM_STRING</key>
+	<string>Your phone is tied to a specific SIM card.</string>
+	<key>NETWORK_LOST</key>
+	<string>Network Lost</string>
+	<key>NETWORK_LOST_LOCK_LABEL</key>
+	<string>slide to choose</string>
+	<key>NETWORK_LOST_LOCK_LABEL_SHORT</key>
+	<string>choose</string>
+	<key>NETWORK_LOST_TEXT</key>
+	<string>Your selected mobile network is no longer available. You can choose a different network in Settings.</string>
+	<key>NETWORK_RESTRICTED</key>
+	<string>Restricted Network</string>
+	<key>NETWORK_RESTRICTED_TEXT</key>
+	<string>Your selected mobile network is restricted. You can choose a different network in Settings.</string>
+	<key>NEWLY_INSTALLED_APP_SASH_LABEL</key>
+	<string>New</string>
+	<key>NEWSSTAND_CARD_TEXT</key>
+	<string>You can download magazines and newspapers in the App Store</string>
+	<key>NEWSSTAND_FOLDER_TITLE</key>
+	<string>Newsstand</string>
+	<key>NEWSSTAND_ICON_TITLE</key>
+	<string>Newsstand</string>
+	<key>NEWSSTAND_STORE_BUTTON_TITLE</key>
+	<string>Store</string>
+	<key>NEW_TEXT_MESSAGE</key>
+	<string>New Message</string>
+	<key>NEW_VOICEMAIL</key>
+	<string>New Voicemail</string>
+	<key>NEW_VOICEMAIL_BODY</key>
+	<string>Voicemail</string>
+	<key>NEW_VOICEMAIL_FROM</key>
+	<string>New Voicemail from %@</string>
+	<key>NO</key>
+	<string>No</string>
+	<key>NON_COMPLIANT_PASSCODE_CONTINUE</key>
+	<string>Continue</string>
+	<key>NON_COMPLIANT_PASSCODE_LATER</key>
+	<string>Later</string>
+	<key>NOTIFICATION_CENTER_MODE_ALL</key>
+	<string>All</string>
+	<key>NOTIFICATION_CENTER_MODE_MISSED</key>
+	<string>Missed</string>
+	<key>NOTIFICATION_CENTER_MODE_TODAY</key>
+	<string>Today</string>
+	<key>NOTIFICATION_CENTER_SECTION_HEADER_TOMORROW</key>
+	<string>Tomorrow</string>
+	<key>NOW</key>
+	<string>Now</string>
+	<key>NO_NAME</key>
+	<string>Unknown</string>
+	<key>NO_SEARCH_RESULTS</key>
+	<string>No Results</string>
+	<key>NO_SERVICE</key>
+	<string>No Service</string>
+	<key>NO_SIM</key>
+	<string>No SIM</string>
+	<key>OK</key>
+	<string>OK</string>
+	<key>ONE_MINUTE_TO_UNBLOCK</key>
+	<string>try again in 1 minute</string>
+	<key>ONE_UPCOMING_ALARM_SET</key>
+	<string>Your alarm is set for %@.</string>
+	<key>OPERATOR_LOCKED_LABEL</key>
+	<string>operator personalisation</string>
+	<key>OPERATOR_LOCKED_SIM_STRING</key>
+	<string>Your phone is tied to SIM cards issued by a specific network operator.</string>
+	<key>OPERATOR_SS_LOCKED_LABEL</key>
+	<string>operator subset personalisation</string>
+	<key>OPERATOR_SUBSET_LOCKED_SIM_STRING</key>
+	<string>Your phone is tied to specific SIM cards issued by a specific network provider.</string>
+	<key>ORIENTATION_LOCK_LANDSCAPE_LOCKED</key>
+	<string>Landscape Orientation Locked</string>
+	<key>ORIENTATION_LOCK_PORTRAIT_LOCKED</key>
+	<string>Portrait Orientation Locked</string>
+	<key>ORIENTATION_LOCK_PORTRAIT_UNLOCKED</key>
+	<string>Portrait Orientation Unlocked</string>
+	<key>ORIENTATION_LOCK_UNLOCKED</key>
+	<string>Orientation Unlocked</string>
+	<key>OUTGOING_CALL_FORWARDED</key>
+	<string>Outgoing Call Forwarded</string>
+	<key>PASSCODE_ALERT_CANCEL</key>
+	<string>Cancel</string>
+	<key>PASSCODE_ALERT_DONE</key>
+	<string>Save</string>
+	<key>PASSCODE_ALERT_EMERGENCY</key>
+	<string>Emergency</string>
+	<key>PASSCODE_ALERT_INCORRECT_PASSCODE</key>
+	<string>Incorrect passcode. Enter your current passcode.</string>
+	<key>PASSCODE_ALERT_NEXT</key>
+	<string>Continue</string>
+	<key>PASSCODE_ALERT_TITLE</key>
+	<string>Passcode Requirement</string>
+	<key>PASSCODE_REMINDER_CANCEL</key>
+	<string>Not Now</string>
+	<key>PASSCODE_REMINDER_CONTINUE</key>
+	<string>Continue</string>
+	<key>PAUSED_ICON_LABEL</key>
+	<string>Paused</string>
+	<key>PENDING_DOWNLOAD_REMOVED_BODY</key>
+	<string>Some downloads have been completed in iTunes on your computer.</string>
+	<key>PENDING_DOWNLOAD_REMOVED_OK</key>
+	<string>Dismiss</string>
+	<key>PENDING_DOWNLOAD_REMOVED_TITLE</key>
+	<string>Downloads Completed</string>
+	<key>PERSONALIZATION_LOCKED_SIM_STRING</key>
+	<string>This iPhone must be used with an approved SIM.</string>
+	<key>PERSONALIZATION_LOCK_ENTER_CODE</key>
+	<string>Enter Code</string>
+	<key>PERSONALIZATION_UNLOCK_FAILED_TITLE</key>
+	<string>Incorrect Code</string>
+	<key>PHONE_ACTIVATED</key>
+	<string>iPhone is activated</string>
+	<key>PIN_ATTEMPTS_REMAINING</key>
+	<string>%@ attempts remaining</string>
+	<key>PIN_ATTEMPT_REMAINING</key>
+	<string>1 attempt remaining</string>
+	<key>PIN_ENTRY_SUCCESS</key>
+	<string>PIN Entry Succeeded</string>
+	<key>PIN_LOCKED_STRING</key>
+	<string>Your SIM card is locked. Would you like to unlock it?</string>
+	<key>PIN_LOCKED_TITLE</key>
+	<string>SIM Locked</string>
+	<key>PIN_UNLOCK_FAILED_TITLE</key>
+	<string>Incorrect PIN</string>
+	<key>PLEASE_WAIT</key>
+	<string>Please Wait…</string>
+	<key>POWER_DOWN_CANCEL</key>
+	<string>Cancel</string>
+	<key>POWER_DOWN_LINE_1</key>
+	<string>hold button down</string>
+	<key>POWER_DOWN_LINE_2</key>
+	<string>to power off</string>
+	<key>POWER_DOWN_LOCK_LABEL</key>
+	<string>slide to power off</string>
+	<key>PRINT_CENTER_TITLE</key>
+	<string>Print Centre</string>
+	<key>PUK_ENTRY_SUCCESS</key>
+	<string>PUK Entry Succeeded</string>
+	<key>PUK_HOPELESSLY_LOCKED_STRING</key>
+	<string>You have exhausted all attempts to unlock your SIM. Please contact your carrier.</string>
+	<key>PUK_HOPELESSLY_LOCKED_TITLE</key>
+	<string>PUK Exhausted</string>
+	<key>PUK_LOCKED_CONFIRM_PIN</key>
+	<string>Confirm new PIN</string>
+	<key>PUK_LOCKED_CONFIRM_PIN_LABEL</key>
+	<string>re-enter new PIN code</string>
+	<key>PUK_LOCKED_ENTER_PIN</key>
+	<string>Enter PIN</string>
+	<key>PUK_LOCKED_ENTER_PIN_LABEL</key>
+	<string>choose a new PIN code</string>
+	<key>PUK_LOCKED_PIN_MISMATCH_LABEL</key>
+	<string>previous PINs did not match</string>
+	<key>PUK_LOCKED_STRING</key>
+	<string>Your SIM cannot be accessed. Please call your carrier to obtain your PUK code.</string>
+	<key>PUK_LOCKED_TITLE</key>
+	<string>PUK Locked</string>
+	<key>PUK_UNLOCK_FAILED_TITLE</key>
+	<string>Incorrect PUK</string>
+	<key>Phone not allowed</key>
+	<string>Phone not allowed</string>
+	<key>RATINGS_ICON_BODY</key>
+	<string>Tap a star to rate.</string>
+	<key>RATINGS_ICON_RATE</key>
+	<string>Rate</string>
+	<key>RATINGS_ICON_SKIP</key>
+	<string>No Thanks</string>
+	<key>RATINGS_ICON_TITLE</key>
+	<string>Please rate “%@” before deleting.</string>
+	<key>RECENTLY_UPDATED_APP_SASH_LABEL</key>
+	<string>Updated</string>
+	<key>REDIAL</key>
+	<string>Redial</string>
+	<key>REGISTRATION_FAILED_BODY</key>
+	<string>No signal detected. Signal is required to complete activation.</string>
+	<key>REGISTRATION_FAILED_TITLE</key>
+	<string>Activation Alert</string>
+	<key>RELATIVE_DATE_FUTURE_HOUR</key>
+	<string>in %@h</string>
+	<key>RELATIVE_DATE_FUTURE_MIN</key>
+	<string>in %@m</string>
+	<key>RELATIVE_DATE_FUTURE_SEC</key>
+	<string>in %@s</string>
+	<key>RELATIVE_DATE_NOW</key>
+	<string>now</string>
+	<key>RELATIVE_DATE_PAST_DAY</key>
+	<string>%@d ago</string>
+	<key>RELATIVE_DATE_PAST_HOUR</key>
+	<string>%@h ago</string>
+	<key>RELATIVE_DATE_PAST_MIN</key>
+	<string>%@m ago</string>
+	<key>RELATIVE_DATE_PAST_SEC</key>
+	<string>%@s ago</string>
+	<key>REMOTE_NOTIFICATIONS_LOCK_FORMAT</key>
+	<string>slide to %@</string>
+	<key>REMOTE_NOTIFICATIONS_LOCK_LABEL</key>
+	<string>slide to view</string>
+	<key>REMOTE_NOTIFICATION_CONTENT_DOWNLOAD_ALERT_BODY</key>
+	<string>New issues will be automatically downloaded when on Wi-Fi. This can be configured in Settings.</string>
+	<key>REMOTE_NOTIFICATION_CONTENT_DOWNLOAD_AND_PUSH_PERMISSION_ALERT_TITLE</key>
+	<string>“%@” Would Like to Send You New Issues and Push Notifications</string>
+	<key>REMOTE_NOTIFICATION_CONTENT_DOWNLOAD_PERMISSION_ALERT_TITLE</key>
+	<string>“%@” Would Like to Send You New Issues</string>
+	<key>REMOTE_NOTIFICATION_ENTITLEMENT_NSERROR_DESCRIPTION</key>
+	<string>no valid '%@' entitlement string found for application</string>
+	<key>REMOTE_NOTIFICATION_NEED_IDENTITY_ALERT_BODY</key>
+	<string>“%@” notifications may include alerts, sounds and icon badges.</string>
+	<key>REMOTE_NOTIFICATION_NEED_IDENTITY_ALERT_DISMISS</key>
+	<string>OK</string>
+	<key>REMOTE_NOTIFICATION_NEED_IDENTITY_ALERT_TITLE</key>
+	<string>Connect to iTunes to Use Push Notifications</string>
+	<key>REMOTE_NOTIFICATION_PERMISSION_ALERT_ALLOW</key>
+	<string>OK</string>
+	<key>REMOTE_NOTIFICATION_PERMISSION_ALERT_BODY</key>
+	<string>Notifications may include alerts, sounds and icon badges. These can be configured in Settings.</string>
+	<key>REMOTE_NOTIFICATION_PERMISSION_ALERT_DENY</key>
+	<string>Don't Allow</string>
+	<key>REMOTE_NOTIFICATION_PERMISSION_ALERT_TITLE</key>
+	<string>“%@” Would Like to Send You Push Notifications</string>
+	<key>REMOTE_NOTIFICATION_SIMULATOR_NOT_SUPPORTED_NSERROR_DESCRIPTION</key>
+	<string>remote notifications are not supported in the simulator</string>
+	<key>REMOTE_NOTIFICATION_SYSTEMWIDE_ALERT_DISMISS</key>
+	<string>Cancel</string>
+	<key>REMOTE_NOTIFICATION_SYSTEMWIDE_ALERT_SETTINGS</key>
+	<string>Settings</string>
+	<key>REMOTE_NOTIFICATION_SYSTEMWIDE_ALERT_TITLE</key>
+	<string>Turn On Push Notifications to Allow “%@” to Receive Sounds, Alerts and Badges</string>
+	<key>REORDER_INFO_BODY</key>
+	<string>To rearrange icons, touch and hold any icon until it starts to wiggle, then drag icons to desired locations.
+Drag an icon to the far right to create additional Home screens.
+Press the Home button when finished.</string>
+	<key>REORDER_INFO_TEXT</key>
+	<string>Touch and hold an icon to enter reorder mode. Press the menu button to stop.</string>
+	<key>REORDER_INFO_TITLE</key>
+	<string>Edit Home Screen</string>
+	<key>REPLY</key>
+	<string>Reply</string>
+	<key>RESET_COMPLETE</key>
+	<string>Reset complete</string>
+	<key>RESET_IN_PROGRESS</key>
+	<string>Resetting %@</string>
+	<key>RESTORE_COMPLETE</key>
+	<string>Restore complete</string>
+	<key>RESTORE_FAILED</key>
+	<string>Restore failed</string>
+	<key>RESTORE_FAILURE_ALERT_BODY_TEXT</key>
+	<string>There was a problem during restore.  Please restart your %@ and try restoring again.</string>
+	<key>RESTORE_FAILURE_ALERT_RESTART_BUTTON_TITLE</key>
+	<string>Restart</string>
+	<key>RESTORE_IN_PROGRESS</key>
+	<string>Restore in Progress</string>
+	<key>RESTRICTED_ICON_LABEL</key>
+	<string>Restricted</string>
+	<key>RESTRICTED_URL_BODY</key>
+	<string>This URL wasn't loaded:
+%@</string>
+	<key>RESTRICTED_URL_TITLE</key>
+	<string>Restricted URL</string>
+	<key>RINGER_VOLUME</key>
+	<string>Ringer</string>
+	<key>SEARCHING</key>
+	<string>Searching…</string>
+	<key>SEARCH_BAR_PLACEHOLDER</key>
+	<string>Search %@</string>
+	<key>SEARCH_SUBTITLE_SEPARATOR</key>
+	<string> — </string>
+	<key>SEARCH_TOP_HIT</key>
+	<string>Top Hit</string>
+	<key>SEARCH_WEB</key>
+	<string>Search Web</string>
+	<key>SEARCH_WIKIPEDIA</key>
+	<string>Search Wikipedia</string>
+	<key>SEND</key>
+	<string>Send</string>
+	<key>SERVICE_PROVIDER_LOCKED_LABEL</key>
+	<string>service provider personalisation</string>
+	<key>SERVICE_PROVIDER_LOCKED_SIM_STRING</key>
+	<string>Your phone is tied to SIM cards issued by a specific service provider.</string>
+	<key>SETTINGS</key>
+	<string>Settings</string>
+	<key>SETTING_LANGUAGE</key>
+	<string>Setting Language…</string>
+	<key>SILENT_VOLUME</key>
+	<string>Silent</string>
+	<key>SIMULATOR_CARRIER_STRING</key>
+	<string>Carrier</string>
+	<key>SLIDE_TO_ANSWER</key>
+	<string>slide to answer</string>
+	<key>SLIDE_TO_CALL_BACK</key>
+	<string>slide to call back</string>
+	<key>SLIDE_TO_CALL_BACK_SHORT</key>
+	<string>call back</string>
+	<key>SLIDE_TO_CANCEL</key>
+	<string>slide to cancel</string>
+	<key>SLIDE_TO_DISMISS</key>
+	<string>slide to dismiss</string>
+	<key>SLIDE_TO_LISTEN</key>
+	<string>slide to listen</string>
+	<key>SMS_ALERT_TITLE</key>
+	<string>Message</string>
+	<key>SMS_READ</key>
+	<string>Read</string>
+	<key>SOFTWARE_UPDATE_AVAILABLE_ALERT_ACTION</key>
+	<string>Details</string>
+	<key>SOFTWARE_UPDATE_AVAILABLE_ALERT_BODY</key>
+	<string>%@ is now available.</string>
+	<key>SOFTWARE_UPDATE_AVAILABLE_ALERT_BODY_IPAD</key>
+	<string>%@ is now available for your iPad.</string>
+	<key>SOFTWARE_UPDATE_AVAILABLE_ALERT_BODY_IPHONE</key>
+	<string>%@ is now available for your iPhone.</string>
+	<key>SOFTWARE_UPDATE_AVAILABLE_ALERT_BODY_IPOD</key>
+	<string>%@ is now available for your iPod.</string>
+	<key>SOFTWARE_UPDATE_AVAILABLE_ALERT_CANCEL</key>
+	<string>Close</string>
+	<key>SOFTWARE_UPDATE_AVAILABLE_ALERT_TITLE</key>
+	<string>Software Update</string>
+	<key>SOFTWARE_UPDATE_DOWNLOAD_FAILURE_ALERT_ACTION</key>
+	<string>Settings</string>
+	<key>SOFTWARE_UPDATE_DOWNLOAD_FAILURE_ALERT_BODY_GENERIC</key>
+	<string>An error occurred downloading %@.</string>
+	<key>SOFTWARE_UPDATE_DOWNLOAD_FAILURE_ALERT_CANCEL</key>
+	<string>Close</string>
+	<key>SOFTWARE_UPDATE_DOWNLOAD_FAILURE_ALERT_TITLE</key>
+	<string>Software Update Failed</string>
+	<key>SOFTWARE_UPDATE_DOWNLOAD_FAILURE_STORAGE_ALERT_ACTION</key>
+	<string>Settings</string>
+	<key>SOFTWARE_UPDATE_DOWNLOAD_FAILURE_STORAGE_ALERT_BODY</key>
+	<string>There is not enough available storage to download %@. You can manage your storage in Settings.</string>
+	<key>SOFTWARE_UPDATE_DOWNLOAD_FAILURE_STORAGE_ALERT_CANCEL</key>
+	<string>Close</string>
+	<key>SOFTWARE_UPDATE_DOWNLOAD_FAILURE_STORAGE_ALERT_TITLE</key>
+	<string>Cannot Download Update</string>
+	<key>SOFTWARE_UPDATE_FORCED_INSTALL_ALERT_ACTION</key>
+	<string>Install</string>
+	<key>SOFTWARE_UPDATE_FORCED_INSTALL_ALERT_BODY_PLURAL</key>
+	<string>%@ will begin installing in %@ seconds. Your device will restart when installation is finished.</string>
+	<key>SOFTWARE_UPDATE_FORCED_INSTALL_ALERT_BODY_PLURAL_IPAD</key>
+	<string>%@ will begin installing in %@ seconds. Your iPad will restart when installation is finished.</string>
+	<key>SOFTWARE_UPDATE_FORCED_INSTALL_ALERT_BODY_PLURAL_IPHONE</key>
+	<string>%@ will begin installing in %@ seconds. Your iPhone will restart when installation is finished.</string>
+	<key>SOFTWARE_UPDATE_FORCED_INSTALL_ALERT_BODY_PLURAL_IPOD</key>
+	<string>%@ will begin installing in %@ seconds. Your iPod will restart when installation is finished.</string>
+	<key>SOFTWARE_UPDATE_FORCED_INSTALL_ALERT_BODY_SINGULAR</key>
+	<string>%@ will begin installing in %@ second. Your device will restart when installation is finished.</string>
+	<key>SOFTWARE_UPDATE_FORCED_INSTALL_ALERT_BODY_SINGULAR_IPAD</key>
+	<string>%@ will begin installing in %@ second. Your iPad will restart when installation is finished.</string>
+	<key>SOFTWARE_UPDATE_FORCED_INSTALL_ALERT_BODY_SINGULAR_IPHONE</key>
+	<string>%@ will begin installing in %@ second. Your iPhone will restart when installation is finished.</string>
+	<key>SOFTWARE_UPDATE_FORCED_INSTALL_ALERT_BODY_SINGULAR_IPOD</key>
+	<string>%@ will begin installing in %@ second. Your iPod will restart when installation is finished.</string>
+	<key>SOFTWARE_UPDATE_FORCED_INSTALL_ALERT_CANCEL</key>
+	<string>Later</string>
+	<key>SOFTWARE_UPDATE_FORCED_INSTALL_ALERT_LOCK_LABEL</key>
+	<string>slide to wait</string>
+	<key>SOFTWARE_UPDATE_FORCED_INSTALL_ALERT_LOCK_LABEL_SHORT</key>
+	<string>wait</string>
+	<key>SOFTWARE_UPDATE_FORCED_INSTALL_ALERT_TITLE</key>
+	<string>Software Update</string>
+	<key>SOFTWARE_UPDATE_INSTALL_FAILURE_ALERT_ACTION</key>
+	<string>Settings</string>
+	<key>SOFTWARE_UPDATE_INSTALL_FAILURE_ALERT_CANCEL</key>
+	<string>Close</string>
+	<key>SOFTWARE_UPDATE_INSTALL_FAILURE_ALERT_TITLE</key>
+	<string>Unable to Install Update</string>
+	<key>SOFTWARE_UPDATE_INSTALL_FAILURE_BATTERY_ALERT_BODY</key>
+	<string>Software update requires at least %@ battery, or to be connected to a power source.</string>
+	<key>SOFTWARE_UPDATE_INSTALL_FAILURE_GENERIC_ALERT_BODY</key>
+	<string>An error occurred installing %@.</string>
+	<key>SOFTWARE_UPDATE_INSTALL_FAILURE_NETWORK_ALERT_BODY</key>
+	<string>Software update requires a network connection.</string>
+	<key>SOFTWARE_UPDATE_INSTALL_FAILURE_STORAGE_ALERT_BODY</key>
+	<string>Software update requires at least %@ of available storage.</string>
+	<key>SOFTWARE_UPDATE_INSTALL_FAILURE_UNAVAILABLE_BODY</key>
+	<string>Software Update is not available at this time. Try again later.</string>
+	<key>SOFTWARE_UPDATE_INSTALL_FAILURE_UNAVAILABLE_TITLE</key>
+	<string>Software Update Unavailable</string>
+	<key>SOFTWARE_UPDATE_VERIFICATION_FAILED_ALERT_ACTION</key>
+	<string>Try again</string>
+	<key>SOFTWARE_UPDATE_VERIFICATION_FAILED_ALERT_BODY</key>
+	<string>%@ failed verification because you are no longer connected to the Internet.</string>
+	<key>SOFTWARE_UPDATE_VERIFICATION_FAILED_ALERT_CANCEL</key>
+	<string>Close</string>
+	<key>SOFTWARE_UPDATE_VERIFICATION_FAILED_ALERT_TITLE</key>
+	<string>Unable to Verify Update</string>
+	<key>SOFTWARE_UPDATE_VERIFYING_ALERT_BODY</key>
+	<string>Verifying update…</string>
+	<key>SOS_ONLY</key>
+	<string>SOS only</string>
+	<key>SOUND_EFFECTS_VOLUME</key>
+	<string>Sound Effects</string>
+	<key>SPOTLIGHT_ALERT_BODY_IPAD</key>
+	<string>Searching iPad is easier than ever with iOS 7. Swipe down from any Home screen to access Spotlight.</string>
+	<key>SPOTLIGHT_ALERT_BODY_IPHONE</key>
+	<string>Searching iPhone is easier than ever with iOS 7. Swipe down from any Home screen to access Spotlight.</string>
+	<key>SPOTLIGHT_ALERT_BODY_IPOD</key>
+	<string>Searching iPod is easier than ever with iOS 7. Swipe down from any Home screen to access Spotlight.</string>
+	<key>SPOTLIGHT_ALERT_TITLE</key>
+	<string>Spotlight Has Moved</string>
+	<key>SYNCING_ICON_LABEL</key>
+	<string>Syncing…</string>
+	<key>SYNC_LOW_POWER</key>
+	<string>iTunes Sync will resume when charged.</string>
+	<key>Smart chip not allowed</key>
+	<string>SIM not allowed</string>
+	<key>Smart chip not provisioned</key>
+	<string>SIM not provisioned</string>
+	<key>TAP_TO_SNOOZE</key>
+	<string>Tap to snooze</string>
+	<key>TAP_TO_STOP</key>
+	<string>Tap to stop</string>
+	<key>THERMAL_ALERT_STRING_IPAD</key>
+	<string>iPad needs to cool down
+before you can use it.</string>
+	<key>THERMAL_ALERT_STRING_IPHONE</key>
+	<string>iPhone needs to cool down
+before you can use it.</string>
+	<key>THERMAL_ALERT_STRING_IPOD</key>
+	<string>iPod needs to cool down
+before you can use it.</string>
+	<key>THERMAL_WARN_BODY_IPAD</key>
+	<string>iPad needs to cool down.</string>
+	<key>THERMAL_WARN_BODY_IPHONE</key>
+	<string>iPhone needs to cool down.</string>
+	<key>THERMAL_WARN_BODY_IPOD</key>
+	<string>iPod needs to cool down.</string>
+	<key>THERMAL_WARN_BUTTON_COOLDOWN</key>
+	<string>Cool Down</string>
+	<key>THERMAL_WARN_BUTTON_IGNORE</key>
+	<string>Use Anyway</string>
+	<key>THERMAL_WARN_TITLE</key>
+	<string>Temperature</string>
+	<key>TIMER_LOCK_LABEL</key>
+	<string>slide to stop timer</string>
+	<key>TODAY</key>
+	<string>Today</string>
+	<key>TOMORROW</key>
+	<string>Tomorrow</string>
+	<key>TRY_AGAIN</key>
+	<string>try again</string>
+	<key>TTY</key>
+	<string>TTY</string>
+	<key>TTY (No SIM)</key>
+	<string>TTY (No SIM)</string>
+	<key>UNHANDLED_URL_BODY</key>
+	<string>This URL wasn't loaded:
+%@</string>
+	<key>UNHANDLED_URL_TITLE</key>
+	<string>Unsupported URL</string>
+	<key>UNINSTALL_ICON_BODY</key>
+	<string>Deleting “%@” will also delete all of its data.</string>
+	<key>UNINSTALL_ICON_BODY_FOR_APP_WITH_DOCUMENTS_IN_CLOUD</key>
+	<string>Deleting “%@” will also delete all its data from this %@. Any documents &amp; data stored in iCloud will not be deleted and can be managed in Settings.</string>
+	<key>UNINSTALL_ICON_BODY_FOR_APP_WITH_DOCUMENTS_UPDATES_PENDING</key>
+	<string>Some documents in iCloud have pending updates. These updates will be lost if you delete “%@” now.</string>
+	<key>UNINSTALL_ICON_BODY_MULTIPLE</key>
+	<string>Deleting “%@” will also delete %@ and all its data.</string>
+	<key>UNINSTALL_ICON_CANCEL</key>
+	<string>Cancel</string>
+	<key>UNINSTALL_ICON_CONFIRM</key>
+	<string>Delete</string>
+	<key>UNINSTALL_ICON_TITLE</key>
+	<string>Delete “%@”</string>
+	<key>UNINSTALL_ICON_TITLE_FOR_APP_WITH_DOCUMENTS_IN_CLOUD</key>
+	<string>Delete “%@”</string>
+	<key>UNINSTALL_ICON_TITLE_FOR_APP_WITH_DOCUMENTS_UPDATES_PENDING</key>
+	<string>Document Updates Pending</string>
+	<key>UNKNOWN</key>
+	<string>Unknown</string>
+	<key>UNLOCK</key>
+	<string>Unlock</string>
+	<key>UNSUPPORTED_CHARGING_ACCESSORY</key>
+	<string>This accessory may
+not be supported.</string>
+	<key>USE_TTY_FOR_CALL</key>
+	<string>Use TTY for this call?</string>
+	<key>VIEW</key>
+	<string>View</string>
+	<key>VOD_OK</key>
+	<string>OK</string>
+	<key>VOICEMAIL_AVAILABLE</key>
+	<string>Voicemail Available</string>
+	<key>VOLUME_VOLUME</key>
+	<string>Volume</string>
+	<key>WAITING_FOR_ACTIVATION_BODY</key>
+	<string>This may take some time.</string>
+	<key>WAITING_FOR_ACTIVATION_TITLE</key>
+	<string>Waiting for Activation</string>
+	<key>WAITING_ICON_LABEL</key>
+	<string>Waiting…</string>
+	<key>WAITING_RESPONSE_TITLE</key>
+	<string>Unlocking…</string>
+	<key>WAIT_FOR_UNLOCK</key>
+	<string>please wait</string>
+	<key>WARNING_DAYS_FORMAT</key>
+	<string>You have %@ days to watch “%@” and then it will be deleted</string>
+	<key>WARNING_DAY_FORMAT</key>
+	<string>You have %@ day to watch “%@” and then it will be deleted</string>
+	<key>WARNING_HOURS_FORMAT</key>
+	<string>You have %@ hours to watch “%@” and then it will be deleted</string>
+	<key>WARNING_HOUR_FORMAT</key>
+	<string>You have %@ hour to watch “%@” and then it will be deleted</string>
+	<key>WARNING_MINUTES_FORMAT</key>
+	<string>You have %@ minutes to watch “%@” and then it will be deleted</string>
+	<key>WARNING_MINUTE_FORMAT</key>
+	<string>You have %@ minute to watch “%@” and then it will be deleted</string>
+	<key>WIFI_SYNC_LOW_POWER</key>
+	<string>iTunes Wi-Fi Sync will resume when charged.</string>
+	<key>WLAN_SYNC_LOW_POWER</key>
+	<string>iTunes WLAN Sync will resume when charged.</string>
+	<key>WRONG_PASSCODE</key>
+	<string>Wrong Passcode</string>
+	<key>YES</key>
+	<string>Yes</string>
+	<key>YESTERDAY</key>
+	<string>Yesterday</string>
+	<key>iPad</key>
+	<string>iPad</string>
+	<key>iPhone</key>
+	<string>iPhone</string>
+	<key>iPod</key>
+	<string>iPod</string>
+	<key>kGprsIllegalMe</key>
+	<string>Illegal ME</string>
+	<key>kGprsIllegalMs</key>
+	<string>Illegal MS</string>
+	<key>kGprsInvalidMobileClass</key>
+	<string>Invalid mobile class</string>
+	<key>kGprsLocationAreaNotAllowed</key>
+	<string>Location area not allowed</string>
+	<key>kGprsPdpAuthenticationFailure</key>
+	<string>PDP authentication failure</string>
+	<key>kGprsPlmnNotAllowed</key>
+	<string>PLMN not allowed</string>
+	<key>kGprsRoamingNotAllowedInLocationArea</key>
+	<string>Roaming not allowed in this location area</string>
+	<key>kGprsServiceOptionNotSubscribed</key>
+	<string>You are not subscribed to a mobile data service</string>
+	<key>kGprsServiceOptionNotSupported</key>
+	<string>Service option not supported</string>
+	<key>kGprsServiceOptionTemporarilyOutOfOrder</key>
+	<string>The mobile data network is temporarily unavailable</string>
+	<key>kGprsServicesNotAllowed</key>
+	<string>GPRS services not allowed</string>
+</dict>
+</plist>
