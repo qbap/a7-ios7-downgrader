@@ -293,7 +293,7 @@ safari, maps, mail, etc should now be working
 
 7.0.2 boots fine unjailbroken, safari is working. home button, pwr button and volume keys do NOT work. ~~when booting dev kernel it results in flickering screen~~ if you delete `xpcd_cache.dylib` it boots fine with the dev kernel with no flickering screen. this means working safari while jailbroken but again home button, pwr button and volume keys are not working. 
 
-7.0.1 & 7.0 boots fine unjailbroken, volume keys, power button, home button, safari, maps, app store all NOT working. when booting dev kernel it boots fine and cydia functions as normal, but tweak injection does not work. if `xpcd_cache.dylib` is installed, the wallpaper is black, but there is no flickering screen.
+7.0.1 & 7.0 boots fine unjailbroken, safari is working. home button, pwr button and volume keys do NOT work. when booting dev kernel it boots fine and cydia functions as normal, but tweak injection does not work. if `xpcd_cache.dylib` is installed, the wallpaper is black, but there is no flickering screen.
 
 7.1.2 has working CommCenter, no need to disable it
 
