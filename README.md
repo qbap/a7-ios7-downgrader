@@ -278,9 +278,9 @@ safari, maps, mail, etc should now be working
 
 | Firmware   | App Store             | Safari                | Home button           | Vol keys& pwr btn     | Root fs r/w           | Jailbreak via script.sh? |
 |------------|-----------------------|-----------------------|-----------------------|-----------------------|-----------------------|--------------------------|
-| iOS 7.0.1  | <ul><li>[x]</li></ul> | <ul><li>[x]</li></ul> | <ul><li>[ ]</li></ul> | <ul><li>[ ]</li></ul> | <ul><li>[ ]</li></ul> | <ul><li>[ ]</li></ul>
-| iOS 7.0.2  | <ul><li>[x]</li></ul> | <ul><li>[x]</li></ul> | <ul><li>[ ]</li></ul> | <ul><li>[ ]</li></ul> | <ul><li>[x]</li></ul> | <ul><li>[x]</li></ul>
-| iOS 7.0.3+ | <ul><li>[x]</li></ul> | <ul><li>[x]</li></ul> | <ul><li>[x]</li></ul> | <ul><li>[x]</li></ul> | <ul><li>[ ]</li></ul> | <ul><li>[ ]</li></ul>
+| iOS 7.0.1  | &#9745;               | &#9745;               | &#9744;               | &#9744;               | &#9744;               | &#9744;
+| iOS 7.0.2  | &#9745;               | &#9745;               | &#9744;               | &#9744;               | &#9745;               | &#9745;
+| iOS 7.0.3+ | &#9745;               | &#9745;               | &#9745;               | &#9745;               | &#9744;               | &#9744;
 
 # credits
 
