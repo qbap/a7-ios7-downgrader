@@ -274,6 +274,14 @@ reboot back into ios
 
 safari, maps, mail, etc should now be working
 
+# chart of compatibility
+
+| Firmware   | App Store             | Safari                | Home button           | Vol keys& pwr btn     | Root fs r/w           | Jailbreak via script.sh? |
+|------------|-----------------------|-----------------------|-----------------------|-----------------------|-----------------------|--------------------------|
+| iOS 7.0.1  | <ul><li>[x]</li></ul> | <ul><li>[x]</li></ul> | <ul><li>[ ]</li></ul> | <ul><li>[ ]</li></ul> | <ul><li>[ ]</li></ul> | <ul><li>[ ]</li></ul>
+| iOS 7.0.2  | <ul><li>[x]</li></ul> | <ul><li>[x]</li></ul> | <ul><li>[ ]</li></ul> | <ul><li>[ ]</li></ul> | <ul><li>[x]</li></ul> | <ul><li>[x]</li></ul>
+| iOS 7.0.3+ | <ul><li>[x]</li></ul> | <ul><li>[x]</li></ul> | <ul><li>[x]</li></ul> | <ul><li>[x]</li></ul> | <ul><li>[ ]</li></ul> | <ul><li>[ ]</li></ul>
+
 # credits
 
 - [Nathan](https://github.com/verygenericname) for the ssh ramdisk and [iBoot64Patcher fork](https://github.com/verygenericname/iBoot64Patcher)
