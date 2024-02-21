@@ -231,10 +231,12 @@ ios 7 cydia does NOT check `/.cydia_no_stash`
 https://github.com/sbingner/cydia/blob/2b6abb5670bfa1bb1cb3273e3e7531bcab0e418c/MobileCydia.mm#L10207
 
 stashing is the process of moving critical system files from the system partition to the user partition to free up disk space on the system partition
+
 this process of moving critical system files breaks safari, maps, mail, among other things such as app store on ios 7
+
 the only way to fix this, as it turns out, is to follow this chain of command
 
-first boot
+## first boot
 
 use RELEASE kernel, no rootfs r/w, no libmis.dylib, and no libsandbox.dylib
 
@@ -244,7 +246,7 @@ the only difference from stock being that we are disabling CommCenter and hackti
 
 once booted, enable assistive touch and disable screen lock timer then put the phone back into dfu
 
-second boot
+## second boot
 
 boot into ssh and copy over libmis.dylib, libsandbox.dylib, and updated fstab to remount / as rw
 
@@ -262,7 +264,7 @@ this should then, in theory, let us use cydia without having to stash critical s
 
 put the phone back into dfu
 
-third boot
+## third boot
 
 unstash /Applications, /Library/Ringtones, and /usr/share and ensure `/.cydia_no_stash` is present and readable
 
