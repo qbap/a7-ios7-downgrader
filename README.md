@@ -276,11 +276,28 @@ safari, maps, mail, etc should now be working
 
 # chart of compatibility
 
-| Firmware   | App Store             | Safari                | Home button           | Vol keys& pwr btn     | Root fs r/w           | Jailbreak via script.sh? |
-|------------|-----------------------|-----------------------|-----------------------|-----------------------|-----------------------|--------------------------|
-| iOS 7.0.1  | &#9745;               | &#9745;               | &#9744;               | &#9744;               | &#9744;               | &#9744;
-| iOS 7.0.2  | &#9745;               | &#9745;               | &#9744;               | &#9744;               | &#9745;               | &#9745;
-| iOS 7.0.3+ | &#9745;               | &#9745;               | &#9745;               | &#9745;               | &#9744;               | &#9744;
+| Firmware | App Store | Safari  | Home button  | Vol keys& pwr btn | CommCenter | Root fs r/w | Jailbreak |
+|----------|-----------|---------|--------------|-------------------|------------|-------------|-----------|
+| 7.0.1    | &#9745;   | &#9745; | &#9744;      | &#9744;           | &#9744;    | &#9744;     | &#9744;
+| 7.0.2    | &#9745;   | &#9745; | &#9744;      | &#9744;           | &#9744;    | &#9745;     | &#9745;
+| 7.0.3    | &#9745;   | &#9745; | &#9745;      | &#9745;           | &#9744;    | &#9744;     | &#9744;
+| 7.0.4    | &#9745;   | &#9745; | &#9745;      | &#9745;           | &#9744;    | &#9744;     | &#9744;
+| 7.0.6    | &#9745;   | &#9745; | &#9745;      | &#9745;           | &#9744;    | &#9744;     | &#9744;
+| 7.1.2    | &#9745;   | &#9745; | &#9745;      | &#9745;           | &#9745;    | &#9744;     | &#9744;
+
+# chart technical breakdown
+
+7.0.6 boots fine unjailbroken, home button, safari, siri, app store all working. ios boots into an infinite spin lock when using dev kernel. this means no jailbreak on ios 7.0.6 is possible. xpcd_cache.dylib is untested on this version
+
+7.0.3 & 7.0.4 boots fine unjailbroken, home button, safari, siri, app store all working. ~~when booting dev kernel it results in flickering screen~~ if you delete `xpcd_cache.dylib` it boots into an infinite spin lock when using the dev kernel. this means no jailbreak on this version is possible.
+
+7.0.2 boots fine unjailbroken, safari is working. home button, pwr button and volume keys do NOT work. ~~when booting dev kernel it results in flickering screen~~ if you delete `xpcd_cache.dylib` it boots fine with the dev kernel with no flickering screen. this means working safari while jailbroken but again home button, pwr button and volume keys are not working. 
+
+7.0.1 & 7.0 boots fine unjailbroken, volume keys, power button, home button, safari, maps, app store all NOT working. when booting dev kernel it boots fine and cydia functions as normal, but tweak injection does not work. if `xpcd_cache.dylib` is installed, the wallpaper is black, but there is no flickering screen.
+
+7.1.2 has working CommCenter, no need to disable it
+
+see https://github.com/y08wilm/a7-ios7-downgrader?tab=readme-ov-file#technical-breakdown as to why safari and other apps stop working after "preparing filesystem" on cydia. tldr you need to update cydia to a version that supports `/.cydia_no_stash` and then run the script again and when it asks you if you want to skip the ramdisk type "no", then press any key once booted into ramdisk and wait about a minute for it to unstash critical system files and type "alpine" hit enter and then type "exit" and hit enter. the script will then guide you thru the steps to boot back into ios. safari and other apps should then work.
 
 # credits
 
