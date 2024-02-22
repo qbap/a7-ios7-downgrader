@@ -194,7 +194,7 @@ _download_boot_files() {
             ./seprmvr64lite jb/11A24580o_kcache.raw $1/$3/kcache.patched
             # cydia substrate requires vm_map_enter and vm_map_protect patches
             # on a side note holy shiiiit binary ninja is so freaking cool
-            ./Kernel64Patcher jb/kcache.patched $1/$3/kcache3.patched
+            ./Kernel64Patcher jb/kcache.patched $1/$3/kcache3.patched -e -p
             ./kerneldiff jb/11A24580o_kcache.raw $1/$3/kcache3.patched $1/$3/kc.bpatch
             ./img4 -i jb/11A24580o_kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
             ./img4 -i jb/11A24580o_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
