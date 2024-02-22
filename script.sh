@@ -504,14 +504,23 @@ if [[ "$response1" = 'yes' || "$response1" = 'y' ]]; then
     if [ ! -e apticket.der ]; then
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1"
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs -o suid,dev /dev/disk0s1s2 /mnt2"
-        ./sshpass -p "alpine" scp -P 2222 root@$localhost:/System/Library/Caches/apticket.der ./apticket.der
-        ./sshpass -p "alpine" scp -P 2222 root@$localhost:/usr/standalone/firmware/sep-firmware.img4 ./sep-firmware.img4
-        ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/usr/local/standalone/firmware/Baseband ./Baseband
-        ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/var/keybags ./keybags
+        ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/Caches/apticket.der ./apticket.der
+        ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/usr/standalone/firmware/sep-firmware.img4 ./sep-firmware.img4
+        ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/usr/local/standalone/firmware/Baseband ./Baseband
+        ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt2/keybags ./keybags
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "umount /mnt1"
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "umount /mnt2"
     fi
     if [ ! -e apticket.der ]; then
+        exit
+    fi
+    if [ ! -e sep-firmware.img4 ]; then
+        exit
+    fi
+    if [ ! -e Baseband ]; then
+        exit
+    fi
+    if [ ! -e keybags ]; then
         exit
     fi
     # this command erases the nand so we can create new partitions
