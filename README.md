@@ -92,7 +92,7 @@ when the screen goes black due to auto lock on lock screen you can just plug in 
 
 i highly recommend turning on assistivetouch and disabling auto lock in settings on your iphone
 
-tweaks do not work, but cydia itself does work
+cydia and tweaks work great using this script
 
 # requirements
 
