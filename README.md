@@ -10,6 +10,8 @@ and supports booting any version of ios 7
 
 but only ios 7.0.2 works with the jailbreak related portion of the script
 
+**for tweaks to work, make sure you NEVER EVER hit restart springboard ANYWHERE. instead, go into the settings app and hit general and erase all content and settings. this does NOT delete any of ur data and will instead restart the springboard. if you don't do it this way, you will be stuck on a spinning circle after hitting restart springboard.**
+
 please refer to the jailbreak section of this readme for more info
 
 future support may be added for newer versions
@@ -152,12 +154,6 @@ device becomes unresponsive once screen is locked or goes to sleep
 
 home button does not work when jailbroken, but works fine unjailbroken on ios 7.0.4-7.1.2
 
-~~safari does not work when jailbroken~~ might be fixed on latest commit
-
-~~mail app does not work when jailbroken~~ might be fixed on latest commit
-
-~~app store does not work when jailbroken, but works fine unjailbroken on ios 7.0.4-7.1.2~~ might be fixed on latest commit
-
 ios 8 gets stuck on slide to upgrade screen** please pr a fix for this, thanks
 
 # working
@@ -166,7 +162,9 @@ wifi, if using a wifi connection that does not have a password
 
 bluetooth** tested working with airpods 2nd gen
 
-~~app store when unjailbroken on ios 7.0.4-7.1.2~~ might work on latest commit regardless
+app store
+
+**for tweaks to work, make sure you NEVER EVER hit restart springboard ANYWHERE. instead, go into the settings app and hit general and erase all content and settings. this does NOT delete any of ur data and will instead restart the springboard. if you don't do it this way, you will be stuck on a spinning circle after hitting restart springboard.**
 
 # not tested
 
@@ -216,7 +214,9 @@ uhh and when it gets to the partitioning step, make terminal full screen, it has
 
 all you gotta do at that step is press the keys on your keyboard it tells you to
 
-cydia will be installed and work as normal, just tweaks do not work yet
+cydia will be installed and work as normal
+
+**for tweaks to work, make sure you NEVER EVER hit restart springboard ANYWHERE. instead, go into the settings app and hit general and erase all content and settings. this does NOT delete any of ur data and will instead restart the springboard. if you don't do it this way, you will be stuck on a spinning circle after hitting restart springboard.**
 
 # technical breakdown 
 
@@ -276,14 +276,14 @@ safari, maps, mail, etc should now be working
 
 # chart of compatibility
 
-| Firmware | App Store | Safari  | Home btn | Vol keys | Pwr btn | CommCenter | Root fs r/w | Jailbreak |
-|----------|-----------|---------|----------|----------|---------|------------|-------------|-----------|
-| 7.0.1    | &#9745;   | &#9745; | &#9744;  | &#9744;  | &#9744; | &#9744;    | &#9744;     | &#9744;
-| 7.0.2    | &#9745;   | &#9745; | &#9744;  | &#9745;  | &#9744; | &#9744;    | &#9745;     | &#9745;
-| 7.0.3    | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9745; | &#9744;    | &#9744;     | &#9744;
-| 7.0.4    | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9745; | &#9744;    | &#9744;     | &#9744;
-| 7.0.6    | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9745; | &#9744;    | &#9744;     | &#9744;
-| 7.1.2    | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9745; | &#9745;    | &#9744;     | &#9744;
+| Firmware | App Store | Safari  | Home btn | Vol keys | Pwr btn | CommCenter | Root fs r/w | Jailbreak | Tweaks |
+|----------|-----------|---------|----------|----------|---------|------------|-------------|-----------|--------|
+| 7.0.1    | &#9745;   | &#9745; | &#9744;  | &#9744;  | &#9744; | &#9744;    | &#9744;     | &#9744;   | &#9744;
+| 7.0.2    | &#9745;   | &#9745; | &#9744;  | &#9745;  | &#9744; | &#9744;    | &#9745;     | &#9745;   | &#9745;
+| 7.0.3    | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9745; | &#9744;    | &#9744;     | &#9744;   | &#9744;
+| 7.0.4    | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9745; | &#9744;    | &#9744;     | &#9744;   | &#9744;
+| 7.0.6    | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9745; | &#9744;    | &#9744;     | &#9744;   | &#9744;
+| 7.1.2    | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9745; | &#9745;    | &#9744;     | &#9744;   | &#9744;
 
 # chart technical breakdown
 
