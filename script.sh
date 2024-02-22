@@ -298,7 +298,7 @@ _download_boot_files() {
             ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
             ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
             ./seprmvr64lite jb/11A24580o_kcache.raw $1/$3/kcache.patched
-            ./Kernel64Patcher jb/kcache.patched $1/$3/kcache3.patched -e -p
+            ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache3.patched -e -p
             ./kerneldiff jb/11A24580o_kcache.raw $1/$3/kcache3.patched $1/$3/kc.bpatch
             ./img4 -i jb/11A24580o_kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
             ./img4 -i jb/11A24580o_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
@@ -424,17 +424,17 @@ fi
 cargo install taco
 cargo run
 if [ ! -e apticket.der ]; then
-    echo "you need to turn on ssh&sftp over wifi on ur phone now"
-    echo "https://github.com/y08wilm/a7-ios7-downgrader?tab=readme-ov-file#preparing-your-device"
-    read -p "what is the local ip of ur ios device on your wifi?" ip
-    echo "$ip"
-    ./sshpass -p "alpine" scp -P 2222 root@$ip:/System/Library/Caches/apticket.der ./apticket.der
-    ./sshpass -p "alpine" scp -P 2222 root@$ip:/usr/standalone/firmware/sep-firmware.img4 ./sep-firmware.img4
-    ./sshpass -p "alpine" scp -r -P 2222 root@$ip:/usr/local/standalone/firmware/Baseband ./Baseband
-    ./sshpass -p "alpine" scp -r -P 2222 root@$ip:/var/keybags ./keybags
-fi
-if [ ! -e apticket.der ]; then
-    exit
+    read -p "files must be downloaded ssh in order to proceed safely, download now? " response839
+    if [[ "$response839" = 'yes' || "$response839" = 'y' ]]; then
+        echo "you need to turn on ssh&sftp over wifi on ur phone now"
+        echo "https://github.com/y08wilm/a7-ios7-downgrader?tab=readme-ov-file#preparing-your-device"
+        read -p "what is the local ip of ur ios device on your wifi?" ip
+        echo "$ip"
+        ./sshpass -p "alpine" scp -P 2222 root@$ip:/System/Library/Caches/apticket.der ./apticket.der
+        ./sshpass -p "alpine" scp -P 2222 root@$ip:/usr/standalone/firmware/sep-firmware.img4 ./sep-firmware.img4
+        ./sshpass -p "alpine" scp -r -P 2222 root@$ip:/usr/local/standalone/firmware/Baseband ./Baseband
+        ./sshpass -p "alpine" scp -r -P 2222 root@$ip:/var/keybags ./keybags
+    fi
 fi
 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
     ./dfuhelper.sh
@@ -501,6 +501,19 @@ read -p "pls press the enter key once device is in the ramdisk " pause1
 sleep 2
 read -p "would you like to wipe this phone and install ios $1? " response1
 if [[ "$response1" = 'yes' || "$response1" = 'y' ]]; then
+    if [ ! -e apticket.der ]; then
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1"
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs -o suid,dev /dev/disk0s1s2 /mnt2"
+        ./sshpass -p "alpine" scp -P 2222 root@$localhost:/System/Library/Caches/apticket.der ./apticket.der
+        ./sshpass -p "alpine" scp -P 2222 root@$localhost:/usr/standalone/firmware/sep-firmware.img4 ./sep-firmware.img4
+        ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/usr/local/standalone/firmware/Baseband ./Baseband
+        ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/var/keybags ./keybags
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "umount /mnt1"
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "umount /mnt2"
+    fi
+    if [ ! -e apticket.der ]; then
+        exit
+    fi
     # this command erases the nand so we can create new partitions
     remote_cmd "lwvm init"
     sleep 2
