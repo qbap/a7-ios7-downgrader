@@ -1,100 +1,95 @@
-# a7-ios7-downgrader
+<div align="center">
+<img src="https://apt.netsirkl64.com/CydiaIcon.png" height="128" width="128" style="border-radius:25%">
+   <h1> a7-ios7-downgrader 
+      <br/> <h2>seprmvr64, tether downgrade&jailbreak utility for a7</h2>
+   </h1>
+</div>
 
-i made this little script that lets you downgrade a7 devices to older ios
+<h6 align="center"> Should Support iOS/iPadOS 7.0.1 - 7.1.2  </h6>
 
-as of the time of this writing this script supports
+# Chart of compatibility
 
-iPhone 5s
+| Firmware | App Store | Safari  | Home btn | Vol keys | Pwr btn | CommCenter | Root fs r/w | Jailbreak | Tweaks |
+|----------|-----------|---------|----------|----------|---------|------------|-------------|-----------|--------|
+| 7.0.1    | &#9745;   | &#9745; | &#9744;  | &#9744;  | &#9744; | &#9744;    | &#9744;     | &#9744;   | &#9744;
+| 7.0.2    | &#9745;   | &#9745; | &#9744;  | &#9745;  | &#9744; | &#9744;    | &#9745;     | &#9745;   | &#9745;
+| 7.0.3    | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9745; | &#9744;    | &#9744;     | &#9744;   | &#9744;
+| 7.0.4    | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9745; | &#9744;    | &#9744;     | &#9744;   | &#9744;
+| 7.0.6    | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9745; | &#9744;    | &#9744;     | &#9744;   | &#9744;
+| 7.1.2    | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9745; | &#9745;    | &#9744;     | &#9744;   | &#9744;
 
-and supports booting any version of ios 7
+## How do I use this?
 
-but only ios 7.0.2 works with the jailbreak related portion of the script
+to use this app, you need to be on a supported version, and have an a7 device
 
-**for tweaks to work, make sure you NEVER EVER hit restart springboard ANYWHERE. instead, go into the settings app and hit general and erase all content and settings. this does NOT delete any of ur data and will instead restart the springboard. if you don't do it this way, you will be stuck on a spinning circle after hitting restart springboard.**
+`xcode-select install`
 
-please refer to the jailbreak section of this readme for more info
+`git clone --recursive https://github.com/y08wilm/a7-ios7-downgrader && cd a7-ios7-downgrader`
 
-future support may be added for newer versions
+`chmod +x script.sh`
 
-8.4.1** gets stuck on slide to upgrade screen
+connect iphone in dfu mode
 
-9.3.2** gets stuck on progress bar on first boot
+if you have an iphone 5s, which is compatible with jb
 
-# contact
+`sudo ./script.sh 7.0.2`
+
+otherwise
+
+`sudo ./script.sh 7.1.2`
+
+which is unjailbroken
+
+and follow the steps, as it will restore that ios onto your phone
+
+whenever the script asks for a password it is either your mac password or `alpine`
+
+when the script says "waiting for device in dfu mode" it means u gotta put it back into dfu
+
+when it gets to the partitioning step, make terminal full screen, it has easy to read instructions on top
+
+all you gotta do at that step is press the keys on your keyboard it tells you to
+
+if you have an iphone 5s and used ios 7.0.2, cydia will be installed and work as normal
+
+## How was this done? 
+ - It removes `/System/Library/LaunchDaemons/com.apple.CommCenter.plist`
+ - [INTERNAL_INSTALL_LEGAL](https://www.theiphonewiki.com/wiki/INTERNAL_INSTALL_LEGAL)
+ - https://vk.com/wall-43001537_167085
+ - [11A24580o](https://iarchive.app/Download/11A24580o.zip)
+ - [/.cydia_no_stash](https://github.com/sbingner/cydia/blob/master/MobileCydia.mm#L8981)
+ - [cydia.tar.lzma](https://drive.google.com/open?id=17aHoLEXsHKwf39JCxC5R9MIhO4iARtqI)
+ - [Kernel64Patcher](https://github.com/y08wilm/Kernel64Patcher)
+ - [seprmvr64](https://github.com/mineek/seprmvr64)
+
+## TODO
+ - Try getting launch daemons to start automatically on boot, such as ssh
+ - Add a boot splash screen
+ - Test iPad mini 2 compatibility with [11A24580o](https://iarchive.app/Download/11A24580o.zip) kernel for jailbreak
+
+## Quirks
+
+passcode& touch id does not work, if the device ever asks you for a passcode it will accept anything as the passcode
+
+for tweaks to work, make sure do not hit restart springboard when cydia asks you to. instead, use assistivetouch to go to the home screen& go into the settings app and hit general and erase all content and settings. this does not delete any of ur data and will instead restart the springboard. if you don't do it this way, you will be stuck on a spinning circle after hitting restart springboard on cydia. do not do this more then once in the same boot otherwise springboard may crash
+
+app store does not work after you hit "erase all content and settings" due to a crash in `com.apple.StreamingUnzipService` caused by cydia substrate. to fix this, put the phone back into dfu and run the script again. install apps as needed from the app store while cydia substrate isnt loaded and then "erase all content and settings" again to load cydia substrate again
+
+wifi does not work unless you connect to an open wifi network, in other words the wifi network must not have a password
+
+home button does not work unless you are using ios 7.0.3 or higher, which is incompatible with this jailbreak i made. so if you want jailbreak, looks like you are shit outa luck for home button to work until someone designs a Kernel64Patcher for ios 7.0.3 or higher on arm64 kernels. the needed patches are `vm_map_enter`, `vm_map_protect`, and `mount_common` in order to jailbreak ios 7.0.3 or higher. the current kernel patcher we are using in this script only works on dev kernels, not release kernels, and is missing `mount_common` patch
+
+this script deletes everything on your phone, including the main os. pls backup all your data before using this script, as it will be unrecoverable after. use this script at your own risk, i am not responsible for any damages caused by you using this script
+
+## Contact
 
 if you need to reach me for any reason, you can msg me on telegram at [wilm271](https://t.me/wilm271)
 
 use this option if you need to contact me for issues with this script
 
-do NOT abuse this option of being able to contact me, or i will take it away
+do not abuse this option of being able to contact me, or i will take it away
 
-# data loss
-
-this script deletes everything on your phone, including the main os
-
-pls backup your data before using this script
-
-dual boot support might be added in the future but is not supported rn
-
-use at your own risk
-
-# jailbreak status
-
-jb bootstrap tar extracts successfully onto idevice and does not kernel panic upon boot
-
-cydia is successfully installed and device functions normally
-
-~~cydia closes upon launch but interestingly enough the actual layout of the Cydia app does load for a split second before it closes, and if you type cydia:// into safari it opens the Cydia app also~~
-
-cydia launch daemon runs but only if I modify the launch daemon plist to make it run as root and then chown the file to make it owned by root instead of mobile 
-
-~~launch daemon script is able to modify the entirety of /var but rootfs is still write protected as of the time of writing~~
-
-~~i now know that we have to patch a check in the kernel for mount_common to be able remount / as rw~~
-
-~~the existing open source patches on the internet for this are for armv7 only and not for arm64~~
-
-~~i have aquired armv7 patches for both tfp0 and rootfs rw, but they need to be ported over to arm64~~
-
-~~once someone updates the kernel patcher to work on arm64 kernelcache, we should have tfp0 and rootfs rw~~
-
-~~see [kernel_patcher/notes.txt](https://github.com/y08wilm/a7-ios7-downgrader/blob/main/kernel_patcher/notes.txt) for more info~~
-
-~~if someone can get this done, we should be able to get jailbreak and cydia working~~
-
-we now have full rootfs rw with the help of an appleinternal development kernel
-
-release kernels can not remount / as rw but development kernels can
-
-so with the help of this development kernel we can modify fstab to make / mount as rw on boot
-
-i tested writing to rootfs from a launch daemon script and it works
-
-we also got patched versions of these dylibs to work
-
-libmis.dylib "code sign bypass"
-
-libsandbox.dylib "userspace sandbox bypass"
-
-xpcd_cache.dylib "launch daemons (?)"
-
-see https://www.theiphonewiki.com/wiki/Talk:Pangu8 for more info on these dylibs
-
-~~now all that is left is figuring out how to bootstrap cydia properly (?)~~
-
-~~cydia app opens but closes immediately, possibly caused by `setuid(0)` not working (?)~~
-
-~~setuid requires chown and chmod to be done properly, so it is possible that might be the issue~~
-
-cydia now works perfectly on ios ~~7.0~~ 7.0.2 ~~but you may need to unplug and replug the power cable on the iphone a couple dozen times~~
-
-when the screen goes black due to auto lock on lock screen you can just plug in a power cable and it will make the screen turn back on
-
-i highly recommend turning on assistivetouch and disabling auto lock in settings on your iphone
-
-cydia and tweaks work great using this script
-
-# requirements
+## Requirements
 
 mac os high sierra 10.13** newer versions might work but are not tested
 
@@ -106,77 +101,17 @@ at least 20gb free space on hdd
 
 usb type A port** usb-c is NOT supported
 
-already jailbroken device** cause the script has to backup `apticket.der`, `sep-firmware.img4`, `Baseband`, and `keybags` from your device before you can downgrade to older ios
+working iphone** cause the script has to backup `apticket.der`, `sep-firmware.img4`, `Baseband`, and `keybags` from your device before you can downgrade to older ios
 
-# preparing your device
+## Setup.app bypass
 
-note that downgrading to ios 10.3.3 may not be required, it is just what i happened to do
+this script deletes Setup.app during the process of tether downgrading your device
 
-you may not have to downgrade to ios 10.3.3, i just havent tested on latest ios 12 sep only ios 10.3.3 sep
+it also installs a modified data_ark.plist to the device to enable the app store to work as well
 
-use [Legacy-iOS-Kit](https://github.com/LukeZGD/Legacy-iOS-Kit) or [LeetDown](https://github.com/rA9stuff/LeetDown/releases) to downgrade your device to ios 10.3.3
+when u try to sign in it may say incorrect password and send 2fa code to your other devices
 
-side note if you are trying to use [LeetDown](https://github.com/rA9stuff/LeetDown/) to downgrade an icloud locked device, you have to use [LeetDown v1.0.3](https://github.com/rA9stuff/LeetDown/releases/tag/1.0.3)
-
-if you are trying to use [Silver](https://www.appletech752.com/downloads.html) to icloud bypass your device, make sure you put it into dfu mode immediately after the first progress bar on the iphone finishes when using [LeetDown v1.0.3](https://github.com/rA9stuff/LeetDown/releases/tag/1.0.3) and only then run the untethered bypass with [Silver](https://www.appletech752.com/downloads.html). if you reach the second progress bar on the device when restoring to ios 10.3.3 then you have to start all over again
-
-it is also worth noting that [LeetDown v1.0.3](https://github.com/rA9stuff/LeetDown/releases/tag/1.0.3) is the only one that works reliably under mac os high sierra 10.13
-
-use [totally.not.spyware.lol](https://totally.not.spyware.lol/) to jailbreak your ios 10.3.3 device
-
-this website may require several, if not several dozen attempts to jailbreak your device successfully
-
-then install dropbear on cydia from `apt.netsirkl64.com` repo
-
-and then go and install `openssh` and `mterminal` as well
-
-dropbear enables ssh on ios 10 and openssh enables sftp on ios 10
-
-open mterminal and type `su -`
-
-it will ask for password, the password is `alpine`
-
-then you should type `dropbear -R -p 2222`
-
-this will then enable dropbear ssh to work over wifi
-
-go into settings and write down the local wifi ip of your device https://www.howtogeek.com/796854/iphone-ip-address/
-
-# issues
-
-[seprmvr64?tab=readme-ov-file#caveats](https://github.com/mineek/seprmvr64?tab=readme-ov-file#caveats)
-
-you can connect only to an OPEN wifi connection
-
-passcode and touch id does not work
-
-device becomes unresponsive once screen is locked or goes to sleep
-
-home button does not work when jailbroken, but works fine unjailbroken on ios 7.0.4-7.1.2
-
-ios 8 gets stuck on slide to upgrade screen** please pr a fix for this, thanks
-
-# working
-
-wifi, if using a wifi connection that does not have a password
-
-bluetooth** tested working with airpods 2nd gen
-
-app store
-
-**for tweaks to work, make sure you NEVER EVER hit restart springboard ANYWHERE. instead, go into the settings app and hit general and erase all content and settings. this does NOT delete any of ur data and will instead restart the springboard. if you don't do it this way, you will be stuck on a spinning circle after hitting restart springboard.**
-
-# not tested
-
-hactivation** https://trainghiemso.vn/cach-ha-iphone-5-ipad-4-tu-10-3-3-xuong-8-4-1-khong-can-shsh-blobs/
-
-playing music with the screen locked
-
-# setup.app bypass
-
-it installs a modified data_ark.plist to the device to enable the app store to work as well
-
-when u try to sign in it will say incorrect password and send 2fa code to your other devices
+if it doesnt say incorrect password but it sent a 2fa code to your other devices, sign out
 
 retype ur password on the iphone but this time put the 2fa code at the end
 
@@ -188,43 +123,77 @@ and it will log in with no issues
 
 when downloading apps you have to go to purchased apps tab and download the last compatible version
 
-tested working on my iphone 5s on ios 7.1.2
+tested working on my iphone 5s on ios 7.0.2 while jailbroken with cydia installed
 
-# how to use
+## Technical breakdown
 
-`xcode-select install`
+this script uses seprmvr64& tether downgrades your device
 
-`git clone --recursive https://github.com/y08wilm/a7-ios7-downgrader && cd a7-ios7-downgrader`
+seprmvr64 is a tool developed by mineek that patches the kernel to allow ios to work with an incompatible sep
 
-`chmod +x script.sh`
+this script also jailbreaks your device using my own method of jailbreaking ios 7
 
-`chmod +x clean.sh`
+it is an entirely new, undocumented jailbreak that i designed myself and here i will give a bit of a breakdown
 
-connect iphone in dfu mode
+armv7 kernel patchers exist for ios 7, see https://github.com/y08wilm/a7-ios7-downgrader/tree/811e90d38565422e00b0e5b6aeb4128cae1cfb79/kernel_patcher
 
-`./script.sh 7.0.2`
+howerver those kernel patches do not work on arm64 devices such as the iphone 5s
 
-and follow the steps, as it will install ios 7.0.2 onto your phone
+that kernel patcher that i just linked has very important patches necessary for jailbreaking ios 7
 
-whenever the script asks for a password it is either your mac password or `alpine`
+namely `vm_map_enter` patch which is required for cydia substrate to be able to inject into running processes
 
-when the script says "waiting for device in dfu mode" it means u gotta put it back into dfu
+as it turns out you need to also patch `vm_map_protect` for cydia substrate to work
 
-uhh and when it gets to the partitioning step, make terminal full screen, it has easy to read instructions on top
+and also `mount_common` patch which is required for being able to mount rootfs as rw
 
-all you gotta do at that step is press the keys on your keyboard it tells you to
+so without an open source arm64 kernel patcher in existence, i decided to try to find an alternative solution
 
-cydia will be installed and work as normal
+upon a lot of digging, i learned that dev kernels allow you to mount rootfs as rw without a `mount_common` patch
 
-**for tweaks to work, make sure you NEVER EVER hit restart springboard ANYWHERE. instead, go into the settings app and hit general and erase all content and settings. this does NOT delete any of ur data and will instead restart the springboard. if you don't do it this way, you will be stuck on a spinning circle after hitting restart springboard.**
+so i decrypted an appleinternal kernel, namely `11A24580o`, and used that to boot ios
 
-# technical breakdown 
+i quickly learned that, in doing so, ios 7.0.3+ is unbootable as it results in an infinite spinning circle on boot
+
+but ios 7.0.1 and 7.0.2 boots just fine when using that kernel
+
+and? rootfs rw worked first try
+
+also, ios is unbearably slow on any version older then ios 7.1.2 due to CommCenter acting a fool
+
+as it turns out, the only way to fix this is to outright disable CommCenter by removing it from ssh
+
+CommCenter is not needed since it is only for calling and bcz we are using Setup.app bypass we will not have working calling
+
+had a bit of a struggle trying to figure out how to install cydia onto the device with proper permissions so that it would open
+
+but once i got cydia installed successfully using the script, i opened cydia and it worked
+
+but uh, after "preparing filesystem" on cydia, guess what? a ton of system apps stopped working
+
+safari, maps, mail, etc. poof, not working, every time you try to open it the app just crashes immediately
+
+at the time app store also did not work while jailbroken, cause i was trying to use `libmis.dylib` and `libsandbox.dylib`
+
+`libmis.dylib` is in charge of amfi bypass
+
+`libsandbox.dylib` is in charge of sandbox bypass
+
+those dylibs, as it turns out, breaks `profiled` which in turn breaks app store
+
+but luckily both of those dylibs are not needed bcz `PE_i_can_has_debugger=1` bypasses sandbox and `amfi=0xff cs_enforcement_disable=1` bypasses amfi
+
+after removing those dylibs, app store started working by safari, maps, mail, etc. were still broken
+
+as it turns out, "preparing filesystem" was the culprit, after a lot of investigating
+
+so i tried to stop cydia from "preparing filesystem" by adding `/.cydia_no_stash` but it didnt work
 
 newer cydia does check `/.cydia_no_stash`
 
 https://github.com/sbingner/cydia/blob/master/MobileCydia.mm#L8981
 
-if that file is present it SKIPS stashing
+if that file is present it skips "preparing filesystem" aka stashing
 
 ios 7 cydia does NOT check `/.cydia_no_stash`
 
@@ -232,11 +201,11 @@ https://github.com/sbingner/cydia/blob/2b6abb5670bfa1bb1cb3273e3e7531bcab0e418c/
 
 stashing is the process of moving critical system files from the system partition to the user partition to free up disk space on the system partition
 
-this process of moving critical system files breaks safari, maps, mail, among other things such as app store on ios 7
+this process of moving critical system files breaks safari, maps, mail, among other things on ios 7
 
-the only way to fix this, as it turns out, is to follow this chain of command
+the only way to fix this, as it turns out, is to do this
 
-## first boot
+first boot
 
 use RELEASE kernel, no rootfs r/w, no libmis.dylib, and no libsandbox.dylib
 
@@ -246,9 +215,9 @@ the only difference from stock being that we are disabling CommCenter and hackti
 
 once booted, enable assistive touch and disable screen lock timer then put the phone back into dfu
 
-## second boot
+second boot
 
-boot into ssh and copy over libmis.dylib, libsandbox.dylib, and updated fstab to remount / as rw
+boot into ssh and copy updated fstab to remount / as rw
 
 then boot into ios but with DEVELOPMENT kernel instead of RELEASE kernel
 
@@ -264,7 +233,9 @@ this should then, in theory, let us use cydia without having to stash critical s
 
 put the phone back into dfu
 
-## third boot
+third boot
+
+boot into ssh ramdisk
 
 unstash /Applications, /Library/Ringtones, and /usr/share and ensure `/.cydia_no_stash` is present and readable
 
@@ -274,32 +245,43 @@ reboot back into ios
 
 safari, maps, mail, etc should now be working
 
-# chart of compatibility
+now came the very tricky part of trying to get tweaks to work
 
-| Firmware | App Store | Safari  | Home btn | Vol keys | Pwr btn | CommCenter | Root fs r/w | Jailbreak | Tweaks |
-|----------|-----------|---------|----------|----------|---------|------------|-------------|-----------|--------|
-| 7.0.1    | &#9745;   | &#9745; | &#9744;  | &#9744;  | &#9744; | &#9744;    | &#9744;     | &#9744;   | &#9744;
-| 7.0.2    | &#9745;   | &#9745; | &#9744;  | &#9745;  | &#9744; | &#9744;    | &#9745;     | &#9745;   | &#9745;
-| 7.0.3    | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9745; | &#9744;    | &#9744;     | &#9744;   | &#9744;
-| 7.0.4    | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9745; | &#9744;    | &#9744;     | &#9744;   | &#9744;
-| 7.0.6    | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9745; | &#9744;    | &#9744;     | &#9744;   | &#9744;
-| 7.1.2    | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9745; | &#9745;    | &#9744;     | &#9744;   | &#9744;
+as i said before, `vm_map_enter` and `vm_map_protect` is required for cydia substrate to inject tweaks into processes
 
-# chart technical breakdown
+see https://iphonedev.wiki/Cydia_Substrate#MobileHooker for more info on how cydia substrate hooks into processes
 
-7.0.6 boots fine unjailbroken, home button, safari, siri, app store all working. ios boots into an infinite spin lock when using dev kernel. this means no jailbreak on ios 7.0.6 is possible. xpcd_cache.dylib is untested on this version
+the only way to get tweaks to work on ios 7 is to patch `vm_map_enter` and `vm_map_protect` in the kernel
 
-7.0.3 & 7.0.4 boots fine unjailbroken, home button, safari, siri, app store all working. ~~when booting dev kernel it results in flickering screen~~ if you delete `xpcd_cache.dylib` it boots into an infinite spin lock when using the dev kernel. this means no jailbreak on this version is possible.
+so, i used student discount on https://binary.ninja/purchase/, and manually patched the `11A24580o` kernel
 
-7.0.2 boots fine unjailbroken, safari is working. home button, pwr button and volume keys do NOT work. ~~when booting dev kernel it results in flickering screen~~ if you delete `xpcd_cache.dylib` it boots fine with the dev kernel with no flickering screen. this means working safari while jailbroken but again home button, pwr button and volume keys are not working.** vol keys are now working with the help of appleinternal shit
+once i figured out how to patch the kernel in binary ninja, i had to figure out how to make my own `Kernel64Patcher`
 
-7.0.1 & 7.0 boots fine unjailbroken, safari is working. home button, pwr button and volume keys do NOT work. when booting dev kernel it boots fine and cydia functions as normal, but tweak injection does not work. if `xpcd_cache.dylib` is installed, the wallpaper is black, but there is no flickering screen.
+spent an entire day learning how `Kernel64Patcher` works and made my own patches in a fork of it
 
-7.1.2 has working CommCenter, no need to disable it
+compiled the patcher and we are now using it in this project
 
-see https://github.com/y08wilm/a7-ios7-downgrader?tab=readme-ov-file#technical-breakdown as to why safari and other apps stop working after "preparing filesystem" on cydia. tldr you need to update cydia to a version that supports `/.cydia_no_stash` and then run the script again and when it asks you if you want to skip the ramdisk type "no", then press any key once booted into ramdisk and wait about a minute for it to unstash critical system files and type "alpine" hit enter and then type "exit" and hit enter. the script will then guide you thru the steps to boot back into ios. safari and other apps should then work.
+works perfectly, now we have arm64 kernel patches for `vm_map_enter` and `vm_map_protect`
 
-# credits
+however, the kernel patches i made only work on dev kernels and not release kernels
+
+regardless, we now have the necessary kernel patches in order for cydia substrate to work on arm64
+
+`vm_map_enter`
+ffffff8000283d64 -> nop
+
+`vm_map_protect`
+ffffff80002864a0 -> nop
+
+but if you try to install a tweak on cydia, and hit restart springboard in cydia, it gets infinite spinning circle
+
+idk why it does, but it does. and as it turns out the only way to fix this is to use assistivetouch to go to the home screen& go into the settings app and hit general and erase all content and settings. this does not delete any of ur data and will instead restart the springboard
+
+tweaks will then start working
+
+but dont use "erase all content and settings" more then once in the same boot otherwise springboard may crash
+
+## Credits
 
 - [Nathan](https://github.com/verygenericname) for the ssh ramdisk and [iBoot64Patcher fork](https://github.com/verygenericname/iBoot64Patcher)
 - [Mineek](https://github.com/mineek) for [seprmvr64](https://github.com/mineek/seprmvr64) and other patches** i want to give a very special thanks to [Mineek](https://github.com/mineek), if it werent for them this entire project would have not been possible. you are amazing and i appreciate all that you do, thank you so much
