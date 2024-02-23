@@ -108,112 +108,6 @@ _download_ramdisk_boot_files() {
         ./img4 -i ramdisk/devicetree.dec -o ramdisk/devicetree.img4 -A -M IM4M -T rdtr
     fi
 }
-_download_boot_files_jb() {
-    # $deviceid arg 1
-    # $replace arg 2
-    # $version arg 3
-    
-    mkdir -p $1/$3
-
-    if [ "$1" = "iPhone6,1" ]; then
-        ipswurl="https://secure-appldnld.apple.com/iOS7/091-9500.20130918.bgy5t/iphone6,1_7.0_11a466_restore.ipsw"
-        if [ ! -e $1/$3/kernelcache.dec ]; then
-            ./pzb -g Firmware/dfu/iBSS.n51ap.RELEASE.im4p "$ipswurl"
-            ./pzb -g Firmware/dfu/iBEC.n51ap.RELEASE.im4p "$ipswurl"
-            ./pzb -g kernelcache.release.n51 "$ipswurl"
-            ./pzb -g Firmware/all_flash/all_flash.n51ap.production/DeviceTree.n51ap.im4p "$ipswurl"
-            mv iBSS.n51ap.RELEASE.im4p $1/$3/iBSS.n51ap.RELEASE.im4p
-            mv iBEC.n51ap.RELEASE.im4p $1/$3/iBEC.n51ap.RELEASE.im4p
-            mv kernelcache.release.n51 $1/$3/kernelcache.release.n51
-            mv DeviceTree.n51ap.im4p $1/$3/DeviceTree.n51ap.im4p
-            ./img4 -i $1/$3/iBSS.n51ap.RELEASE.im4p -o $1/$3/iBSS.dec -k 7e90fe7330257620f0213dff247d9f28e6bbba5ec2868c369e47cd47e75f1d352f20228c0bee22a756b9a934cec1b584
-            ./img4 -i $1/$3/iBEC.n51ap.RELEASE.im4p -o $1/$3/iBEC.dec -k 230c1b4044e61af6f4039dd506e0a4fcff2ebe36b5cad824a68560cc8e351d37d17fc5356564dc493f80d339ce982964
-            ./ipatcher $1/$3/iBSS.dec $1/$3/iBSS.patched
-            ./ipatcher $1/$3/iBEC.dec $1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1 PE_i_can_has_debugger=1"
-            ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
-            ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
-            ./img4 -i $1/$3/kernelcache.release.n51 -o $1/$3/kernelcache.dec -k 1f002ce72b2bd39660ed5c5efb9bcd22d32e8ec93e2f53ebf5a6a3089b4a7575e41c5846803c5f374a734d5711e537b5 -D
-            ./img4 -i $1/$3/kernelcache.release.n51 -o $1/$3/kcache.raw -k 1f002ce72b2bd39660ed5c5efb9bcd22d32e8ec93e2f53ebf5a6a3089b4a7575e41c5846803c5f374a734d5711e537b5
-            ./seprmvr64lite jb/11A24581c_kcache.raw $1/$3/kcache.patched
-            ./kerneldiff jb/11A24581c_kcache.raw $1/$3/kcache.patched $1/$3/kc.bpatch
-            ./img4 -i jb/11A24581c_kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
-            ./img4 -i jb/11A24581c_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
-            ./img4 -i $1/$3/DeviceTree.n51ap.im4p -o $1/$3/dtree.raw -k a0c6cda2b9735cd54d394b7f3d6f51c6f23becd34081751134cc8d1bbcf7eb1bcfa5993c612007aecb0b27de05ae6ee8
-            ./img4 -i $1/$3/dtree.raw -o $1/$3/devicetree.img4 -A -M IM4M -T rdtr
-        fi
-    elif [ "$1" = "iPhone6,2" ]; then
-        ipswurl="https://secure-appldnld.apple.com/iOS7/091-9498.20130918.lllkt/iphone6,2_7.0_11a466_restore.ipsw"
-        if [ ! -e $1/$3/kernelcache.dec ]; then
-            ./pzb -g Firmware/dfu/iBSS.n53ap.RELEASE.im4p "$ipswurl"
-            ./pzb -g Firmware/dfu/iBEC.n53ap.RELEASE.im4p "$ipswurl"
-            ./pzb -g kernelcache.release.n53 "$ipswurl"
-            ./pzb -g Firmware/all_flash/all_flash.n53ap.production/DeviceTree.n53ap.im4p "$ipswurl"
-            mv iBSS.n53ap.RELEASE.im4p $1/$3/iBSS.n53ap.RELEASE.im4p
-            mv iBEC.n53ap.RELEASE.im4p $1/$3/iBEC.n53ap.RELEASE.im4p
-            mv kernelcache.release.n53 $1/$3/kernelcache.release.n53
-            mv DeviceTree.n53ap.im4p $1/$3/DeviceTree.n53ap.im4p
-            ./img4 -i $1/$3/iBSS.n53ap.RELEASE.im4p -o $1/$3/iBSS.dec -k b44f3bcd69620c181a8783ca5bfc60b0fefac2548bf1855b97a8b9569e31c87e175c5ee4d21c073a19d23ce3df6cee90
-            ./img4 -i $1/$3/iBEC.n53ap.RELEASE.im4p -o $1/$3/iBEC.dec -k e08ff10d31b4c68673aabf5a2c22ce3cd41927285caaac1659ccf11cbd4c081948aeaf014497e6f8cdf77a371782879c
-            ./ipatcher $1/$3/iBSS.dec $1/$3/iBSS.patched
-            ./ipatcher $1/$3/iBEC.dec $1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1 PE_i_can_has_debugger=1"
-            ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
-            ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
-            ./img4 -i $1/$3/kernelcache.release.n53 -o $1/$3/kernelcache.dec -k 2af87a1af1b954ea84b24384e35d96d87434e7f374f5366a6f25814a0ea04a0865e9b1348f1885816adfdab84cfe6b4b -D
-            ./img4 -i $1/$3/kernelcache.release.n53 -o $1/$3/kcache.raw -k 2af87a1af1b954ea84b24384e35d96d87434e7f374f5366a6f25814a0ea04a0865e9b1348f1885816adfdab84cfe6b4b
-            ./seprmvr64lite jb/11A24581c_kcache.raw $1/$3/kcache.patched
-            ./kerneldiff jb/11A24581c_kcache.raw $1/$3/kcache.patched $1/$3/kc.bpatch
-            ./img4 -i jb/11A24581c_kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
-            ./img4 -i jb/11A24581c_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
-            ./img4 -i $1/$3/DeviceTree.n53ap.im4p -o $1/$3/dtree.raw -k e556e32fe658e374e5fda8e0d0cd7d10fed7a316853e51005b9bcad9442a1a1432d2ddf04ec163279601b6aad982edca
-            ./img4 -i $1/$3/dtree.raw -o $1/$3/devicetree.img4 -A -M IM4M -T rdtr
-        fi
-    fi
-}
-_download_root_fs_jb() {
-    # $deviceid arg 1
-    # $replace arg 2
-    # $version arg 3
-    
-    mkdir -p $1/$3
-
-    if [ "$1" = "iPhone6,1" ]; then
-        ipswurl="https://secure-appldnld.apple.com/iOS7/091-9500.20130918.bgy5t/iphone6,1_7.0_11a466_restore.ipsw"
-        if [ ! -e $1/$3/OS.tar ]; then
-            ./pzb -g 038-4572-394.dmg "$ipswurl"
-            mv 038-4572-394.dmg $1/$3/038-4572-394.dmg
-            ./dmg extract $1/$3/038-4572-394.dmg $1/$3/OS.dmg -k 170dd7944f0583cb1356022c55de3c950bf97743eeee600cbe6c9586ad9b93dfeb27951f
-            ./dmg build $1/$3/OS.dmg $1/$3/rw.dmg
-            hdiutil attach -mountpoint /tmp/ios $1/$3/rw.dmg
-            sudo diskutil enableOwnership /tmp/ios
-            sudo mkdir /tmp/ios2
-            sudo rm -rf /tmp/ios2
-            sudo cp -a /tmp/ios/. /tmp/ios2/
-            sudo tar --lzma -xvf ./jb/cydia.tar.lzma -C /tmp/ios2
-            sudo ./gnutar -cvf $1/$3/OS.tar -C /tmp/ios2 .
-            hdiutil detach /tmp/ios
-            rm -rf /tmp/ios
-            sudo rm -rf /tmp/ios2
-        fi
-    elif [ "$1" = "iPhone6,2" ]; then
-        ipswurl="https://secure-appldnld.apple.com/iOS7/091-9498.20130918.lllkt/iphone6,2_7.0_11a466_restore.ipsw"
-        if [ ! -e $1/$3/OS.tar ]; then
-            ./pzb -g 038-6622-334.dmg "$ipswurl"
-            mv 038-6622-334.dmg $1/$3/038-6622-334.dmg
-            ./dmg extract $1/$3/038-6622-334.dmg $1/$3/OS.dmg -k 9012b18043cab2fc9df516b71ac2f9f9403bfdb732fc99f01e73cbe0095635b5df92c9fb
-            ./dmg build $1/$3/OS.dmg $1/$3/rw.dmg
-            hdiutil attach -mountpoint /tmp/ios $1/$3/rw.dmg
-            sudo diskutil enableOwnership /tmp/ios
-            sudo mkdir /tmp/ios2
-            sudo rm -rf /tmp/ios2
-            sudo cp -a /tmp/ios/. /tmp/ios2/
-            sudo tar --lzma -xvf ./jb/cydia.tar.lzma -C /tmp/ios2
-            sudo ./gnutar -cvf $1/$3/OS.tar -C /tmp/ios2 .
-            hdiutil detach /tmp/ios
-            rm -rf /tmp/ios
-            sudo rm -rf /tmp/ios2
-        fi
-    fi
-}
 _download_boot_files() {
     # $deviceid arg 1
     # $replace arg 2
@@ -291,7 +185,13 @@ _download_boot_files() {
             elif [ "$1" = "iPhone6,2" ]; then
                 echo "ok"
             else
-                echo "this version is not supported"
+                read -p "this device may not support this version, continue?" r
+                if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
+                    echo "ok"
+                else
+                    echo "this device is not supported"
+                    exit
+                fi
             fi
             ./ipatcher $1/$3/iBSS.dec $1/$3/iBSS.patched
             ./ipatcher $1/$3/iBEC.dec $1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1 PE_i_can_has_debugger=1"
@@ -423,19 +323,6 @@ if [ "$cmd_not_found" = "1" ]; then
 fi
 cargo install taco
 cargo run
-if [ ! -e apticket.der ]; then
-    read -p "files must be downloaded ssh in order to proceed safely, download now? " response839
-    if [[ "$response839" = 'yes' || "$response839" = 'y' ]]; then
-        echo "you need to turn on ssh&sftp over wifi on ur phone now"
-        echo "https://github.com/y08wilm/a7-ios7-downgrader?tab=readme-ov-file#preparing-your-device"
-        read -p "what is the local ip of ur ios device on your wifi?" ip
-        echo "$ip"
-        ./sshpass -p "alpine" scp -P 2222 root@$ip:/System/Library/Caches/apticket.der ./apticket.der
-        ./sshpass -p "alpine" scp -P 2222 root@$ip:/usr/standalone/firmware/sep-firmware.img4 ./sep-firmware.img4
-        ./sshpass -p "alpine" scp -r -P 2222 root@$ip:/usr/local/standalone/firmware/Baseband ./Baseband
-        ./sshpass -p "alpine" scp -r -P 2222 root@$ip:/var/keybags ./keybags
-    fi
-fi
 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
     ./dfuhelper.sh
 fi
@@ -445,8 +332,8 @@ replace=$(./irecovery -q | grep MODEL | sed 's/MODEL: //')
 deviceid=$(./irecovery -q | grep PRODUCT | sed 's/PRODUCT: //')
 echo $deviceid
 if [ -e $deviceid/$1/iBSS.img4 ]; then
-    read -p "would you like to skip the ramdisk and boot ios $1? " response76
-    if [[ "$response76" = 'yes' || "$response76" = 'y' ]]; then
+    read -p "would you like to skip the ramdisk and boot ios $1? " r
+    if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         # if we already have installed ios using this script we can just boot the existing kernelcache
         _wait_for_dfu
         cd $deviceid/$1
@@ -457,8 +344,8 @@ if [ -e $deviceid/$1/iBSS.img4 ]; then
         ../../irecovery -f devicetree.img4
         ../../irecovery -c devicetree
         if [ "$1" = "7.0.2" ]; then
-            read -p "would you like enable root fs r/w on ios $1? " response79
-            if [[ "$response79" = 'yes' || "$response79" = 'y' ]]; then
+            read -p "would you like enable root fs r/w on ios $1? " r
+            if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
                 ../../irecovery -f kernelcache.img4
             else
                 ../../irecovery -f kernelcache2.img4
@@ -473,13 +360,8 @@ fi
 # in this case we are going to use the ones from SSHRD_Script https://github.com/verygenericname/SSHRD_Script
 ./img4tool -e -s other/shsh/"${check}".shsh -m IM4M
 _download_ramdisk_boot_files $deviceid $replace 8.4.1
-if [ "$1" = "7.0" ]; then
-    _download_boot_files_jb $deviceid $replace $1
-    _download_root_fs_jb $deviceid $replace $1
-else
-    _download_boot_files $deviceid $replace $1
-    _download_root_fs $deviceid $replace $1
-fi
+_download_boot_files $deviceid $replace $1
+_download_root_fs $deviceid $replace $1
 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
     ./dfuhelper.sh
 fi
@@ -496,11 +378,11 @@ cd ramdisk
 ../irecovery -f kernelcache.img4
 ../irecovery -c bootx &
 cd ..
-read -p "pls press the enter key once device is in the ramdisk " pause1
+read -p "pls press the enter key once device is in the ramdisk " r
 ./iproxy 2222 22 &
 sleep 2
-read -p "would you like to wipe this phone and install ios $1? " response1
-if [[ "$response1" = 'yes' || "$response1" = 'y' ]]; then
+read -p "would you like to wipe this phone and install ios $1? " r
+if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     if [ ! -e apticket.der ]; then
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1"
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs -o suid,dev /dev/disk0s1s2 /mnt2"
@@ -508,19 +390,21 @@ if [[ "$response1" = 'yes' || "$response1" = 'y' ]]; then
         ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/usr/standalone/firmware/sep-firmware.img4 ./sep-firmware.img4
         ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/usr/local/standalone/firmware/Baseband ./Baseband
         ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt2/keybags ./keybags
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "umount /mnt1"
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "umount /mnt2"
     fi
     if [ ! -e apticket.der ]; then
+        echo "missing ./apticket.der, which is required in order to proceed. exiting.."
         exit
     fi
     if [ ! -e sep-firmware.img4 ]; then
+        echo "missing ./sep-firmware.img4, which is required in order to proceed. exiting.."
         exit
     fi
     if [ ! -e Baseband ]; then
+        echo "missing ./Baseband, which is required in order to proceed. exiting.."
         exit
     fi
     if [ ! -e keybags ]; then
+        echo "missing ./keybags, which is required in order to proceed. exiting.."
         exit
     fi
     # this command erases the nand so we can create new partitions
@@ -546,7 +430,7 @@ if [[ "$response1" = 'yes' || "$response1" = 'y' ]]; then
     ../irecovery -f kernelcache.img4
     ../irecovery -c bootx &
     cd ..
-    read -p "pls press the enter key once device is in the ramdisk" pause1
+    read -p "pls press the enter key once device is in the ramdisk" r
     ./iproxy 2222 22 &
     echo "https://ios7.iarchive.app/downgrade/installing-filesystem.html"
     echo "partition 1"
@@ -554,7 +438,8 @@ if [[ "$response1" = 'yes' || "$response1" = 'y' ]]; then
     echo "step 2, press number 1 on your keyboard and press enter"
     echo "step 3, press enter again"
     if [ "$1" = "7.0.2" ]; then
-        echo "step 4, type 864563 and then press enter"
+        echo "step 4, type 864563, not 786438 and then press enter"
+        echo "we need a bigger system volume bcz we are using /.cydia_no_stash"
     else
         echo "step 4, type 786438 and then press enter"
     fi
@@ -589,12 +474,9 @@ if [[ "$response1" = 'yes' || "$response1" = 'y' ]]; then
     ./sshpass -p "alpine" scp -P 2222 ./apticket.der root@localhost:/mnt1/System/Library/Caches/
     ./sshpass -p "alpine" scp -P 2222 ./sep-firmware.img4 root@localhost:/mnt1/usr/standalone/firmware/
     ./sshpass -p "alpine" scp -P 2222 ./fstab root@localhost:/mnt1/etc/
-    read -p "would you like to also delete Setup.app? " response2
-    if [[ "$response2" = 'yes' || "$response2" = 'y' ]]; then
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/Applications/Setup.app"
-        ./sshpass -p "alpine" scp -P 2222 ./data_ark.plist.tar root@localhost:/mnt2/
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/data_ark.plist.tar -C /mnt2"
-    fi
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/Applications/Setup.app"
+    ./sshpass -p "alpine" scp -P 2222 ./data_ark.plist.tar root@localhost:/mnt2/
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/data_ark.plist.tar -C /mnt2"
     ./sshpass -p "alpine" scp -P 2222 ./jb/com.saurik.Cydia.Startup.plist root@localhost:/mnt1/System/Library/LaunchDaemons
     if [ "$1" = "7.0.2" ]; then
         ./sshpass -p "alpine" scp -P 2222 ./jb/Services.plist root@localhost:/mnt1/System/Library/Lockdown/Services.plist
@@ -664,7 +546,7 @@ if [[ "$response1" = 'yes' || "$response1" = 'y' ]]; then
         ../irecovery -f kernelcache.img4
         ../irecovery -c bootx &
         cd ..
-        read -p "pls press the enter key once device is in the ramdisk" pause1
+        read -p "pls press the enter key once device is in the ramdisk" r
         ./iproxy 2222 22 &
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1"
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs -o suid,dev /dev/disk0s1s2 /mnt2"
@@ -716,7 +598,7 @@ if [[ "$response1" = 'yes' || "$response1" = 'y' ]]; then
         ../irecovery -f kernelcache.img4
         ../irecovery -c bootx &
         cd ..
-        read -p "pls press the enter key once device is in the ramdisk" pause7
+        read -p "pls press the enter key once device is in the ramdisk" r
         ./iproxy 2222 22 &
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1"
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs -o suid,dev /dev/disk0s1s2 /mnt2"
@@ -737,6 +619,30 @@ if [[ "$response1" = 'yes' || "$response1" = 'y' ]]; then
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chown root:wheel /mnt1/.cydia_no_stash"
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chmod 777 /mnt1/.cydia_no_stash"
         $(./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
+        if [ -e $deviceid/$1/iBSS.img4 ]; then
+            if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+                ./dfuhelper.sh
+            fi    
+            _wait_for_dfu
+             cd $deviceid/$1
+            ../../ipwnder -p
+            ../../irecovery -f iBSS.img4
+            ../../irecovery -f iBSS.img4
+            ../../irecovery -f iBEC.img4
+            ../../irecovery -f devicetree.img4
+            ../../irecovery -c devicetree
+            ../../irecovery -f kernelcache.img4
+            ../../irecovery -c bootx &
+            cd ../../
+            echo "third phase of downgrading and jailbreaking your phone done"
+            echo "take note that in order for tweaks to work, make sure you do not hit"
+            echo "restart springboard in cydia. if it ever asks you to, use assistivetouch to go home"
+            echo "and then open settings, go to general, and reset and erase all content& settings"
+            echo "this will restart your springboard without it causing it to get stuck on spinning circle"
+            echo "do not do this more then once in the same boot, otherwise springboard may crash"
+            echo "pls note that cydia substrate must not be loaded in order for app store to work"
+            exit
+        fi
     fi
 else
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1"
@@ -789,8 +695,8 @@ if [ -e $deviceid/$1/iBSS.img4 ]; then
     ../../irecovery -f devicetree.img4
     ../../irecovery -c devicetree
     if [ "$1" = "7.0.2" ]; then
-        read -p "would you like enable root fs r/w on ios $1? " response79
-        if [[ "$response79" = 'yes' || "$response79" = 'y' ]]; then
+        read -p "would you like enable root fs r/w on ios $1? " r
+        if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
             ../../irecovery -f kernelcache.img4
         else
             ../../irecovery -f kernelcache2.img4
