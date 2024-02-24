@@ -331,6 +331,12 @@ check=$(./irecovery -q | grep CPID | sed 's/CPID: //')
 replace=$(./irecovery -q | grep MODEL | sed 's/MODEL: //')
 deviceid=$(./irecovery -q | grep PRODUCT | sed 's/PRODUCT: //')
 echo $deviceid
+# we need a shsh file that we can use in order to boot the ios 8 ramdisk
+# in this case we are going to use the ones from SSHRD_Script https://github.com/verygenericname/SSHRD_Script
+./img4tool -e -s other/shsh/"${check}".shsh -m IM4M
+_download_ramdisk_boot_files $deviceid $replace 8.4.1
+_download_boot_files $deviceid $replace $1
+_download_root_fs $deviceid $replace $1
 if [ -e $deviceid/$1/iBSS.img4 ]; then
     read -p "would you like to skip the ramdisk and boot ios $1? " r
     if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
@@ -356,12 +362,6 @@ if [ -e $deviceid/$1/iBSS.img4 ]; then
         exit
     fi
 fi
-# we need a shsh file that we can use in order to boot the ios 8 ramdisk
-# in this case we are going to use the ones from SSHRD_Script https://github.com/verygenericname/SSHRD_Script
-./img4tool -e -s other/shsh/"${check}".shsh -m IM4M
-_download_ramdisk_boot_files $deviceid $replace 8.4.1
-_download_boot_files $deviceid $replace $1
-_download_root_fs $deviceid $replace $1
 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
     ./dfuhelper.sh
 fi
