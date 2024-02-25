@@ -3,13 +3,13 @@
 <plist version="1.0">
 <dict>
 	<key>ProductBuildVersion</key>
-	<string>11A501</string>
+	<string>11B651</string>
 	<key>ProductCopyright</key>
 	<string>1983-2013 Apple Inc.</string>
 	<key>ProductName</key>
 	<string>iPhone OS</string>
 	<key>ProductVersion</key>
-	<string>7.0.2</string>
+	<string>7.0.6</string>
         <key>ReleaseType</key>
         <string>Internal</string>
         <key>ProductType</key>
