@@ -9,14 +9,14 @@
 
 # Chart of compatibility
 
-| Firmware | App Store | Safari  | Home btn | Vol keys | Pwr btn | CommCenter | Root fs r/w | Jailbreak | Tweaks |
-|----------|-----------|---------|----------|----------|---------|------------|-------------|-----------|--------|
-| 7.0.1    | &#9745;   | &#9745; | &#9744;  | &#9744;  | &#9744; | &#9744;    | &#9744;     | &#9744;   | &#9744;
-| 7.0.2    | &#9745;   | &#9745; | &#9744;  | &#9745;  | &#9744; | &#9744;    | &#9745;     | &#9745;   | &#9745;
-| 7.0.3    | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9745; | &#9744;    | &#9744;     | &#9744;   | &#9744;
-| 7.0.4    | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9745; | &#9744;    | &#9744;     | &#9744;   | &#9744;
-| 7.0.6    | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9745; | &#9744;    | &#9744;     | &#9744;   | &#9744;
-| 7.1.2    | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9745; | &#9745;    | &#9744;     | &#9744;   | &#9744;
+| Firmware | App Store | Safari  | Home btn | Vol keys | CommCenter | Root fs r/w | Jailbreak | Tweaks |
+|----------|-----------|---------|----------|----------|------------|-------------|-----------|--------|
+| 7.0.1    | &#9745;   | &#9745; | &#9744;  | &#9744;  | &#9744;    | &#9745;     | &#9745;   | &#9745;
+| 7.0.2    | &#9745;   | &#9745; | &#9744;  | &#9745;  | &#9744;    | &#9745;     | &#9745;   | &#9745;
+| 7.0.3    | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9744;    | &#9745;     | &#9745;   | &#9745;
+| 7.0.4    | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9744;    | &#9745;     | &#9745;   | &#9745;
+| 7.0.6    | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9744;    | &#9745;     | &#9745;   | &#9745;
+| 7.1.2    | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9745;
 
 ## How do I use this?
 
@@ -29,12 +29,6 @@ to use this app, you need to be on a supported version, and have an a7 device
 `chmod +x script.sh`
 
 connect iphone in dfu mode
-
-if you have an iphone 5s, which is compatible with jb
-
-`sudo ./script.sh 7.0.2`
-
-otherwise
 
 `sudo ./script.sh 7.1.2`
 
@@ -50,7 +44,7 @@ when it gets to the partitioning step, make terminal full screen, it has easy to
 
 all you gotta do at that step is press the keys on your keyboard it tells you to
 
-if you have an iphone 5s and used ios 7.0.2, cydia will be installed and work as normal
+cydia will be installed and work as normal
 
 ## How was this done? 
  - It removes `/System/Library/LaunchDaemons/com.apple.CommCenter.plist`
@@ -71,13 +65,15 @@ if you have an iphone 5s and used ios 7.0.2, cydia will be installed and work as
 
 passcode& touch id does not work, if the device ever asks you for a passcode it will accept anything as the passcode
 
+power btn seems to only work on newer versions of ios 7, and even if it does work you should not use it. bcz if you lock the screen while the phone is on, it will cause a deep sleep bug which causes the phone to be frozen at a black screen until you force reboot the device. i do not have the skills or expertise to be able to fix the deep sleep bug issue, but prs are welcome
+
 for tweaks to work, make sure do not hit restart springboard when cydia asks you to. instead, use assistivetouch to go to the home screen& go into the settings app and hit general and erase all content and settings. this does not delete any of ur data and will instead restart the springboard. if you don't do it this way, you will be stuck on a spinning circle after hitting restart springboard on cydia. do not do this more then once in the same boot otherwise springboard may crash
 
 app store does not work after you hit "erase all content and settings" due to a crash in `com.apple.StreamingUnzipService` caused by cydia substrate. to fix this, put the phone back into dfu and run the script again. install apps as needed from the app store while cydia substrate isnt loaded and then "erase all content and settings" again to load cydia substrate again
 
 wifi does not work unless you connect to an open wifi network, in other words the wifi network must not have a password
 
-home button does not work unless you are using ios 7.0.3 or higher, which is incompatible with this jailbreak i made. so if you want jailbreak, looks like you are shit outa luck for home button to work until someone designs a Kernel64Patcher for ios 7.0.3 or higher on arm64 kernels. the needed patches are `vm_map_enter`, `vm_map_protect`, and `mount_common` in order to jailbreak ios 7.0.3 or higher. the current kernel patcher we are using in this script only works on dev kernels, not release kernels, and is missing `mount_common` patch
+home button does not work unless you are using ios 7.0.3 or higher
 
 this script deletes everything on your phone, including the main os. pls backup all your data before using this script, as it will be unrecoverable after. use this script at your own risk, i am not responsible for any damages caused by you using this script
 
@@ -143,21 +139,11 @@ that kernel patcher that i just linked has very important patches necessary for 
 
 namely `vm_map_enter` patch which is required for cydia substrate to be able to inject into running processes
 
-as it turns out you need to also patch `vm_map_protect` for cydia substrate to work
-
 and also `mount_common` patch which is required for being able to mount rootfs as rw
 
-so without an open source arm64 kernel patcher in existence, i decided to try to find an alternative solution
+so without an open source arm64 kernel patcher in existence, i designed my own [Kernel64Patcher](https://github.com/y08wilm/Kernel64Patcher)
 
-upon a lot of digging, i learned that dev kernels allow you to mount rootfs as rw without a `mount_common` patch
-
-so i decrypted an appleinternal kernel, namely `11A24580o`, and used that to boot ios
-
-i quickly learned that, in doing so, ios 7.0.3+ is unbootable as it results in an infinite spinning circle on boot
-
-but ios 7.0.1 and 7.0.2 boots just fine when using that kernel
-
-and? rootfs rw worked first try
+this arm64 kernel patcher i made includes the necessary patches for root fs rw and cydia substrate to work
 
 also, ios is unbearably slow on any version older then ios 7.1.2 due to CommCenter acting a fool
 
@@ -203,69 +189,21 @@ stashing is the process of moving critical system files from the system partitio
 
 this process of moving critical system files breaks safari, maps, mail, among other things on ios 7
 
-the only way to fix this, as it turns out, is to do this
+the only way to fix this, as it turns out, is to boot the device back into ramdisk and move those system files back
 
-first boot
+once those files are moved back, and cydia is updated to the latest version, and `/.cydia_no_stash` is present
 
-use RELEASE kernel, no rootfs r/w, no libmis.dylib, and no libsandbox.dylib
+safari, maps, mail, among other things will start working again as normal
 
-this effectively means a stock oem first boot on ios 7.0.2
-
-the only difference from stock being that we are disabling CommCenter and hacktivating the device. CommCenter, if left enabled, causes the entire os to become extremely slow and unoperable. according to online docs, CommCenter is only used for calling but cellular is not possible since the device is hacktivated as it is
-
-once booted, enable assistive touch and disable screen lock timer then put the phone back into dfu
-
-second boot
-
-boot into ssh and copy updated fstab to remount / as rw
-
-then boot into ios but with DEVELOPMENT kernel instead of RELEASE kernel
-
-this jailbreaks the device 
-
-now the user MUST connect the device to an open wifi network, and open cydia
-
-once cydia is opened it will prepare filesystem, once done open cydia again
-
-refresh sources and update cydia to the latest version
-
-this should then, in theory, let us use cydia without having to stash critical system files
-
-put the phone back into dfu
-
-third boot
-
-boot into ssh ramdisk
-
-unstash /Applications, /Library/Ringtones, and /usr/share and ensure `/.cydia_no_stash` is present and readable
-
-this enables a manual stashing mode on cydia
-
-reboot back into ios
-
-safari, maps, mail, etc should now be working
-
-now came the very tricky part of trying to get tweaks to work
+now the part of trying to get tweaks to work
 
 as i said before, `vm_map_enter` and `vm_map_protect` is required for cydia substrate to inject tweaks into processes
 
 see https://iphonedev.wiki/Cydia_Substrate#MobileHooker for more info on how cydia substrate hooks into processes
 
-the only way to get tweaks to work on ios 7 is to patch `vm_map_enter` and `vm_map_protect` in the kernel
+the only way to get tweaks to work on ios 7 is to patch `vm_map_enter` in the kernel
 
-so, i used student discount on https://binary.ninja/purchase/, and manually patched the `11A24580o` kernel
-
-once i figured out how to patch the kernel in binary ninja, i had to figure out how to make my own `Kernel64Patcher`
-
-spent an entire day learning how `Kernel64Patcher` works and made my own patches in a fork of it
-
-compiled the patcher and we are now using it in this project
-
-works perfectly, now we have arm64 kernel patches for `vm_map_enter` and `vm_map_protect`
-
-however, the kernel patches i made only work on dev kernels and not release kernels
-
-regardless, we now have the necessary kernel patches in order for cydia substrate to work on arm64
+luckily with the help of my [Kernel64Patcher](https://github.com/y08wilm/Kernel64Patcher) it works already
 
 `vm_map_enter`
 ffffff8000283d64 -> nop
