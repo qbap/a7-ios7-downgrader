@@ -9,14 +9,14 @@
 
 # Chart of compatibility
 
-| Firmware | App Store | Safari  | Home btn | Vol keys | CommCenter | Root fs r/w | Jailbreak | Tweaks |
-|----------|-----------|---------|----------|----------|------------|-------------|-----------|--------|
-| 7.0.1    | &#9745;   | &#9745; | &#9744;  | &#9744;  | &#9744;    | &#9745;     | &#9745;   | &#9745;
-| 7.0.2    | &#9745;   | &#9745; | &#9744;  | &#9745;  | &#9744;    | &#9745;     | &#9745;   | &#9745;
-| 7.0.3    | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9744;    | &#9745;     | &#9745;   | &#9745;
-| 7.0.4    | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9744;    | &#9745;     | &#9745;   | &#9745;
-| 7.0.6    | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9744;    | &#9745;     | &#9745;   | &#9745;
-| 7.1.2    | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9745;
+| Firmware | App Store | Safari  | Home btn | Vol keys | CommCenter | Root fs r/w | Jailbreak | Tweaks | Respring |
+|----------|-----------|---------|----------|----------|------------|-------------|-----------|--------|----------|
+| 7.0.1    | &#9745;   | &#9745; | &#9744;  | &#9744;  | &#9744;    | &#9745;     | &#9745;   | &#9745;| &#9744;  |
+| 7.0.2    | &#9745;   | &#9745; | &#9744;  | &#9745;  | &#9744;    | &#9745;     | &#9745;   | &#9745;| &#9744;  |
+| 7.0.3    | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9744;    | &#9745;     | &#9745;   | &#9745;| &#9744;  |
+| 7.0.4    | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9744;    | &#9745;     | &#9745;   | &#9745;| &#9744;  |
+| 7.0.6    | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9744;    | &#9745;     | &#9745;   | &#9745;| &#9744;  |
+| 7.1.2    | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9745;| &#9745;  |
 
 ## How do I use this?
 
@@ -67,9 +67,11 @@ passcode& touch id does not work, if the device ever asks you for a passcode it 
 
 power btn seems to only work on newer versions of ios 7, and even if it does work you should not use it. bcz if you lock the screen while the phone is on, it will cause a deep sleep bug which causes the phone to be frozen at a black screen until you force reboot the device. i do not have the skills or expertise to be able to fix the deep sleep bug issue, but prs are welcome
 
-for tweaks to work, make sure do not hit restart springboard when cydia asks you to. instead, use assistivetouch to go to the home screen& go into the settings app and hit general and erase all content and settings. this does not delete any of ur data and will instead restart the springboard. if you don't do it this way, you will be stuck on a spinning circle after hitting restart springboard on cydia. do not do this more then once in the same boot otherwise springboard may crash
+~~for tweaks to work, make sure do not hit restart springboard when cydia asks you to. instead, use assistivetouch to go to the home screen& go into the settings app and hit general and erase all content and settings. this does not delete any of ur data and will instead restart the springboard. if you don't do it this way, you will be stuck on a spinning circle after hitting restart springboard on cydia. do not do this more then once in the same boot otherwise springboard may crash~~
 
-app store does not work after you hit "erase all content and settings" due to a crash in `com.apple.StreamingUnzipService` caused by cydia substrate. to fix this, put the phone back into dfu and run the script again. install apps as needed from the app store while cydia substrate isnt loaded and then "erase all content and settings" again to load cydia substrate again
+tweaks are now working as well as respring but only on ios 7.1.2, for older versions you must do the crossed out instructions above for tweaks to work. it is highly recommended to use ios 7.1.2 bcz tweaks& respring works perfectly on that version
+
+app store may not work if you hit "erase all content and settings" due to a crash in `com.apple.StreamingUnzipService` caused by cydia substrate. to fix this, put the phone back into dfu and run the script again. install apps as needed from the app store while cydia substrate isnt loaded and then "erase all content and settings" again to load cydia substrate again
 
 wifi does not work unless you connect to an open wifi network, in other words the wifi network must not have a password
 
@@ -211,13 +213,15 @@ ffffff8000283d64 -> nop
 `vm_map_protect`
 ffffff80002864a0 -> nop
 
-but if you try to install a tweak on cydia, and hit restart springboard in cydia, it gets infinite spinning circle
+~~but if you try to install a tweak on cydia, and hit restart springboard in cydia, it gets infinite spinning circle~~
 
-idk why it does, but it does. and as it turns out the only way to fix this is to use assistivetouch to go to the home screen& go into the settings app and hit general and erase all content and settings. this does not delete any of ur data and will instead restart the springboard
+~~idk why it does, but it does. and as it turns out the only way to fix this is to use assistivetouch to go to the home screen& go into the settings app and hit general and erase all content and settings. this does not delete any of ur data and will instead restart the springboard~~
 
-tweaks will then start working
+~~tweaks will then start working~~
 
-but dont use "erase all content and settings" more then once in the same boot otherwise springboard may crash
+~~but dont use "erase all content and settings" more then once in the same boot otherwise springboard may crash~~
+
+tweaks are now working as well as respring but only on ios 7.1.2, for older versions you must do the crossed out instructions above for tweaks to work. it is highly recommended to use ios 7.1.2 bcz tweaks& respring works perfectly on that version
 
 ## Credits
 
