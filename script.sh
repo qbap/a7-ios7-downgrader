@@ -195,6 +195,9 @@ _download_boot_files() {
         ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
         ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
         if [[ "$3" == *"8"* ]]; then
+            rm $1/$3/kcache.patched
+            rm $1/$3/kcache2.patched
+            rm $1/$3/kc.bpatch
             ./seprmvr64lite jb/12A4265u_kcache.raw $1/$3/kcache.patched
             # we need to apply mount_common patch for rootfs rw and vm_map_enter patch for tweak injection
             #./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -m -e
@@ -314,8 +317,9 @@ if [ -e $deviceid/$1/iBSS.img4 ]; then
         read -p "undefined? " r
         if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
             ../../irecovery -f kernelcache2.img4
+        else
+            ../../irecovery -f kernelcache.img4
         fi
-        ../../irecovery -f kernelcache.img4
         ../../irecovery -c bootx &
         cd ../../
         exit
@@ -473,6 +477,8 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     ./sshpass -p "alpine" scp -P 2222 ./apticket.der root@localhost:/mnt1/System/Library/Caches/
     ./sshpass -p "alpine" scp -P 2222 ./sep-firmware.img4 root@localhost:/mnt1/usr/standalone/firmware/
     if [[ "$1" == *"9"* ]]; then
+        ./sshpass -p "alpine" scp -P 2222 ./fstab root@localhost:/mnt1/etc/
+    elif [[ "$1" == *"8"* ]]; then
         ./sshpass -p "alpine" scp -P 2222 ./fstab root@localhost:/mnt1/etc/
     else
         ./sshpass -p "alpine" scp -P 2222 ./jb/fstab root@localhost:/mnt1/etc/
