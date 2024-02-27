@@ -186,15 +186,15 @@ _download_boot_files() {
             ./ipatcher $1/$3/iBSS.dec $1/$3/iBSS.patched
             ./ipatcher $1/$3/iBEC.dec $1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1 PE_i_can_has_debugger=1"
         fi
-        ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
-        ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
-        ./seprmvr64lite $1/$3/kcache.raw $1/$3/kcache.patched
-        # we need to apply mount_common patch for rootfs rw and vm_map_enter patch for tweak injection
-        ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -m -e
-        ./kerneldiff $1/$3/kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
-        ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
-        ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
         if [[ "$3" == *"8"* ]]; then
+            ./seprmvr64lite jb/12A4297e_kcache.raw $1/$3/kcache.patched
+            # we need to apply mount_common patch for rootfs rw and vm_map_enter patch for tweak injection
+            #./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -m -e
+            cp $1/$3/kcache.patched $1/$3/kcache2.patched
+            ./kerneldiff jb/12A4297e_kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
+            ./img4 -i jb/12A4297e_kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
+            ./img4 -i jb/12A4297e_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
+            
             rm $1/$3/kcache.patched
             rm $1/$3/kcache2.patched
             rm $1/$3/kc.bpatch
@@ -219,17 +219,28 @@ _download_boot_files() {
             ./kerneldiff $1/$3/kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
             ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache3.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
             ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache3 -M IM4M -T krnl -P $1/$3/kc.bpatch
-
+            
             rm $1/$3/kcache.patched
             rm $1/$3/kcache2.patched
             rm $1/$3/kc.bpatch
-            ./seprmvr64lite jb/12A4297e_kcache.raw $1/$3/kcache.patched
+
+            ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
+            ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
+            ./seprmvr64lite $1/$3/kcache.raw $1/$3/kcache.patched
             # we need to apply mount_common patch for rootfs rw and vm_map_enter patch for tweak injection
-            #./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -m -e
-            cp $1/$3/kcache.patched $1/$3/kcache2.patched
-            ./kerneldiff jb/12A4297e_kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
-            ./img4 -i jb/12A4297e_kernelcache.dec -o $1/$3/kernelcache4.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
-            ./img4 -i jb/12A4297e_kernelcache.dec -o $1/$3/kernelcache4 -M IM4M -T krnl -P $1/$3/kc.bpatch
+            ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -m -e
+            ./kerneldiff $1/$3/kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
+            ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache4.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
+            ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache4 -M IM4M -T krnl -P $1/$3/kc.bpatch
+        else
+            ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
+            ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
+            ./seprmvr64lite $1/$3/kcache.raw $1/$3/kcache.patched
+            # we need to apply mount_common patch for rootfs rw and vm_map_enter patch for tweak injection
+            ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -m -e
+            ./kerneldiff $1/$3/kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
+            ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
+            ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
         fi
         ./img4 -i $1/$3/DeviceTree.dec -o $1/$3/devicetree.img4 -A -M IM4M -T rdtr
     fi
@@ -341,7 +352,7 @@ if [ -e $deviceid/$1/iBSS.img4 ]; then
         ../../irecovery -c devicetree
         read -p "undefined? " r
         if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
-            ../../irecovery -f kernelcache4.img4
+            ../../irecovery -f kernelcache2.img4
         else
             ../../irecovery -f kernelcache.img4
         fi
@@ -556,7 +567,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         ../../irecovery -f devicetree.img4
         ../../irecovery -c devicetree
         if [[ "$1" == *"8"* ]]; then
-            ../../irecovery -f kernelcache3.img4
+            ../../irecovery -f kernelcache2.img4
         else
             ../../irecovery -f kernelcache.img4
         fi
@@ -585,11 +596,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
             ../../irecovery -f iBEC.img4
             ../../irecovery -f devicetree.img4
             ../../irecovery -c devicetree
-            if [[ "$1" == *"8"* ]]; then
-                ../../irecovery -f kernelcache3.img4
-            else
-                ../../irecovery -f kernelcache.img4
-            fi
+            ../../irecovery -f kernelcache.img4
             ../../irecovery -c bootx &
             cd ../../
         fi
@@ -650,7 +657,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     ../../irecovery -f iBEC.img4
     ../../irecovery -f devicetree.img4
     ../../irecovery -c devicetree
-    ../../irecovery -f kernelcache.img4
+    ../../irecovery -f kernelcache3.img4
     ../../irecovery -c bootx &
     cd ../../
     echo "third phase of downgrading and jailbreaking your phone done"
