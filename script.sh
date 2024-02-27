@@ -179,8 +179,13 @@ _download_boot_files() {
     rm -rf BuildManifest.plist
     
     if [ ! -e $1/$3/iBSS.patched ]; then    
-        ./ipatcher $1/$3/iBSS.dec $1/$3/iBSS.patched
-        ./ipatcher $1/$3/iBEC.dec $1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1 PE_i_can_has_debugger=1"
+        if [[ "$3" == *"9"* ]]; then
+            ./iBoot64Patcher $1/$3/iBSS.dec $1/$3/iBSS.patched
+            ./iBoot64Patcher $1/$3/iBEC.dec $1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1 PE_i_can_has_debugger=1"
+        else
+            ./ipatcher $1/$3/iBSS.dec $1/$3/iBSS.patched
+            ./ipatcher $1/$3/iBEC.dec $1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1 PE_i_can_has_debugger=1"
+        fi
         ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
         ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
         ./seprmvr64lite $1/$3/kcache.raw $1/$3/kcache.patched
@@ -218,7 +223,7 @@ _download_root_fs() {
     ./pzb -g BuildManifest.plist "$ipswurl"
     
     if [ ! -e $1/$3/OS.tar ]; then
-        if [[ "$1" == *"8"* ]]; then
+        if [[ "$3" == *"8"* ]]; then
             echo "ios 8"
         else
             # Download root fs
