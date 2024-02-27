@@ -483,7 +483,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     else
         ./sshpass -p "alpine" scp -P 2222 ./jb/fstab root@localhost:/mnt1/etc/
     fi
-    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/Applications/PreBoard.app"
+    #./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/Applications/PreBoard.app"
     read -p "would you like to also delete Setup.app? " r
     if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/Applications/Setup.app"
@@ -530,11 +530,11 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         ../../irecovery -f iBEC.img4
         ../../irecovery -f devicetree.img4
         ../../irecovery -c devicetree
-        if [[ "$1" == *"8"* ]]; then
-            ../../irecovery -f kernelcache2.img4
-        else
+        #if [[ "$1" == *"8"* ]]; then
+        #    ../../irecovery -f kernelcache2.img4
+        #else
             ../../irecovery -f kernelcache.img4
-        fi
+        #fi
         ../../irecovery -c bootx &
         cd ../../
     fi
