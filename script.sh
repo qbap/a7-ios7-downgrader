@@ -188,22 +188,12 @@ _download_boot_files() {
         fi
         ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
         ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
-        if [[ "$3" == *"8"* ]]; then
-            ./seprmvr64lite jb/12A4297e_kcache.raw $1/$3/kcache.patched
-            # we need to apply mount_common patch for rootfs rw and vm_map_enter patch for tweak injection
-            #./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -m -e
-            cp $1/$3/kcache.patched $1/$3/kcache2.patched
-            ./kerneldiff jb/12A4297e_kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
-            ./img4 -i jb/12A4297e_kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
-            ./img4 -i jb/12A4297e_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
-        else
-            ./seprmvr64lite $1/$3/kcache.raw $1/$3/kcache.patched
-            # we need to apply mount_common patch for rootfs rw and vm_map_enter patch for tweak injection
-            ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -m -e
-            ./kerneldiff $1/$3/kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
-            ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
-            ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
-        fi
+        ./seprmvr64lite $1/$3/kcache.raw $1/$3/kcache.patched
+        # we need to apply mount_common patch for rootfs rw and vm_map_enter patch for tweak injection
+        ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -m -e
+        ./kerneldiff $1/$3/kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
+        ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
+        ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
         ./img4 -i $1/$3/DeviceTree.dec -o $1/$3/devicetree.img4 -A -M IM4M -T rdtr
     fi
 }
@@ -233,17 +223,13 @@ _download_root_fs() {
     ./pzb -g BuildManifest.plist "$ipswurl"
     
     if [ ! -e $1/$3/OS.tar ]; then
-        if [[ "$3" == *"8"* ]]; then
-            echo "ios 8"
-        else
-            # Download root fs
-            ./pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
-            # Decrypt root fs
-            # note that as per src/decrypt.rs it will rename the file to OS.dmg by default
-            cargo run decrypt $1 $3 "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -l
-            osfn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
-            mv $(echo $osfn | sed "s/dmg/bin/g") $1/$3/OS.dmg
-        fi
+        # Download root fs
+        ./pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
+        # Decrypt root fs
+        # note that as per src/decrypt.rs it will rename the file to OS.dmg by default
+        cargo run decrypt $1 $3 "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -l
+        osfn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
+        mv $(echo $osfn | sed "s/dmg/bin/g") $1/$3/OS.dmg
         ./dmg build $1/$3/OS.dmg $1/$3/rw.dmg
         hdiutil attach -mountpoint /tmp/ios $1/$3/rw.dmg
         sudo diskutil enableOwnership /tmp/ios
@@ -409,18 +395,17 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     echo "step 1, press the letter n on your keyboard and then press enter"
     echo "step 2, press number 2 on your keyboard and press enter"
     echo "step 3, press enter 3 more times"
+    echo "fixing ios 8"
+    echo "step 1, press the letter x on your keyboard then press enter"
+    echo "step 2, press the letter c on your keyboard then press enter"
+    echo "step 3, press number 1 on your keyboard and press enter"
+    echo "step 4, type 00000000-0000-0000-0000-000000000000 and then press enter"
+    echo "step 5, press the letter c on your keyboard then press enter"
+    echo "step 6, press number 2 on your keyboard and press enter"
+    echo "step 7, type 00000000-0000-0000-0000-000000000000 and then press enter"
     echo "last steps"
     echo "step 1, press the letter w on your keyboard and then press enter"
     echo "step 2, press y on your keyboard and press enter"
-    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "gptfdisk /dev/rdisk0s1"
-    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync"
-    sleep 2
-    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync"
-    sleep 2
-    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync"
-    sleep 2
-    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync"
-    sleep 2
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "gptfdisk /dev/rdisk0s1"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync"
     sleep 2
