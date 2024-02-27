@@ -188,12 +188,21 @@ _download_boot_files() {
         fi
         ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
         ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
-        ./seprmvr64lite $1/$3/kcache.raw $1/$3/kcache.patched
-        # we need to apply mount_common patch for rootfs rw and vm_map_enter patch for tweak injection
-        ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -m -e
-        ./kerneldiff $1/$3/kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
-        ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
-        ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
+        if [[ "$3" == *"8"* ]]; then
+            ./seprmvr64lite jb/12A4265u_kcache.raw $1/$3/kcache.patched
+            # we need to apply mount_common patch for rootfs rw and vm_map_enter patch for tweak injection
+            ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -m -e
+            ./kerneldiff jb/12A4265u_kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
+            ./img4 -i jb/12A4265u_kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
+            ./img4 -i jb/12A4265u_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
+        else
+            ./seprmvr64lite $1/$3/kcache.raw $1/$3/kcache.patched
+            # we need to apply mount_common patch for rootfs rw and vm_map_enter patch for tweak injection
+            ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -m -e
+            ./kerneldiff $1/$3/kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
+            ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
+            ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
+        fi
         ./img4 -i $1/$3/DeviceTree.dec -o $1/$3/devicetree.img4 -A -M IM4M -T rdtr
     fi
 }
