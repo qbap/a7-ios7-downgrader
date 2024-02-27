@@ -59,7 +59,7 @@ cydia will be installed and work as normal
 ## TODO
  - Try getting launch daemons to start automatically on boot, such as ssh
  - Add a boot splash screen
- - Test iPad mini 2 compatibility with [11A24580o](https://iarchive.app/Download/11A24580o.zip) kernel for jailbreak
+ - Test iPad mini 2 compatibility
 
 ## Quirks
 
