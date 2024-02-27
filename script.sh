@@ -219,6 +219,17 @@ _download_boot_files() {
             ./kerneldiff $1/$3/kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
             ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache3.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
             ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache3 -M IM4M -T krnl -P $1/$3/kc.bpatch
+
+            rm $1/$3/kcache.patched
+            rm $1/$3/kcache2.patched
+            rm $1/$3/kc.bpatch
+            ./seprmvr64lite jb/12A4297e_kcache.raw $1/$3/kcache.patched
+            # we need to apply mount_common patch for rootfs rw and vm_map_enter patch for tweak injection
+            #./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -m -e
+            cp $1/$3/kcache.patched $1/$3/kcache2.patched
+            ./kerneldiff jb/12A4297e_kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
+            ./img4 -i jb/12A4297e_kernelcache.dec -o $1/$3/kernelcache4.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
+            ./img4 -i jb/12A4297e_kernelcache.dec -o $1/$3/kernelcache4 -M IM4M -T krnl -P $1/$3/kc.bpatch
         fi
         ./img4 -i $1/$3/DeviceTree.dec -o $1/$3/devicetree.img4 -A -M IM4M -T rdtr
     fi
@@ -330,7 +341,7 @@ if [ -e $deviceid/$1/iBSS.img4 ]; then
         ../../irecovery -c devicetree
         read -p "undefined? " r
         if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
-            ../../irecovery -f kernelcache2.img4
+            ../../irecovery -f kernelcache4.img4
         else
             ../../irecovery -f kernelcache.img4
         fi
