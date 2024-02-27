@@ -433,6 +433,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     else
         ./sshpass -p "alpine" scp -P 2222 ./jb/fstab root@localhost:/mnt1/etc/
     fi
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/Applications/PreBoard.app"
     read -p "would you like to also delete Setup.app? " r
     if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/Applications/Setup.app"
