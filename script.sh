@@ -271,6 +271,9 @@ _download_root_fs() {
     ./pzb -g BuildManifest.plist "$ipswurl"
     
     if [ ! -e $1/$3/OS.tar ]; then
+        if [[ "$3" == *"8"* ]]; then
+            echo "ios 8"
+        else
         # Download root fs
         ./pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
         # Decrypt root fs
@@ -278,6 +281,7 @@ _download_root_fs() {
         cargo run decrypt $1 $3 "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -l
         osfn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
         mv $(echo $osfn | sed "s/dmg/bin/g") $1/$3/OS.dmg
+        fi
         ./dmg build $1/$3/OS.dmg $1/$3/rw.dmg
         hdiutil attach -mountpoint /tmp/ios $1/$3/rw.dmg
         sudo diskutil enableOwnership /tmp/ios
@@ -352,7 +356,7 @@ if [ -e $deviceid/$1/iBSS.img4 ]; then
         ../../irecovery -c devicetree
         read -p "undefined? " r
         if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
-            ../../irecovery -f kernelcache2.img4
+            ../../irecovery -f kernelcache4.img4
         else
             ../../irecovery -f kernelcache.img4
         fi
