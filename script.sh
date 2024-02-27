@@ -415,6 +415,31 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     sleep 2
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync"
     sleep 2
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync"
+    sleep 2
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync"
+    sleep 2
+    $(./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
+    _kill_if_running iproxy
+    echo "device should now reboot into recovery, pls wait"
+    echo "once in recovery you should follow instructions online to go back into dfu"
+    if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+        ./dfuhelper.sh
+    fi
+    _wait_for_dfu
+    cd ramdisk
+    ../ipwnder -p
+    ../irecovery -f iBSS.img4
+    ../irecovery -f iBSS.img4
+    ../irecovery -f iBEC.img4
+    ../irecovery -f ramdisk.img4
+    ../irecovery -c ramdisk
+    ../irecovery -f devicetree.img4
+    ../irecovery -c devicetree
+    ../irecovery -f kernelcache.img4
+    ../irecovery -c bootx &
+    cd ..
+    read -p "pls press the enter key once device is in the ramdisk" r
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_hfs -s -v System -J -b 4096 -n a=4096,c=4096,e=4096 /dev/disk0s1s1"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_hfs -s -v Data -J -b 4096 -n a=4096,c=4096,e=4096 /dev/disk0s1s2"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_hfs /dev/disk0s1s1 /mnt1"
