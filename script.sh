@@ -179,45 +179,17 @@ _download_boot_files() {
     rm -rf BuildManifest.plist
     
     if [ ! -e $1/$3/iBSS.patched ]; then    
-        if [ "$3" = "7.0.2" ]; then
-            if [ "$1" = "iPhone6,1" ]; then
-                echo "ok"
-            elif [ "$1" = "iPhone6,2" ]; then
-                echo "ok"
-            else
-                read -p "this device may not support this version, continue?" r
-                if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
-                    echo "ok"
-                else
-                    echo "this device is not supported"
-                    exit
-                fi
-            fi
-            ./ipatcher $1/$3/iBSS.dec $1/$3/iBSS.patched
-            ./ipatcher $1/$3/iBEC.dec $1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1 PE_i_can_has_debugger=1"
-            ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
-            ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
-            ./seprmvr64lite jb/11A24580o_kcache.raw $1/$3/kcache.patched
-            ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache3.patched -e -p
-            ./kerneldiff jb/11A24580o_kcache.raw $1/$3/kcache3.patched $1/$3/kc.bpatch
-            ./img4 -i jb/11A24580o_kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
-            ./img4 -i jb/11A24580o_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
-            ./seprmvr64lite $1/$3/kcache.raw $1/$3/kcache2.patched
-            ./kerneldiff $1/$3/kcache.raw $1/$3/kcache2.patched $1/$3/kc2.bpatch
-            ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache2.img4 -M IM4M -T rkrn -P $1/$3/kc2.bpatch
-            ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache2 -M IM4M -T krnl -P $1/$3/kc2.bpatch
-            ./img4 -i $1/$3/DeviceTree.dec -o $1/$3/devicetree.img4 -A -M IM4M -T rdtr
-        else
-            ./ipatcher $1/$3/iBSS.dec $1/$3/iBSS.patched
-            ./ipatcher $1/$3/iBEC.dec $1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1 PE_i_can_has_debugger=1"
-            ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
-            ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
-            ./seprmvr64lite $1/$3/kcache.raw $1/$3/kcache.patched
-            ./kerneldiff $1/$3/kcache.raw $1/$3/kcache.patched $1/$3/kc.bpatch
-            ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
-            ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
-            ./img4 -i $1/$3/DeviceTree.dec -o $1/$3/devicetree.img4 -A -M IM4M -T rdtr
-        fi
+        ./ipatcher $1/$3/iBSS.dec $1/$3/iBSS.patched
+        ./ipatcher $1/$3/iBEC.dec $1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1 PE_i_can_has_debugger=1"
+        ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
+        ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
+        ./seprmvr64lite $1/$3/kcache.raw $1/$3/kcache.patched
+        # we need to apply mount_common patch for rootfs rw and vm_map_enter patch for tweak injection
+        ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -m -e
+        ./kerneldiff $1/$3/kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
+        ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
+        ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
+        ./img4 -i $1/$3/DeviceTree.dec -o $1/$3/devicetree.img4 -A -M IM4M -T rdtr
     fi
 }
 _download_root_fs() {
@@ -246,49 +218,25 @@ _download_root_fs() {
     ./pzb -g BuildManifest.plist "$ipswurl"
     
     if [ ! -e $1/$3/OS.tar ]; then
-        if [ "$3" = "7.0.2" ]; then
-            if [ "$1" = "iPhone6,1" ]; then
-                echo "ok"
-            elif [ "$1" = "iPhone6,2" ]; then
-                echo "ok"
-            else
-                echo "this version is not supported"
-            fi
-            # Download root fs
-            ./pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
-            # Decrypt root fs
-            # note that as per src/decrypt.rs it will rename the file to OS.dmg by default
-            cargo run decrypt $1 $3 "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -l
-            osfn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
-            mv $(echo $osfn | sed "s/dmg/bin/g") $1/$3/OS.dmg
-            ./dmg build $1/$3/OS.dmg $1/$3/rw.dmg
-            hdiutil attach -mountpoint /tmp/ios $1/$3/rw.dmg
-            sudo diskutil enableOwnership /tmp/ios
-            sudo mkdir /tmp/ios2
-            sudo rm -rf /tmp/ios2
-            sudo cp -a /tmp/ios/. /tmp/ios2/
-            sudo tar --lzma -xvf ./jb/cydia.tar.lzma -C /tmp/ios2
-            sudo ./gnutar -cvf $1/$3/OS.tar -C /tmp/ios2 .
-            hdiutil detach /tmp/ios
-            rm -rf /tmp/ios
-            sudo rm -rf /tmp/ios2
-            ./irecovery -f /dev/null
-        else
-            # Download root fs
-            ./pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
-            # Decrypt root fs
-            # note that as per src/decrypt.rs it will rename the file to OS.dmg by default
-            cargo run decrypt $1 $3 "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -l
-            osfn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
-            mv $(echo $osfn | sed "s/dmg/bin/g") $1/$3/OS.dmg
-            ./dmg build $1/$3/OS.dmg $1/$3/rw.dmg
-            hdiutil attach -mountpoint /tmp/ios $1/$3/rw.dmg
-            sudo diskutil enableOwnership /tmp/ios
-            sudo ./gnutar -cvf $1/$3/OS.tar -C /tmp/ios .
-            hdiutil detach /tmp/ios
-            rm -rf /tmp/ios
-            ./irecovery -f /dev/null
-        fi
+        # Download root fs
+        ./pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
+        # Decrypt root fs
+        # note that as per src/decrypt.rs it will rename the file to OS.dmg by default
+        cargo run decrypt $1 $3 "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -l
+        osfn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
+        mv $(echo $osfn | sed "s/dmg/bin/g") $1/$3/OS.dmg
+        ./dmg build $1/$3/OS.dmg $1/$3/rw.dmg
+        hdiutil attach -mountpoint /tmp/ios $1/$3/rw.dmg
+        sudo diskutil enableOwnership /tmp/ios
+        sudo mkdir /tmp/ios2
+        sudo rm -rf /tmp/ios2
+        sudo cp -a /tmp/ios/. /tmp/ios2/
+        sudo tar --lzma -xvf ./jb/cydia.tar.lzma -C /tmp/ios2
+        sudo ./gnutar -cvf $1/$3/OS.tar -C /tmp/ios2 .
+        hdiutil detach /tmp/ios
+        rm -rf /tmp/ios
+        sudo rm -rf /tmp/ios2
+        ./irecovery -f /dev/null
     fi
 
     rm -rf BuildManifest.plist
@@ -331,6 +279,12 @@ check=$(./irecovery -q | grep CPID | sed 's/CPID: //')
 replace=$(./irecovery -q | grep MODEL | sed 's/MODEL: //')
 deviceid=$(./irecovery -q | grep PRODUCT | sed 's/PRODUCT: //')
 echo $deviceid
+# we need a shsh file that we can use in order to boot the ios 8 ramdisk
+# in this case we are going to use the ones from SSHRD_Script https://github.com/verygenericname/SSHRD_Script
+./img4tool -e -s other/shsh/"${check}".shsh -m IM4M
+_download_ramdisk_boot_files $deviceid $replace 8.4.1
+_download_boot_files $deviceid $replace $1
+_download_root_fs $deviceid $replace $1
 if [ -e $deviceid/$1/iBSS.img4 ]; then
     read -p "would you like to skip the ramdisk and boot ios $1? " r
     if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
@@ -343,25 +297,12 @@ if [ -e $deviceid/$1/iBSS.img4 ]; then
         ../../irecovery -f iBEC.img4
         ../../irecovery -f devicetree.img4
         ../../irecovery -c devicetree
-        if [ "$1" = "7.0.2" ]; then
-            read -p "would you like enable root fs r/w on ios $1? " r
-            if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
-                ../../irecovery -f kernelcache.img4
-            else
-                ../../irecovery -f kernelcache2.img4
-            fi
-        fi
+        ../../irecovery -f kernelcache.img4
         ../../irecovery -c bootx &
         cd ../../
         exit
     fi
 fi
-# we need a shsh file that we can use in order to boot the ios 8 ramdisk
-# in this case we are going to use the ones from SSHRD_Script https://github.com/verygenericname/SSHRD_Script
-./img4tool -e -s other/shsh/"${check}".shsh -m IM4M
-_download_ramdisk_boot_files $deviceid $replace 8.4.1
-_download_boot_files $deviceid $replace $1
-_download_root_fs $deviceid $replace $1
 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
     ./dfuhelper.sh
 fi
@@ -437,12 +378,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     echo "step 1, press the letter n on your keyboard and then press enter"
     echo "step 2, press number 1 on your keyboard and press enter"
     echo "step 3, press enter again"
-    if [ "$1" = "7.0.2" ]; then
-        echo "step 4, type 864563, not 786438 and then press enter"
-        echo "we need a bigger system volume bcz we are using /.cydia_no_stash"
-    else
-        echo "step 4, type 786438 and then press enter"
-    fi
+    echo "step 4, type 864563 and then press enter"
     echo "step 5, press enter one last time"
     echo "partition 2"
     echo "step 1, press the letter n on your keyboard and then press enter"
@@ -473,212 +409,141 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     ./sshpass -p "alpine" scp -r -P 2222 ./Baseband root@localhost:/mnt1/usr/local/standalone/firmware
     ./sshpass -p "alpine" scp -P 2222 ./apticket.der root@localhost:/mnt1/System/Library/Caches/
     ./sshpass -p "alpine" scp -P 2222 ./sep-firmware.img4 root@localhost:/mnt1/usr/standalone/firmware/
-    ./sshpass -p "alpine" scp -P 2222 ./fstab root@localhost:/mnt1/etc/
+    ./sshpass -p "alpine" scp -P 2222 ./jb/fstab root@localhost:/mnt1/etc/
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/Applications/Setup.app"
     ./sshpass -p "alpine" scp -P 2222 ./data_ark.plist.tar root@localhost:/mnt2/
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/data_ark.plist.tar -C /mnt2"
     ./sshpass -p "alpine" scp -P 2222 ./jb/com.saurik.Cydia.Startup.plist root@localhost:/mnt1/System/Library/LaunchDaemons
-    if [ "$1" = "7.0.2" ]; then
-        ./sshpass -p "alpine" scp -P 2222 ./jb/Services.plist root@localhost:/mnt1/System/Library/Lockdown/Services.plist
-    fi
-    #./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir /mnt1/usr/libexec/y08wilm/"
-    #./sshpass -p "alpine" scp -P 2222 ./startup root@localhost:/mnt1/usr/libexec/y08wilm/
+    ./sshpass -p "alpine" scp -P 2222 ./jb/Services.plist root@localhost:/mnt1/System/Library/Lockdown/Services.plist
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/OS.tar"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/log/asl/SweepStore"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/Library/PreinstalledAssets/*"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/Library/Preferences/.GlobalPreferences.plist"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/.forward"
-    ./sshpass -p "alpine" scp -P 2222 ./fixkeybag root@localhost:/mnt1/usr/libexec/
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/chown root:wheel /mnt1/System/Library/LaunchDaemons/com.saurik.Cydia.Startup.plist"
-    if [ "$1" = "7.0.2" ]; then
-        ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/kernelcache2 root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mv /mnt1/System/Library/LaunchDaemons/com.apple.CommCenter.plist /mnt1/System/Library/LaunchDaemons/com.apple.CommCenter.plis_"
-        ./sshpass -p "alpine" scp -P 2222 ./jb/AppleInternal.tar root@localhost:/mnt1/
-        ./sshpass -p "alpine" scp -P 2222 ./jb/PrototypeTools.framework.tar root@localhost:/mnt1/
-        ./sshpass -p "alpine" scp -P 2222 ./jb/SystemVersion.plist root@localhost:/mnt1/System/Library/CoreServices/SystemVersion.plist
-        ./sshpass -p "alpine" scp -P 2222 ./jb/SpringBoard-Internal.strings root@localhost:/mnt1/System/Library/CoreServices/SpringBoard.app/en.lproj/
-        ./sshpass -p "alpine" scp -P 2222 ./jb/SpringBoard-Internal.strings root@localhost:/mnt1/System/Library/CoreServices/SpringBoard.app/en_GB.lproj/
-        ./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.springboard.plist root@localhost:/mnt2/mobile/Library/Preferences/com.apple.springboard.plist
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar -xvf /mnt1/PrototypeTools.framework.tar -C /mnt1/System/Library/PrivateFrameworks/'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt1/System/Library/PrivateFrameworks/PrototypeTools.framework'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/PrototypeTools.framework.tar'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar -xvf /mnt1/AppleInternal.tar -C /mnt1/'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt1/AppleInternal/'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/AppleInternal.tar'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt2/mobile/Library/Caches/com.apple.MobileGestalt.plist'
-    else
-        ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/kernelcache root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches
-    fi
+    ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/kernelcache root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mv /mnt1/System/Library/LaunchDaemons/com.apple.CommCenter.plist /mnt1/System/Library/LaunchDaemons/com.apple.CommCenter.plis_"
+    ./sshpass -p "alpine" scp -P 2222 ./jb/AppleInternal.tar root@localhost:/mnt1/
+    ./sshpass -p "alpine" scp -P 2222 ./jb/PrototypeTools.framework.tar root@localhost:/mnt1/
+    ./sshpass -p "alpine" scp -P 2222 ./jb/SystemVersion.plist root@localhost:/mnt1/System/Library/CoreServices/SystemVersion.plist
+    ./sshpass -p "alpine" scp -P 2222 ./jb/SpringBoard-Internal.strings root@localhost:/mnt1/System/Library/CoreServices/SpringBoard.app/en.lproj/
+    ./sshpass -p "alpine" scp -P 2222 ./jb/SpringBoard-Internal.strings root@localhost:/mnt1/System/Library/CoreServices/SpringBoard.app/en_GB.lproj/
+    ./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.springboard.plist root@localhost:/mnt2/mobile/Library/Preferences/com.apple.springboard.plist
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar -xvf /mnt1/PrototypeTools.framework.tar -C /mnt1/System/Library/PrivateFrameworks/'
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt1/System/Library/PrivateFrameworks/PrototypeTools.framework'
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/PrototypeTools.framework.tar'
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar -xvf /mnt1/AppleInternal.tar -C /mnt1/'
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt1/AppleInternal/'
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/AppleInternal.tar'
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt2/mobile/Library/Caches/com.apple.MobileGestalt.plist'
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/usr/lib/libmis.dylib"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram oblit-inprogress=5"
     $(./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
-    if [ "$1" = "7.0.2" ]; then
-        if [ -e $deviceid/$1/iBSS.img4 ]; then
-            if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                ./dfuhelper.sh
-            fi
-            _wait_for_dfu
-            cd $deviceid/$1
-            ../../ipwnder -p
-            ../../irecovery -f iBSS.img4
-            ../../irecovery -f iBSS.img4
-            ../../irecovery -f iBEC.img4
-            ../../irecovery -f devicetree.img4
-            ../../irecovery -c devicetree
-            ../../irecovery -f kernelcache2.img4
-            ../../irecovery -c bootx &
-            cd ../../
+    if [ -e $deviceid/$1/iBSS.img4 ]; then
+        if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+            ./dfuhelper.sh
         fi
-        _kill_if_running iproxy
-        echo "first phase of downgrading and jailbreaking your phone done"
-        echo "once device boots up to the lock screen, turn on assistivetouch and disable auto lock"
-        echo "then once you have done those two things, put the phone back into dfu mode"
         _wait_for_dfu
-        cd ramdisk
-        ../ipwnder -p
-        ../irecovery -f iBSS.img4
-        ../irecovery -f iBSS.img4
-        ../irecovery -f iBEC.img4
-        ../irecovery -f ramdisk.img4
-        ../irecovery -c ramdisk
-        ../irecovery -f devicetree.img4
-        ../irecovery -c devicetree
-        ../irecovery -f kernelcache.img4
-        ../irecovery -c bootx &
-        cd ..
-        read -p "pls press the enter key once device is in the ramdisk" r
-        ./iproxy 2222 22 &
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1"
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs -o suid,dev /dev/disk0s1s2 /mnt2"
-        if [ "$1" = "7.0.2" ]; then
-            ./sshpass -p "alpine" scp -P 2222 ./jb/fstab root@localhost:/mnt1/etc/
-            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mv /mnt1/System/Library/LaunchDaemons/com.apple.CommCenter.plist /mnt1/System/Library/LaunchDaemons/com.apple.CommCenter.plis_"
-            ./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.springboard.plist root@localhost:/mnt2/mobile/Library/Preferences/com.apple.springboard.plist
-        else
-            ./sshpass -p "alpine" scp -P 2222 ./fstab root@localhost:/mnt1/etc/
-        fi
-        #./sshpass -p "alpine" scp -P 2222 ./jb/libmis.dylib root@localhost:/mnt1/usr/lib/
-        #./sshpass -p "alpine" scp -P 2222 ./jb/libsandbox.dylib root@localhost:/mnt1/usr/lib/
-        #./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir /mnt1/System/Library/Caches/com.apple.xpcd/"
-        #./sshpass -p "alpine" scp -P 2222 ./jb/xpcd_cache.dylib root@localhost:/mnt1/System/Library/Caches/com.apple.xpcd/
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt1/System/Library/Caches/com.apple.dyld/enable-dylibs-to-override-cache"
-        $(./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
-        if [ -e $deviceid/$1/iBSS.img4 ]; then
-            if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                ./dfuhelper.sh
-            fi    
-            _wait_for_dfu
-             cd $deviceid/$1
-            ../../ipwnder -p
-            ../../irecovery -f iBSS.img4
-            ../../irecovery -f iBSS.img4
-            ../../irecovery -f iBEC.img4
-            ../../irecovery -f devicetree.img4
-            ../../irecovery -c devicetree
-            ../../irecovery -f kernelcache.img4
-            ../../irecovery -c bootx &
-            cd ../../
-        fi
-        _kill_if_running iproxy
-        echo "second phase of downgrading and jailbreaking your phone done"
-        echo "once device boots up to the lock screen, open cydia and let it prepare filesystem"
-        echo "then connect the phone to an open wifi network and update cydia"
-        echo "this should in theory let us enable manual stashing via /.cydia_no_stash"
-        echo "which, after unstashing a few things, should fix safari, maps, mail, etc"
-        _wait_for_dfu
-        cd ramdisk
-        ../ipwnder -p
-        ../irecovery -f iBSS.img4
-        ../irecovery -f iBSS.img4
-        ../irecovery -f iBEC.img4
-        ../irecovery -f ramdisk.img4
-        ../irecovery -c ramdisk
-        ../irecovery -f devicetree.img4
-        ../irecovery -c devicetree
-        ../irecovery -f kernelcache.img4
-        ../irecovery -c bootx &
-        cd ..
-        read -p "pls press the enter key once device is in the ramdisk" r
-        ./iproxy 2222 22 &
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1"
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs -o suid,dev /dev/disk0s1s2 /mnt2"
-        ./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.springboard.plist root@localhost:/mnt2/mobile/Library/Preferences/com.apple.springboard.plist
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm /mnt1/Applications'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv $(find /mnt2/stash -name Applications) /mnt1/'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm /mnt1/Library/Ringtones'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv $(find /mnt2/stash -name Ringtones) /mnt1/Library'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm /mnt1/Library/Wallpaper'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv $(find /mnt2/stash -name Wallpaper) /mnt1/Library'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm /mnt1/usr/lib/pam'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv $(find /mnt2/stash -name pam) /mnt1/usr/lib'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm /mnt1/usr/include'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv $(find /mnt2/stash -name include) /mnt1/usr/'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm /mnt1/usr/share'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv $(find /mnt2/stash -name share) /mnt1/usr/'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt1/.cydia_no_stash"
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chown root:wheel /mnt1/.cydia_no_stash"
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chmod 777 /mnt1/.cydia_no_stash"
-        $(./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
-        if [ -e $deviceid/$1/iBSS.img4 ]; then
-            if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                ./dfuhelper.sh
-            fi    
-            _wait_for_dfu
-             cd $deviceid/$1
-            ../../ipwnder -p
-            ../../irecovery -f iBSS.img4
-            ../../irecovery -f iBSS.img4
-            ../../irecovery -f iBEC.img4
-            ../../irecovery -f devicetree.img4
-            ../../irecovery -c devicetree
-            ../../irecovery -f kernelcache.img4
-            ../../irecovery -c bootx &
-            cd ../../
-            echo "third phase of downgrading and jailbreaking your phone done"
-            echo "take note that in order for tweaks to work, make sure you do not hit"
-            echo "restart springboard in cydia. if it ever asks you to, use assistivetouch to go home"
-            echo "and then open settings, go to general, and reset and erase all content& settings"
-            echo "this will restart your springboard without it causing it to get stuck on spinning circle"
-            echo "do not do this more then once in the same boot, otherwise springboard may crash"
-            echo "pls note that cydia substrate must not be loaded in order for app store to work"
-            exit
-        fi
+        cd $deviceid/$1
+        ../../ipwnder -p
+        ../../irecovery -f iBSS.img4
+        ../../irecovery -f iBSS.img4
+        ../../irecovery -f iBEC.img4
+        ../../irecovery -f devicetree.img4
+        ../../irecovery -c devicetree
+        ../../irecovery -f kernelcache.img4
+        ../../irecovery -c bootx &
+        cd ../../
     fi
+    _kill_if_running iproxy
+    echo "first phase of downgrading and jailbreaking your phone done"
+    echo "once device boots up to the lock screen, turn on assistivetouch and disable auto lock"
+    echo "connect the phone to an open wifi network before opening cydia"
+    echo "then once you have done those two things, open cydia and let it prepare filesystem"
+    echo "refresh sources on cydia and then update cydia to the latest version"
+    echo "this should in theory let us enable manual stashing via /.cydia_no_stash"
+    echo "which, after unstashing a few things, should fix safari, maps, mail, etc"
+    _wait_for_dfu
+    cd ramdisk
+    ../ipwnder -p
+    ../irecovery -f iBSS.img4
+    ../irecovery -f iBSS.img4
+    ../irecovery -f iBEC.img4
+    ../irecovery -f ramdisk.img4
+    ../irecovery -c ramdisk
+    ../irecovery -f devicetree.img4
+    ../irecovery -c devicetree
+    ../irecovery -f kernelcache.img4
+    ../irecovery -c bootx &
+    cd ..
+    read -p "pls press the enter key once device is in the ramdisk" r
+    ./iproxy 2222 22 &
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1"
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs -o suid,dev /dev/disk0s1s2 /mnt2"
+    ./sshpass -p "alpine" scp -P 2222 ./jb/fstab root@localhost:/mnt1/etc/
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mv /mnt1/System/Library/LaunchDaemons/com.apple.CommCenter.plist /mnt1/System/Library/LaunchDaemons/com.apple.CommCenter.plis_"
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt1/System/Library/Caches/com.apple.dyld/enable-dylibs-to-override-cache"
+    ./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.springboard.plist root@localhost:/mnt2/mobile/Library/Preferences/com.apple.springboard.plist
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm /mnt1/Applications'
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv $(find /mnt2/stash -name Applications) /mnt1/'
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm /mnt1/Library/Ringtones'
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv $(find /mnt2/stash -name Ringtones) /mnt1/Library'
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm /mnt1/Library/Wallpaper'
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv $(find /mnt2/stash -name Wallpaper) /mnt1/Library'
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm /mnt1/usr/lib/pam'
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv $(find /mnt2/stash -name pam) /mnt1/usr/lib'
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm /mnt1/usr/include'
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv $(find /mnt2/stash -name include) /mnt1/usr/'
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm /mnt1/usr/share'
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv $(find /mnt2/stash -name share) /mnt1/usr/'
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt1/.cydia_no_stash"
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chown root:wheel /mnt1/.cydia_no_stash"
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chmod 777 /mnt1/.cydia_no_stash"
+    $(./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
+    if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+        ./dfuhelper.sh
+    fi    
+    _wait_for_dfu
+     cd $deviceid/$1
+    ../../ipwnder -p
+    ../../irecovery -f iBSS.img4
+    ../../irecovery -f iBSS.img4
+    ../../irecovery -f iBEC.img4
+    ../../irecovery -f devicetree.img4
+    ../../irecovery -c devicetree
+    ../../irecovery -f kernelcache.img4
+    ../../irecovery -c bootx &
+    cd ../../
+    echo "third phase of downgrading and jailbreaking your phone done"
+    echo "take note that in order for tweaks to work, make sure you do not hit"
+    echo "restart springboard in cydia. if it ever asks you to, use assistivetouch to go home"
+    echo "and then open settings, go to general, and reset and erase all content& settings"
+    echo "this will restart your springboard without it causing it to get stuck on spinning circle"
+    echo "do not do this more then once in the same boot, otherwise springboard may crash"
+    echo "pls note that cydia substrate must not be loaded in order for app store to work"
+    exit
 else
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs -o suid,dev /dev/disk0s1s2 /mnt2"
-    if [ "$1" = "7.0.2" ]; then
-        ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/kernelcache2 root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches
-        #./sshpass -p "alpine" scp -P 2222 ./jb/libmis.dylib root@localhost:/mnt1/usr/lib/
-        #./sshpass -p "alpine" scp -P 2222 ./jb/libsandbox.dylib root@localhost:/mnt1/usr/lib/
-        #./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir /mnt1/System/Library/Caches/com.apple.xpcd/"
-        #./sshpass -p "alpine" scp -P 2222 ./jb/xpcd_cache.dylib root@localhost:/mnt1/System/Library/Caches/com.apple.xpcd/
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mv /mnt1/System/Library/LaunchDaemons/com.apple.CommCenter.plist /mnt1/System/Library/LaunchDaemons/com.apple.CommCenter.plis_"
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt1/System/Library/Caches/com.apple.dyld/enable-dylibs-to-override-cache"
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt1/.cydia_no_stash"
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chown root:wheel /mnt1/.cydia_no_stash"
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chmod 777 /mnt1/.cydia_no_stash"
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm /mnt1/Applications'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv $(find /mnt2/stash -name Applications) /mnt1/'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm /mnt1/Library/Ringtones'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv $(find /mnt2/stash -name Ringtones) /mnt1/Library'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm /mnt1/Library/Wallpaper'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv $(find /mnt2/stash -name Wallpaper) /mnt1/Library'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm /mnt1/usr/lib/pam'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv $(find /mnt2/stash -name pam) /mnt1/usr/lib'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm /mnt1/usr/include'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv $(find /mnt2/stash -name include) /mnt1/usr/'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm /mnt1/usr/share'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv $(find /mnt2/stash -name share) /mnt1/usr/'
-    else
-        ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/kernelcache root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches
-    fi
-    ./sshpass -p "alpine" scp -P 2222 ./startup root@localhost:/mnt1/usr/libexec/y08wilm/
-    if [ "$1" = "7.0.2" ]; then
-        ./sshpass -p "alpine" scp -P 2222 ./jb/fstab root@localhost:/mnt1/etc/
-    else
-        ./sshpass -p "alpine" scp -P 2222 ./fstab root@localhost:/mnt1/etc/
-    fi
+    ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/kernelcache root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mv /mnt1/System/Library/LaunchDaemons/com.apple.CommCenter.plist /mnt1/System/Library/LaunchDaemons/com.apple.CommCenter.plis_"
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt1/System/Library/Caches/com.apple.dyld/enable-dylibs-to-override-cache"
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt1/.cydia_no_stash"
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chown root:wheel /mnt1/.cydia_no_stash"
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chmod 777 /mnt1/.cydia_no_stash"
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm /mnt1/Applications'
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv $(find /mnt2/stash -name Applications) /mnt1/'
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm /mnt1/Library/Ringtones'
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv $(find /mnt2/stash -name Ringtones) /mnt1/Library'
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm /mnt1/Library/Wallpaper'
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv $(find /mnt2/stash -name Wallpaper) /mnt1/Library'
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm /mnt1/usr/lib/pam'
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv $(find /mnt2/stash -name pam) /mnt1/usr/lib'
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm /mnt1/usr/include'
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv $(find /mnt2/stash -name include) /mnt1/usr/'
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm /mnt1/usr/share'
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv $(find /mnt2/stash -name share) /mnt1/usr/'
+    ./sshpass -p "alpine" scp -P 2222 ./jb/fstab root@localhost:/mnt1/etc/
     ssh -p2222 root@localhost
     $(./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
 fi
@@ -694,14 +559,7 @@ if [ -e $deviceid/$1/iBSS.img4 ]; then
     ../../irecovery -f iBEC.img4
     ../../irecovery -f devicetree.img4
     ../../irecovery -c devicetree
-    if [ "$1" = "7.0.2" ]; then
-        read -p "would you like enable root fs r/w on ios $1? " r
-        if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
-            ../../irecovery -f kernelcache.img4
-        else
-            ../../irecovery -f kernelcache2.img4
-        fi
-    fi
+    ../../irecovery -f kernelcache.img4
     ../../irecovery -c bootx &
     cd ../../
     exit
