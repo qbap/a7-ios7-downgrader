@@ -395,6 +395,35 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     echo "step 1, press the letter n on your keyboard and then press enter"
     echo "step 2, press number 2 on your keyboard and press enter"
     echo "step 3, press enter 3 more times"
+    echo "last steps"
+    echo "step 1, press the letter w on your keyboard and then press enter"
+    echo "step 2, press y on your keyboard and press enter"
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "gptfdisk /dev/rdisk0s1"
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync"
+    sleep 2
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync"
+    sleep 2
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync"
+    sleep 2
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync"
+    sleep 2
+    echo "https://ios7.iarchive.app/downgrade/installing-filesystem.html"
+    echo "partition 1"
+    echo "step 1, press the letter n on your keyboard and then press enter"
+    echo "step 2, press number 1 on your keyboard and press enter"
+    echo "step 3, press enter again"
+    if [[ "$1" == *"9"* ]]; then
+        echo "step 4, type 1264563 and then press enter"
+    elif [[ "$1" == *"8"* ]]; then
+        echo "step 4, type 1264563 and then press enter"
+    else
+        echo "step 4, type 864563 and then press enter"
+    fi
+    echo "step 5, press enter one last time"
+    echo "partition 2"
+    echo "step 1, press the letter n on your keyboard and then press enter"
+    echo "step 2, press number 2 on your keyboard and press enter"
+    echo "step 3, press enter 3 more times"
     echo "fixing ios 8"
     echo "step 1, press the letter x on your keyboard then press enter"
     echo "step 2, press the letter c on your keyboard then press enter"
@@ -415,28 +444,6 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     sleep 2
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync"
     sleep 2
-    $(./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
-    _kill_if_running iproxy
-    echo "device should now reboot into recovery, pls wait"
-    echo "once in recovery you should follow instructions online to go back into dfu"
-    if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-        ./dfuhelper.sh
-    fi
-    _wait_for_dfu
-    cd ramdisk
-    ../ipwnder -p
-    ../irecovery -f iBSS.img4
-    ../irecovery -f iBSS.img4
-    ../irecovery -f iBEC.img4
-    ../irecovery -f ramdisk.img4
-    ../irecovery -c ramdisk
-    ../irecovery -f devicetree.img4
-    ../irecovery -c devicetree
-    ../irecovery -f kernelcache.img4
-    ../irecovery -c bootx &
-    cd ..
-    read -p "pls press the enter key once device is in the ramdisk" r
-    ./iproxy 2222 22 &
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_hfs -s -v System -J -b 4096 -n a=4096,c=4096,e=4096 /dev/disk0s1s1"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_hfs -s -v Data -J -b 4096 -n a=4096,c=4096,e=4096 /dev/disk0s1s2"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_hfs /dev/disk0s1s1 /mnt1"
