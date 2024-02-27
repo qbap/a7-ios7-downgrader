@@ -249,7 +249,7 @@ _download_root_fs() {
         sudo mkdir /tmp/ios2
         sudo rm -rf /tmp/ios2
         sudo cp -a /tmp/ios/. /tmp/ios2/
-        sudo tar --lzma -xvf ./jb/cydia.tar.lzma -C /tmp/ios2
+        sudo tar -xvf ./jb/cydia.tar -C /tmp/ios2
         sudo ./gnutar -cvf $1/$3/OS.tar -C /tmp/ios2 .
         hdiutil detach /tmp/ios
         rm -rf /tmp/ios
