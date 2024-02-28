@@ -189,13 +189,34 @@ _download_boot_files() {
         if [[ "$3" == *"8"* ]]; then
             ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
             ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
-            #seprmvr64lite only works on ios 7.0 - 8.0 beta 5
-            #ios 8.0+ gets KERN_INVALID_ADDRESS in Security.framework, securityd etc. due to bad patches
-            #this is the root cause of the slide to upgrade screen, not because of partition guid not being 00000000-0000-0000-0000-000000000000
-            #here we are using ios 8 beta 5 12A4345d kernel to boot ios 8, which is tested working on ios 8.0
+            
+            # step one, boot into slide to upgrade screen by booting regular ios 8
+            # make sure you DO NOT slide to upgrade, for the love of god just DO NOT!
+            ./seprmvr64lite $1/$3/kcache.raw $1/$3/kcache.patched
+            cp $1/$3/kcache.patched $1/$3/kcache2.patched
+            ./kerneldiff $1/$3/kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
+            ./img4 -i $1/$3/kernelcache.dec -o $1/$3/full_kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
+            ./img4 -i $1/$3/kernelcache.dec -o $1/$3/full_kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
+            
+            rm $1/$3/kcache.patched
+            rm $1/$3/kcache2.patched
+            rm $1/$3/kc.bpatch
+            
+            # step two, boot into ios 8 beta 2
+            # verbose should get stuck on AppleBCMWLanCore::powerOn() after a bit
+            # let it stay stuck on AppleBCMWLanCore::powerOn() for >60 seconds
+            ./seprmvr64lite jb/12A4297e_kcache.raw $1/$3/kcache.patched
+            cp $1/$3/kcache.patched $1/$3/kcache2.patched
+            ./kerneldiff jb/12A4297e_kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
+            ./img4 -i jb/12A4297e_kernelcache.dec -o $1/$3/beta2_kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
+            ./img4 -i jb/12A4297e_kernelcache.dec -o $1/$3/beta2_kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
+            
+            rm $1/$3/kcache.patched
+            rm $1/$3/kcache2.patched
+            rm $1/$3/kc.bpatch
+        
+            # step three, boot into ios 8 beta 5
             ./seprmvr64lite jb/12A4345d_kcache.raw $1/$3/kcache.patched
-            # we need to apply mount_common patch for rootfs rw and vm_map_enter patch for tweak injection
-            #./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -m -e
             cp $1/$3/kcache.patched $1/$3/kcache2.patched
             ./kerneldiff jb/12A4345d_kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
             ./img4 -i jb/12A4345d_kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
@@ -441,13 +462,10 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         ./sshpass -p "alpine" scp -P 2222 ./ios9/fstab root@localhost:/mnt1/etc/
     elif [[ "$1" == *"8"* ]]; then
         ./sshpass -p "alpine" scp -P 2222 ./fstab root@localhost:/mnt1/etc/
-        read -p "would you like to also install wtfis jailbreak? " r
-        if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
-            ./sshpass -p "alpine" scp -P 2222 ./jb/wtfis.app.tar root@localhost:/mnt1
-            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt1/wtfis.app.tar -C /mnt1/Applications"
-            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt1/Applications/wtfis.app'
-            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'chmod -R 775 /mnt1/Applications/wtfis.app'
-        fi
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/Keychains/*"
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mv /mnt1/System/Library/Frameworks/AssetsLibrary.framework /mnt1/System/Library/Frameworks/AssetsLibrary.framework.bak"
+        ./sshpass -p "alpine" scp -P 2222 ./jb/AssetsLibrary.framework.tar root@localhost:/mnt1/
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt1/AssetsLibrary.framework.tar -C /mnt1/System/Library/Frameworks"
     else
         ./sshpass -p "alpine" scp -P 2222 ./jb/fstab root@localhost:/mnt1/etc/
     fi
@@ -503,11 +521,48 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         ../../irecovery -f iBEC.img4
         ../../irecovery -f devicetree.img4
         ../../irecovery -c devicetree
-        ../../irecovery -f kernelcache.img4
+        if [[ "$1" == *"8"* ]]; then
+            ../../irecovery -f full_kernelcache.img4
+        else
+            ../../irecovery -f kernelcache.img4
+        fi
         ../../irecovery -c bootx &
         cd ../../
     fi
     _kill_if_running iproxy
+    if [[ "$1" == *"8"* ]]; then
+        echo "step one, boot into slide to upgrade screen by booting regular ios 8"
+        echo "make sure you DO NOT slide to upgrade, for the love of god just DO NOT!"
+        echo "reboot into dfu when ready to move onto the next step"
+        _wait_for_dfu
+        cd $deviceid/$1
+        ../../ipwnder -p
+        ../../irecovery -f iBSS.img4
+        ../../irecovery -f iBSS.img4
+        ../../irecovery -f iBEC.img4
+        ../../irecovery -f devicetree.img4
+        ../../irecovery -c devicetree
+        ../../irecovery -f beta2_kernelcache.img4
+        ../../irecovery -c bootx &
+        cd ../../
+        echo "step two, boot into ios 8 beta 2"
+        echo "verbose should get stuck on AppleBCMWLanCore::powerOn() after a bit"
+        echo "let it stay stuck on AppleBCMWLanCore::powerOn() for >60 seconds"
+        echo "reboot into dfu when ready to move onto the next step"
+        _wait_for_dfu
+        cd $deviceid/$1
+        ../../ipwnder -p
+        ../../irecovery -f iBSS.img4
+        ../../irecovery -f iBSS.img4
+        ../../irecovery -f iBEC.img4
+        ../../irecovery -f devicetree.img4
+        ../../irecovery -c devicetree
+        ../../irecovery -f beta2_kernelcache.img4
+        ../../irecovery -c bootx &
+        cd ../../
+        echo "step three, boot into ios 8 beta 5"
+    fi
+    echo "done"
     exit
 else
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1"
