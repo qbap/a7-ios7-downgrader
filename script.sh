@@ -509,7 +509,9 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs -o suid,dev /dev/disk0s1s2 /mnt2"
     ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/OS.tar root@localhost:/mnt2
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/OS.tar -C /mnt1"
-    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mv -v /mnt1/private/var/* /mnt2"
+    ./sshpass -p "alpine" scp -P 2222 ./jb/mnt2.tar root@localhost:/mnt2
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/mnt2-done.tar -C /mnt2"
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/private/var/*"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt1/usr/local/standalone/firmware/Baseband"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir /mnt2/keybags"
     ./sshpass -p "alpine" scp -r -P 2222 ./keybags root@localhost:/mnt2
@@ -570,11 +572,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         ../../irecovery -f iBEC.img4
         ../../irecovery -f devicetree.img4
         ../../irecovery -c devicetree
-        if [[ "$1" == *"8"* ]]; then
-            ../../irecovery -f kernelcache2.img4
-        else
-            ../../irecovery -f kernelcache.img4
-        fi
+        ../../irecovery -f kernelcache.img4
         ../../irecovery -c bootx &
         cd ../../
     fi
@@ -674,7 +672,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     exit
 else
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1"
-    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs -o suid,dev /dev/disk0s1s2 /mnt2"
+    #./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs -o suid,dev /dev/disk0s1s2 /mnt2"
     ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/kernelcache root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches
     if [[ "$1" == *"7"* ]]; then
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mv /mnt1/System/Library/LaunchDaemons/com.apple.CommCenter.plist /mnt1/System/Library/LaunchDaemons/com.apple.CommCenter.plis_"
@@ -702,12 +700,12 @@ else
     else
         ./sshpass -p "alpine" scp -P 2222 ./jb/fstab root@localhost:/mnt1/etc/
     fi
-    read -p "would you like to also delete Setup.app? " r
-    if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/Applications/Setup.app"
-        ./sshpass -p "alpine" scp -P 2222 ./data_ark.plist.tar root@localhost:/mnt2/
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/data_ark.plist.tar -C /mnt2"
-    fi
+    #read -p "would you like to also delete Setup.app? " r
+    #if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
+    #    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/Applications/Setup.app"
+    #    ./sshpass -p "alpine" scp -P 2222 ./data_ark.plist.tar root@localhost:/mnt2/
+    #    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/data_ark.plist.tar -C /mnt2"
+    #fi
     ssh -p2222 root@localhost
     $(./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
 fi
