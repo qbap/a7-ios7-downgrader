@@ -514,6 +514,12 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/OS.tar"
     if [[ "$1" == *"8"* ]]; then
         echo "ios 8"
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cp /mnt1/usr/libexec/securityd /mnt1/usr/libexec/securityd.bak"
+        ./sshpass -p "alpine" scp -P 2222 ./jb/securityd root@localhost:/mnt1/usr/libexec/securityd
+        ./sshpass -p "alpine" scp -P 2222 ./jb/Security.framework.tar root@localhost:/mnt1/
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mv /mnt1/System/Library/Frameworks/Security.framework /mnt1/System/Library/Frameworks/Security.framework.bak"
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt1/Security.framework.tar -C /mnt1/System/Library/Frameworks"
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/Keychains/*"
     else
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/log/asl/SweepStore"
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/Library/PreinstalledAssets/*"
