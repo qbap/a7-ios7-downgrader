@@ -200,19 +200,6 @@ _download_boot_files() {
             ./kerneldiff jb/12A4345d_kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
             ./img4 -i jb/12A4345d_kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
             ./img4 -i jb/12A4345d_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
-            
-            rm $1/$3/kcache.patched
-            rm $1/$3/kcache2.patched
-            rm $1/$3/kc.bpatch
-            
-            # maybe need to use this for first boot on ios 8
-            ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
-            ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
-            ./seprmvr64lite jb/12A4297e_kcache.raw $1/$3/kcache.patched
-            cp $1/$3/kcache.patched $1/$3/kcache2.patched
-            ./kerneldiff jb/12A4297e_kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
-            ./img4 -i jb/12A4297e_kernelcache.dec -o $1/$3/kernelcache2.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
-            ./img4 -i jb/12A4297e_kernelcache.dec -o $1/$3/kernelcache2 -M IM4M -T krnl -P $1/$3/kc.bpatch
         else
             ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
             ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
@@ -450,13 +437,6 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     ./sshpass -p "alpine" scp -r -P 2222 ./Baseband root@localhost:/mnt1/usr/local/standalone/firmware
     ./sshpass -p "alpine" scp -P 2222 ./apticket.der root@localhost:/mnt1/System/Library/Caches/
     ./sshpass -p "alpine" scp -P 2222 ./sep-firmware.img4 root@localhost:/mnt1/usr/standalone/firmware/
-    # lets do it twice just to be sure
-    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt1/usr/local/standalone/firmware/Baseband"
-    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir /mnt2/keybags"
-    ./sshpass -p "alpine" scp -r -P 2222 ./keybags root@localhost:/mnt2
-    ./sshpass -p "alpine" scp -r -P 2222 ./Baseband root@localhost:/mnt1/usr/local/standalone/firmware
-    ./sshpass -p "alpine" scp -P 2222 ./apticket.der root@localhost:/mnt1/System/Library/Caches/
-    ./sshpass -p "alpine" scp -P 2222 ./sep-firmware.img4 root@localhost:/mnt1/usr/standalone/firmware/
     if [[ "$1" == *"9"* ]]; then
         ./sshpass -p "alpine" scp -P 2222 ./ios9/fstab root@localhost:/mnt1/etc/
     elif [[ "$1" == *"8"* ]]; then
@@ -484,12 +464,12 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/Library/PreinstalledAssets/*"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/Library/Preferences/.GlobalPreferences.plist"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/.forward"
-    #if [[ "$1" == *"9"* || "$1" == *"8"* ]]; then
+    if [[ "$1" == *"9"* || "$1" == *"8"* ]]; then
         # these plists should in theory trick ios into thinking we already migrated& went thru Setup.app
-        #./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.purplebuddy.plist root@localhost:/mnt2/mobile/Library/Preferences/
-        #./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.purplebuddy.notbackedup.plist root@localhost:/mnt2/mobile/Library/Preferences/
-        #./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.migration.plist root@localhost:/mnt2/mobile/Library/Preferences/
-    #fi
+        ./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.purplebuddy.plist root@localhost:/mnt2/mobile/Library/Preferences/
+        ./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.purplebuddy.notbackedup.plist root@localhost:/mnt2/mobile/Library/Preferences/
+        ./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.migration.plist root@localhost:/mnt2/mobile/Library/Preferences/
+    fi
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/chown root:wheel /mnt1/System/Library/LaunchDaemons/com.saurik.Cydia.Startup.plist"
     ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/kernelcache root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches
     if [[ "$1" == *"7"* ]]; then
@@ -511,30 +491,10 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/usr/lib/libmis.dylib"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram oblit-inprogress=5"
     $(./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
-    if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-        ./dfuhelper.sh
-    fi
-    _wait_for_dfu
-    cd $deviceid/$1
-    ../../ipwnder -p
-    ../../irecovery -f iBSS.img4
-    ../../irecovery -f iBSS.img4
-    ../../irecovery -f iBEC.img4
-    ../../irecovery -f devicetree.img4
-    ../../irecovery -c devicetree
-    if [[ "$1" == *"8"* ]]; then
-        # ios 8 beta 2
-        ../../irecovery -f kernelcache2.img4
-    else
-        ../../irecovery -f kernelcache.img4
-    fi
-    ../../irecovery -c bootx &
-    cd ../../
-    _kill_if_running iproxy
-    if [[ "$1" == *"8"* ]]; then
-        echo "first phase of downgrade is done, now wait until it gets stuck in verbose"
-        echo "once it has been stuck for >60 seconds, go and put the phone back in dfu mode"
-        echo "we will then boot the phone with a slightly newer kernel to make it boot"
+    if [ -e $deviceid/$1/iBSS.img4 ]; then
+        if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+            ./dfuhelper.sh
+        fi
         _wait_for_dfu
         cd $deviceid/$1
         ../../ipwnder -p
@@ -543,13 +503,11 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         ../../irecovery -f iBEC.img4
         ../../irecovery -f devicetree.img4
         ../../irecovery -c devicetree
-        # ios 8 beta 5
         ../../irecovery -f kernelcache.img4
         ../../irecovery -c bootx &
         cd ../../
-    else
-        echo "done"
     fi
+    _kill_if_running iproxy
     exit
 else
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1"
