@@ -189,6 +189,10 @@ _download_boot_files() {
         if [[ "$3" == *"8"* ]]; then
             ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
             ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
+            #seprmvr64lite only works on ios 7.0 - 8.0 beta 5
+            #ios 8.0+ gets KERN_INVALID_ADDRESS in Security.framework, securityd etc. due to bad patches
+            #this is the root cause of the slide to upgrade screen, not because of partition guid not being 00000000-0000-0000-0000-000000000000
+            #here we are using ios 8 beta 5 12A4297e kernel to boot ios 8, which is tested working on ios 8.0
             ./seprmvr64lite jb/12A4297e_kcache.raw $1/$3/kcache.patched
             # we need to apply mount_common patch for rootfs rw and vm_map_enter patch for tweak injection
             #./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -m -e
@@ -196,16 +200,6 @@ _download_boot_files() {
             ./kerneldiff jb/12A4297e_kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
             ./img4 -i jb/12A4297e_kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
             ./img4 -i jb/12A4297e_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
-            
-            #./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
-            #./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
-            #./seprmvr64lite $1/$3/kcache.raw $1/$3/kcache.patched
-            # we need to apply mount_common patch for rootfs rw and vm_map_enter patch for tweak injection
-            #./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -m -e
-            #cp $1/$3/kcache.patched $1/$3/kcache2.patched
-            #./kerneldiff $1/$3/kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
-            #./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
-            #./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
         else
             ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
             ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
@@ -433,49 +427,6 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     sleep 2
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync"
     sleep 2
-    if [[ "$1" == *"8"* ]]; then
-        echo "https://ios7.iarchive.app/downgrade/installing-filesystem.html"
-        echo "partition 1"
-        echo "step 1, press the letter n on your keyboard and then press enter"
-        echo "step 2, press number 1 on your keyboard and press enter"
-        echo "step 3, press enter again"
-        if [[ "$1" == *"9"* ]]; then
-            echo "step 4, type 1264563 and then press enter"
-        elif [[ "$1" == *"8"* ]]; then
-            echo "step 4, type 1264563 and then press enter"
-        else
-            echo "step 4, type 864563 and then press enter"
-        fi
-        echo "step 5, press enter one last time"
-        echo "partition 2"
-        echo "step 1, press the letter n on your keyboard and then press enter"
-        echo "step 2, press number 2 on your keyboard and press enter"
-        echo "step 3, press enter 3 more times"
-        echo "fixing ios 8"
-        echo "step 1, press the letter x on your keyboard then press enter"
-        echo "step 2, press the letter c on your keyboard then press enter"
-        echo "step 3, press number 1 on your keyboard and press enter"
-        echo "step 4, type 00000000-0000-0000-0000-000000000000 and then press enter"
-        echo "step 5, press the letter c on your keyboard then press enter"
-        echo "step 6, press number 2 on your keyboard and press enter"
-        echo "step 7, type 00000000-0000-0000-0000-000000000000 and then press enter"
-        echo "last steps"
-        echo "step 1, press the letter w on your keyboard and then press enter"
-        echo "step 2, press y on your keyboard and press enter"
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "gptfdisk /dev/rdisk0s1"
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync"
-        sleep 2
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync"
-        sleep 2
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync"
-        sleep 2
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync"
-        sleep 2
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync"
-        sleep 2
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync"
-        sleep 2
-    fi
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_hfs -s -v System -J -b 4096 -n a=4096,c=4096,e=4096 /dev/disk0s1s1"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_hfs -s -v Data -J -b 4096 -n a=4096,c=4096,e=4096 /dev/disk0s1s2"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_hfs /dev/disk0s1s1 /mnt1"
@@ -493,6 +444,13 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         ./sshpass -p "alpine" scp -P 2222 ./ios9/fstab root@localhost:/mnt1/etc/
     elif [[ "$1" == *"8"* ]]; then
         ./sshpass -p "alpine" scp -P 2222 ./fstab root@localhost:/mnt1/etc/
+        read -p "would you like to also install wtfis jailbreak? " r
+        if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
+            ./sshpass -p "alpine" scp -P 2222 ./jb/wtfis.app.tar root@localhost:/mnt1
+            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt1/wtfis.app.tar -C /mnt1/Applications"
+            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt1/Applications/wtfis.app'
+            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'chmod -R 775 /mnt1/Applications/wtfis.app'
+        fi
     else
         ./sshpass -p "alpine" scp -P 2222 ./jb/fstab root@localhost:/mnt1/etc/
     fi
@@ -504,22 +462,17 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/data_ark.plist.tar -C /mnt2"
     fi
     ./sshpass -p "alpine" scp -P 2222 ./jb/com.saurik.Cydia.Startup.plist root@localhost:/mnt1/System/Library/LaunchDaemons
-    ./sshpass -p "alpine" scp -P 2222 ./jb/Services.plist root@localhost:/mnt1/System/Library/Lockdown/Services.plist
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/OS.tar"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/log/asl/SweepStore"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/Library/PreinstalledAssets/*"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/Library/Preferences/.GlobalPreferences.plist"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/.forward"
-    if [[ "$1" == *"9"* || "$1" == *"8"* ]]; then
+    #if [[ "$1" == *"9"* || "$1" == *"8"* ]]; then
         # these plists should in theory trick ios into thinking we already migrated& went thru Setup.app
-        ./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.purplebuddy.plist root@localhost:/mnt2/mobile/Library/Preferences/
-        ./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.purplebuddy.notbackedup.plist root@localhost:/mnt2/mobile/Library/Preferences/
-        ./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.migration.plist root@localhost:/mnt2/mobile/Library/Preferences/
-        read -p "would you like to also delete DataMigration.framework? " r
-        if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
-            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mv /mnt1/System/Library/PrivateFrameworks/DataMigration.framework /mnt1/System/Library/PrivateFrameworks/DataMigration.framework.bak"
-        fi
-    fi
+        #./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.purplebuddy.plist root@localhost:/mnt2/mobile/Library/Preferences/
+        #./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.purplebuddy.notbackedup.plist root@localhost:/mnt2/mobile/Library/Preferences/
+        #./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.migration.plist root@localhost:/mnt2/mobile/Library/Preferences/
+    #fi
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/chown root:wheel /mnt1/System/Library/LaunchDaemons/com.saurik.Cydia.Startup.plist"
     ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/kernelcache root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches
     if [[ "$1" == *"7"* ]]; then
@@ -558,100 +511,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         cd ../../
     fi
     _kill_if_running iproxy
-    if [[ "$1" == *"7"* ]]; then
-        echo "first phase of downgrading and jailbreaking your phone done"
-        echo "once device boots up to the lock screen, turn on assistivetouch and disable auto lock"
-        echo "connect the phone to an open wifi network before opening cydia"
-        echo "then once you have done those two things, open cydia and let it prepare filesystem"
-        echo "refresh sources on cydia and then update cydia to the latest version"
-        echo "this should in theory let us enable manual stashing via /.cydia_no_stash"
-        echo "which, after unstashing a few things, should fix safari, maps, mail, etc"
-        _wait_for_dfu
-        if [[ "$1" == *"8"* ]]; then
-            if [ -e $deviceid/$1/iBSS.img4 ]; then
-                if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                    ./dfuhelper.sh
-                fi
-                _wait_for_dfu
-                cd $deviceid/$1
-                ../../ipwnder -p
-                ../../irecovery -f iBSS.img4
-                ../../irecovery -f iBSS.img4
-                ../../irecovery -f iBEC.img4
-                ../../irecovery -f devicetree.img4
-                ../../irecovery -c devicetree
-                ../../irecovery -f kernelcache.img4
-                ../../irecovery -c bootx &
-                cd ../../
-            fi
-            _wait_for_dfu
-        fi
-        cd ramdisk
-        ../ipwnder -p
-        ../irecovery -f iBSS.img4
-        ../irecovery -f iBSS.img4
-        ../irecovery -f iBEC.img4
-        ../irecovery -f ramdisk.img4
-        ../irecovery -c ramdisk
-        ../irecovery -f devicetree.img4
-        ../irecovery -c devicetree
-        ../irecovery -f kernelcache.img4
-        ../irecovery -c bootx &
-        cd ..
-        read -p "pls press the enter key once device is in the ramdisk" r
-        ./iproxy 2222 22 &
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1"
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs -o suid,dev /dev/disk0s1s2 /mnt2"
-        if [[ "$1" == *"9"* ]]; then
-            ./sshpass -p "alpine" scp -P 2222 ./ios9/fstab root@localhost:/mnt1/etc/
-        elif [[ "$1" == *"8"* ]]; then
-            ./sshpass -p "alpine" scp -P 2222 ./fstab root@localhost:/mnt1/etc/
-        else
-            ./sshpass -p "alpine" scp -P 2222 ./jb/fstab root@localhost:/mnt1/etc/
-        fi
-        if [[ "$1" == *"7"* ]]; then
-            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mv /mnt1/System/Library/LaunchDaemons/com.apple.CommCenter.plist /mnt1/System/Library/LaunchDaemons/com.apple.CommCenter.plis_"
-            ./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.springboard.plist root@localhost:/mnt2/mobile/Library/Preferences/com.apple.springboard.plist
-            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt1/System/Library/Caches/com.apple.dyld/enable-dylibs-to-override-cache"
-        fi
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm /mnt1/Applications'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv $(find /mnt2/stash -name Applications) /mnt1/'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm /mnt1/Library/Ringtones'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv $(find /mnt2/stash -name Ringtones) /mnt1/Library'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm /mnt1/Library/Wallpaper'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv $(find /mnt2/stash -name Wallpaper) /mnt1/Library'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm /mnt1/usr/lib/pam'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv $(find /mnt2/stash -name pam) /mnt1/usr/lib'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm /mnt1/usr/include'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv $(find /mnt2/stash -name include) /mnt1/usr/'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm /mnt1/usr/share'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv $(find /mnt2/stash -name share) /mnt1/usr/'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt1/.cydia_no_stash"
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chown root:wheel /mnt1/.cydia_no_stash"
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chmod 777 /mnt1/.cydia_no_stash"
-        $(./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
-        if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-            ./dfuhelper.sh
-        fi    
-        _wait_for_dfu
-         cd $deviceid/$1
-        ../../ipwnder -p
-        ../../irecovery -f iBSS.img4
-        ../../irecovery -f iBSS.img4
-        ../../irecovery -f iBEC.img4
-        ../../irecovery -f devicetree.img4
-        ../../irecovery -c devicetree
-        ../../irecovery -f kernelcache3.img4
-        ../../irecovery -c bootx &
-        cd ../../
-        echo "third phase of downgrading and jailbreaking your phone done"
-        echo "take note that in order for tweaks to work, make sure you do not hit"
-        echo "restart springboard in cydia. if it ever asks you to, use assistivetouch to go home"
-        echo "and then open settings, go to general, and reset and erase all content& settings"
-        echo "this will restart your springboard without it causing it to get stuck on spinning circle"
-        echo "do not do this more then once in the same boot, otherwise springboard may crash"
-        echo "pls note that cydia substrate must not be loaded in order for app store to work"
-    fi
+    exit
 else
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1"
     if [[ "$1" == *"7"* ]]; then
@@ -681,6 +541,8 @@ else
             ./sshpass -p "alpine" scp -P 2222 ./data_ark.plist.tar root@localhost:/mnt2/
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/data_ark.plist.tar -C /mnt2"
         fi
+    #for ios 8 and up it is critical to not ever mount /mnt2 as rw from ssh ever again after first mount
+    #you can however mount /mnt2 as read only on ios 8 and up with the commented out command listed below
     #else
         #./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -t hfs -o suid,dev /dev/disk0s1s2 /mnt2"
     fi
