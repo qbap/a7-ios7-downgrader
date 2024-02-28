@@ -557,7 +557,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         ../../irecovery -f iBEC.img4
         ../../irecovery -f devicetree.img4
         ../../irecovery -c devicetree
-        ../../irecovery -f beta2_kernelcache.img4
+        ../../irecovery -f kernelcache.img4
         ../../irecovery -c bootx &
         cd ../../
         echo "step three, boot into ios 8 beta 5"
