@@ -479,7 +479,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     ./sshpass -p "alpine" scp -P 2222 ./apticket.der root@localhost:/mnt1/System/Library/Caches/
     ./sshpass -p "alpine" scp -P 2222 ./sep-firmware.img4 root@localhost:/mnt1/usr/standalone/firmware/
     if [[ "$1" == *"9"* ]]; then
-        ./sshpass -p "alpine" scp -P 2222 ./fstab root@localhost:/mnt1/etc/
+        ./sshpass -p "alpine" scp -P 2222 ./ios9/fstab root@localhost:/mnt1/etc/
     elif [[ "$1" == *"8"* ]]; then
         ./sshpass -p "alpine" scp -P 2222 ./fstab root@localhost:/mnt1/etc/
     else
@@ -582,7 +582,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1"
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs -o suid,dev /dev/disk0s1s2 /mnt2"
         if [[ "$1" == *"9"* ]]; then
-            ./sshpass -p "alpine" scp -P 2222 ./fstab root@localhost:/mnt1/etc/
+            ./sshpass -p "alpine" scp -P 2222 ./ios9/fstab root@localhost:/mnt1/etc/
         elif [[ "$1" == *"8"* ]]; then
             ./sshpass -p "alpine" scp -P 2222 ./fstab root@localhost:/mnt1/etc/
         else
@@ -661,7 +661,7 @@ else
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/data_ark.plist.tar -C /mnt2"
         fi
     else
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -t hfs -o suid,dev /dev/disk0s1s2 /mnt2"
+        #./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -t hfs -o suid,dev /dev/disk0s1s2 /mnt2"
     fi
     ssh -p2222 root@localhost
     $(./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
