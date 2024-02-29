@@ -260,25 +260,45 @@ _download_root_fs() {
     ./pzb -g BuildManifest.plist "$ipswurl"
     
     if [ ! -e $1/$3/OS.tar ]; then
-        # Download root fs
-        ./pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
-        # Decrypt root fs
-        # note that as per src/decrypt.rs it will rename the file to OS.dmg by default
-        cargo run decrypt $1 $3 "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -l
-        osfn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
-        mv $(echo $osfn | sed "s/dmg/bin/g") $1/$3/OS.dmg
-        ./dmg build $1/$3/OS.dmg $1/$3/rw.dmg
-        hdiutil attach -mountpoint /tmp/ios $1/$3/rw.dmg
-        sudo diskutil enableOwnership /tmp/ios
-        sudo mkdir /tmp/ios2
-        sudo rm -rf /tmp/ios2
-        sudo cp -a /tmp/ios/. /tmp/ios2/
-        sudo tar -xvf ./jb/cydia.tar -C /tmp/ios2
-        sudo ./gnutar -cvf $1/$3/OS.tar -C /tmp/ios2 .
-        hdiutil detach /tmp/ios
-        rm -rf /tmp/ios
-        sudo rm -rf /tmp/ios2
-        ./irecovery -f /dev/null
+        if [[ "$3" == *"9"* || "$3" == *"8"* ]]; then
+            # there is a nuance in the ios 8+ data protection model that all file contents on /var will get destroyed on first boot
+            # so there is no needed to install cydia, because a lot of cydia related files get installed to /var
+            # the user will instead have to manually install the contents of a jailbreak ipa over ssh and then run the app after boot
+            # Download root fs
+            ./pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
+            # Decrypt root fs
+            # note that as per src/decrypt.rs it will rename the file to OS.dmg by default
+            cargo run decrypt $1 $3 "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -l
+            osfn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
+            mv $(echo $osfn | sed "s/dmg/bin/g") $1/$3/OS.dmg
+            ./dmg build $1/$3/OS.dmg $1/$3/rw.dmg
+            hdiutil attach -mountpoint /tmp/ios $1/$3/rw.dmg
+            sudo diskutil enableOwnership /tmp/ios
+            sudo ./gnutar -cvf $1/$3/OS.tar -C /tmp/ios .
+            hdiutil detach /tmp/ios
+            rm -rf /tmp/ios
+            ./irecovery -f /dev/null
+        else
+            # Download root fs
+            ./pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
+            # Decrypt root fs
+            # note that as per src/decrypt.rs it will rename the file to OS.dmg by default
+            cargo run decrypt $1 $3 "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -l
+            osfn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
+            mv $(echo $osfn | sed "s/dmg/bin/g") $1/$3/OS.dmg
+            ./dmg build $1/$3/OS.dmg $1/$3/rw.dmg
+            hdiutil attach -mountpoint /tmp/ios $1/$3/rw.dmg
+            sudo diskutil enableOwnership /tmp/ios
+            sudo mkdir /tmp/ios2
+            sudo rm -rf /tmp/ios2
+            sudo cp -a /tmp/ios/. /tmp/ios2/
+            sudo tar -xvf ./jb/cydia.tar -C /tmp/ios2
+            sudo ./gnutar -cvf $1/$3/OS.tar -C /tmp/ios2 .
+            hdiutil detach /tmp/ios
+            rm -rf /tmp/ios
+            sudo rm -rf /tmp/ios2
+            ./irecovery -f /dev/null
+        fi
     fi
 
     rm -rf BuildManifest.plist
@@ -339,7 +359,16 @@ if [ -e $deviceid/$1/iBSS.img4 ]; then
         ../../irecovery -f iBEC.img4
         ../../irecovery -f devicetree.img4
         ../../irecovery -c devicetree
-        ../../irecovery -f kernelcache.img4
+        if [[ "$1" == *"8"* ]]; then
+            read -p "would you like to boot ios $1 release kernel? " r
+            if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
+                ../../irecovery -f full_kernelcache.img4
+            else
+                ../../irecovery -f kernelcache.img4
+            fi
+        else
+            ../../irecovery -f kernelcache.img4
+        fi
         ../../irecovery -c bootx &
         cd ../../
         exit
@@ -368,11 +397,13 @@ read -p "would you like to wipe this phone and install ios $1? " r
 if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     if [ ! -e apticket.der ]; then
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1"
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs -o suid,dev /dev/disk0s1s2 /mnt2"
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -t hfs -o ro,nosuid,nodev /dev/disk0s1s2 /mnt2"
         ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/Caches/apticket.der ./apticket.der
         ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/usr/standalone/firmware/sep-firmware.img4 ./sep-firmware.img4
         ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/usr/local/standalone/firmware/Baseband ./Baseband
         ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt2/keybags ./keybags
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt1"
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt2"
     fi
     if [ ! -e apticket.der ]; then
         echo "missing ./apticket.der, which is required in order to proceed. exiting.."
@@ -445,7 +476,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync"
     sleep 2
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_hfs -s -v System -J -b 4096 -n a=4096,c=4096,e=4096 /dev/disk0s1s1"
-    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_hfs -s -v Data -J -b 4096 -n a=4096,c=4096,e=4096 /dev/disk0s1s2"
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_hfs -s -v Data -P -J -b 4096 -n a=4096,c=4096,e=4096 /dev/disk0s1s2"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_hfs /dev/disk0s1s1 /mnt1"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs -o suid,dev /dev/disk0s1s2 /mnt2"
     ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/OS.tar root@localhost:/mnt2
@@ -462,10 +493,6 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         ./sshpass -p "alpine" scp -P 2222 ./ios9/fstab root@localhost:/mnt1/etc/
     elif [[ "$1" == *"8"* ]]; then
         ./sshpass -p "alpine" scp -P 2222 ./fstab root@localhost:/mnt1/etc/
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/Keychains/*"
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mv /mnt1/System/Library/Frameworks/AssetsLibrary.framework /mnt1/System/Library/Frameworks/AssetsLibrary.framework.bak"
-        ./sshpass -p "alpine" scp -P 2222 ./jb/AssetsLibrary.framework.tar root@localhost:/mnt1/
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt1/AssetsLibrary.framework.tar -C /mnt1/System/Library/Frameworks"
     else
         ./sshpass -p "alpine" scp -P 2222 ./jb/fstab root@localhost:/mnt1/etc/
     fi
@@ -473,22 +500,30 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     read -p "would you like to also delete Setup.app? " r
     if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/Applications/Setup.app"
-        ./sshpass -p "alpine" scp -P 2222 ./data_ark.plist.tar root@localhost:/mnt2/
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/data_ark.plist.tar -C /mnt2"
+        if [[ "$1" == *"9"* || "$1" == *"8"* ]]; then
+            read -p "would you like to install data_ark.plist to /var? " r
+            if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
+                ./sshpass -p "alpine" scp -P 2222 ./data_ark.plist.tar root@localhost:/mnt2/
+                ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/data_ark.plist.tar -C /mnt2"
+            fi
+        else
+            ./sshpass -p "alpine" scp -P 2222 ./data_ark.plist.tar root@localhost:/mnt2/
+            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/data_ark.plist.tar -C /mnt2"
+            ./sshpass -p "alpine" scp -P 2222 ./jb/com.saurik.Cydia.Startup.plist root@localhost:/mnt1/System/Library/LaunchDaemons
+            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/chown root:wheel /mnt1/System/Library/LaunchDaemons/com.saurik.Cydia.Startup.plist"
+        fi
     fi
-    ./sshpass -p "alpine" scp -P 2222 ./jb/com.saurik.Cydia.Startup.plist root@localhost:/mnt1/System/Library/LaunchDaemons
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/OS.tar"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/log/asl/SweepStore"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/Library/PreinstalledAssets/*"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/Library/Preferences/.GlobalPreferences.plist"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/.forward"
-    if [[ "$1" == *"9"* || "$1" == *"8"* ]]; then
-        # these plists should in theory trick ios into thinking we already migrated& went thru Setup.app
-        ./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.purplebuddy.plist root@localhost:/mnt2/mobile/Library/Preferences/
-        ./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.purplebuddy.notbackedup.plist root@localhost:/mnt2/mobile/Library/Preferences/
-        ./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.migration.plist root@localhost:/mnt2/mobile/Library/Preferences/
-    fi
-    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/chown root:wheel /mnt1/System/Library/LaunchDaemons/com.saurik.Cydia.Startup.plist"
+    #if [[ "$1" == *"9"* || "$1" == *"8"* ]]; then
+    #    # these plists should in theory trick ios into thinking we already migrated& went thru Setup.app
+    #    ./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.purplebuddy.plist root@localhost:/mnt2/mobile/Library/Preferences/
+    #    ./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.purplebuddy.notbackedup.plist root@localhost:/mnt2/mobile/Library/Preferences/
+    #    ./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.migration.plist root@localhost:/mnt2/mobile/Library/Preferences/
+    #fi
     ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/kernelcache root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches
     if [[ "$1" == *"7"* ]]; then
         ./sshpass -p "alpine" scp -P 2222 ./jb/AppleInternal.tar root@localhost:/mnt1/
