@@ -260,45 +260,25 @@ _download_root_fs() {
     ./pzb -g BuildManifest.plist "$ipswurl"
     
     if [ ! -e $1/$3/OS.tar ]; then
-        if [[ "$3" == *"9"* || "$3" == *"8"* ]]; then
-            # there is a nuance in the ios 8+ data protection model that all file contents on /var will get destroyed on first boot
-            # so there is no needed to install cydia, because a lot of cydia related files get installed to /var
-            # the user will instead have to manually install the contents of a jailbreak ipa over ssh and then run the app after boot
-            # Download root fs
-            ./pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
-            # Decrypt root fs
-            # note that as per src/decrypt.rs it will rename the file to OS.dmg by default
-            cargo run decrypt $1 $3 "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -l
-            osfn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
-            mv $(echo $osfn | sed "s/dmg/bin/g") $1/$3/OS.dmg
-            ./dmg build $1/$3/OS.dmg $1/$3/rw.dmg
-            hdiutil attach -mountpoint /tmp/ios $1/$3/rw.dmg
-            sudo diskutil enableOwnership /tmp/ios
-            sudo ./gnutar -cvf $1/$3/OS.tar -C /tmp/ios .
-            hdiutil detach /tmp/ios
-            rm -rf /tmp/ios
-            ./irecovery -f /dev/null
-        else
-            # Download root fs
-            ./pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
-            # Decrypt root fs
-            # note that as per src/decrypt.rs it will rename the file to OS.dmg by default
-            cargo run decrypt $1 $3 "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -l
-            osfn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
-            mv $(echo $osfn | sed "s/dmg/bin/g") $1/$3/OS.dmg
-            ./dmg build $1/$3/OS.dmg $1/$3/rw.dmg
-            hdiutil attach -mountpoint /tmp/ios $1/$3/rw.dmg
-            sudo diskutil enableOwnership /tmp/ios
-            sudo mkdir /tmp/ios2
-            sudo rm -rf /tmp/ios2
-            sudo cp -a /tmp/ios/. /tmp/ios2/
-            sudo tar -xvf ./jb/cydia.tar -C /tmp/ios2
-            sudo ./gnutar -cvf $1/$3/OS.tar -C /tmp/ios2 .
-            hdiutil detach /tmp/ios
-            rm -rf /tmp/ios
-            sudo rm -rf /tmp/ios2
-            ./irecovery -f /dev/null
-        fi
+        # Download root fs
+        ./pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
+        # Decrypt root fs
+        # note that as per src/decrypt.rs it will rename the file to OS.dmg by default
+        cargo run decrypt $1 $3 "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -l
+        osfn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
+        mv $(echo $osfn | sed "s/dmg/bin/g") $1/$3/OS.dmg
+        ./dmg build $1/$3/OS.dmg $1/$3/rw.dmg
+        hdiutil attach -mountpoint /tmp/ios $1/$3/rw.dmg
+        sudo diskutil enableOwnership /tmp/ios
+        sudo mkdir /tmp/ios2
+        sudo rm -rf /tmp/ios2
+        sudo cp -a /tmp/ios/. /tmp/ios2/
+        sudo tar -xvf ./jb/cydia.tar -C /tmp/ios2
+        sudo ./gnutar -cvf $1/$3/OS.tar -C /tmp/ios2 .
+        hdiutil detach /tmp/ios
+        rm -rf /tmp/ios
+        sudo rm -rf /tmp/ios2
+        ./irecovery -f /dev/null
     fi
 
     rm -rf BuildManifest.plist
@@ -540,6 +520,13 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/AppleInternal.tar'
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt2/mobile/Library/Caches/com.apple.MobileGestalt.plist'
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mv /mnt1/System/Library/LaunchDaemons/com.apple.CommCenter.plist /mnt1/System/Library/LaunchDaemons/com.apple.CommCenter.plis_"
+    elif [[ "$1" == *"9"* || "$1" == *"8"* ]]; then
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/sbin/umount /mnt2'
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/bin/dd if=/dev/disk0s1s2 of=/mnt1/out.img bs=512 count=8192'
+        ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/out.img ./$deviceid/$1/NoMoreSIGABRT.img
+        ./Kernel64Patcher ./$deviceid/$1/NoMoreSIGABRT.img ./$deviceid/$1/NoMoreSIGABRT.patched -n
+        ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/NoMoreSIGABRT.patched root@localhost:/mnt1/out.img
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/bin/dd if=/mnt1/out.img of=/dev/disk0s1s2 bs=512 count=8192'
     fi
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/usr/lib/libmis.dylib"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram oblit-inprogress=5"
