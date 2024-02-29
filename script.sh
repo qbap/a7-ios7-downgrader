@@ -236,24 +236,24 @@ _download_root_fs() {
     
     if [ ! -e $1/$3/OS.tar ]; then
         if [ ! -e $1/$3/OS.dmg ]; then
-        if [[ "$3" == "8.0" ]]; then
-            # https://archive.org/download/Apple_iPhone_Firmware/Apple%20iPhone%206.1%20Firmware%208.0%20(8.0.12A4297e)%20(beta2)/
-            ./aria2c https://ia903400.us.archive.org/4/items/Apple_iPhone_Firmware/Apple%20iPhone%206.1%20Firmware%208.0%20%288.0.12A4297e%29%20%28beta2%29/media_ipsw.rar
-            mv media_ipsw.rar $1/$3/media_ipsw.rar
-            cd ./$1/$3
-            ../../7z x media_ipsw.rar
-            ../../7z x $(find . -name '*.ipsw*')
-            ../../dmg extract 058-01244-038.dmg OS.dmg -k 45f6fbb943e0b9079ae340662e0c408e73c9e0c9bffefef04a8acb89691558660ca75942
-            cd ../../
-        else
-            # Download root fs
-            ./pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
-            # Decrypt root fs
-            # note that as per src/decrypt.rs it will rename the file to OS.dmg by default
-            cargo run decrypt $1 $3 "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -l
-            osfn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
-            mv $(echo $osfn | sed "s/dmg/bin/g") $1/$3/OS.dmg
-        fi
+            if [[ "$3" == "8.0" ]]; then
+                # https://archive.org/download/Apple_iPhone_Firmware/Apple%20iPhone%206.1%20Firmware%208.0%20(8.0.12A4297e)%20(beta2)/
+                ./aria2c https://ia903400.us.archive.org/4/items/Apple_iPhone_Firmware/Apple%20iPhone%206.1%20Firmware%208.0%20%288.0.12A4297e%29%20%28beta2%29/media_ipsw.rar
+                mv media_ipsw.rar $1/$3/media_ipsw.rar
+                cd ./$1/$3
+                ../../7z x media_ipsw.rar
+                ../../7z x $(find . -name '*.ipsw*')
+                ../../dmg extract 058-01244-038.dmg OS.dmg -k 45f6fbb943e0b9079ae340662e0c408e73c9e0c9bffefef04a8acb89691558660ca75942
+                cd ../../
+            else
+                # Download root fs
+                ./pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
+                # Decrypt root fs
+                # note that as per src/decrypt.rs it will rename the file to OS.dmg by default
+                cargo run decrypt $1 $3 "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -l
+                osfn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
+                mv $(echo $osfn | sed "s/dmg/bin/g") $1/$3/OS.dmg
+            fi
         fi
         ./dmg build $1/$3/OS.dmg $1/$3/rw.dmg
         hdiutil attach -mountpoint /tmp/ios $1/$3/rw.dmg
