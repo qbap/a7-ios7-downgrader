@@ -189,38 +189,11 @@ _download_boot_files() {
         if [[ "$3" == *"8"* ]]; then
             ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
             ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
-            
-            # step one, boot into slide to upgrade screen by booting regular ios 8
-            # make sure you DO NOT slide to upgrade, for the love of god just DO NOT!
-            ./seprmvr64lite $1/$3/kcache.raw $1/$3/kcache.patched
-            cp $1/$3/kcache.patched $1/$3/kcache2.patched
-            ./kerneldiff $1/$3/kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
-            ./img4 -i $1/$3/kernelcache.dec -o $1/$3/full_kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
-            ./img4 -i $1/$3/kernelcache.dec -o $1/$3/full_kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
-            
-            rm $1/$3/kcache.patched
-            rm $1/$3/kcache2.patched
-            rm $1/$3/kc.bpatch
-            
-            # step two, boot into ios 8 beta 2
-            # verbose should get stuck on AppleBCMWLanCore::powerOn() after a bit
-            # let it stay stuck on AppleBCMWLanCore::powerOn() for >60 seconds
             ./seprmvr64lite jb/12A4297e_kcache.raw $1/$3/kcache.patched
             cp $1/$3/kcache.patched $1/$3/kcache2.patched
             ./kerneldiff jb/12A4297e_kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
-            ./img4 -i jb/12A4297e_kernelcache.dec -o $1/$3/beta2_kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
-            ./img4 -i jb/12A4297e_kernelcache.dec -o $1/$3/beta2_kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
-            
-            rm $1/$3/kcache.patched
-            rm $1/$3/kcache2.patched
-            rm $1/$3/kc.bpatch
-        
-            # step three, boot into ios 8 beta 5
-            ./seprmvr64lite jb/12A4345d_kcache.raw $1/$3/kcache.patched
-            cp $1/$3/kcache.patched $1/$3/kcache2.patched
-            ./kerneldiff jb/12A4345d_kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
-            ./img4 -i jb/12A4345d_kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
-            ./img4 -i jb/12A4345d_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
+            ./img4 -i jb/12A4297e_kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
+            ./img4 -i jb/12A4297e_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
         else
             ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
             ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
@@ -231,7 +204,7 @@ _download_boot_files() {
             ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
             ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
         fi
-	./dtree_patcher $1/$3/DeviceTree.dec $1/$3/DeviceTree.patched -n
+        ./dtree_patcher $1/$3/DeviceTree.dec $1/$3/DeviceTree.patched -n
         ./img4 -i $1/$3/DeviceTree.patched -o $1/$3/devicetree.img4 -A -M IM4M -T rdtr
     fi
 }
@@ -261,13 +234,24 @@ _download_root_fs() {
     ./pzb -g BuildManifest.plist "$ipswurl"
     
     if [ ! -e $1/$3/OS.tar ]; then
-        # Download root fs
-        ./pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
-        # Decrypt root fs
-        # note that as per src/decrypt.rs it will rename the file to OS.dmg by default
-        cargo run decrypt $1 $3 "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -l
-        osfn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
-        mv $(echo $osfn | sed "s/dmg/bin/g") $1/$3/OS.dmg
+        if [[ "$3" == "8.0" ]]; then
+            # https://archive.org/download/Apple_iPhone_Firmware/Apple%20iPhone%206.1%20Firmware%208.0%20(8.0.12A4297e)%20(beta2)/
+            ./aria2c https://ia903400.us.archive.org/4/items/Apple_iPhone_Firmware/Apple%20iPhone%206.1%20Firmware%208.0%20%288.0.12A4297e%29%20%28beta2%29/media_ipsw.rar
+            mv media_ipsw.rar $1/$3/media_ipsw.rar
+            cd ./$1/$3
+            ../../7z x media_ipsw.rar
+            ../../7z x $(find . -name '*.ipsw*')
+            ../../dmg extract 058-01244-038.dmg OS.dmg -k 45f6fbb943e0b9079ae340662e0c408e73c9e0c9bffefef04a8acb89691558660ca75942
+            cd ../../
+        else
+            # Download root fs
+            ./pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
+            # Decrypt root fs
+            # note that as per src/decrypt.rs it will rename the file to OS.dmg by default
+            cargo run decrypt $1 $3 "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -l
+            osfn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
+            mv $(echo $osfn | sed "s/dmg/bin/g") $1/$3/OS.dmg
+        fi
         ./dmg build $1/$3/OS.dmg $1/$3/rw.dmg
         hdiutil attach -mountpoint /tmp/ios $1/$3/rw.dmg
         sudo diskutil enableOwnership /tmp/ios
@@ -340,16 +324,7 @@ if [ -e $deviceid/$1/iBSS.img4 ]; then
         ../../irecovery -f iBEC.img4
         ../../irecovery -f devicetree.img4
         ../../irecovery -c devicetree
-        if [[ "$1" == *"8"* ]]; then
-            read -p "would you like to boot ios $1 release kernel? " r
-            if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
-                ../../irecovery -f full_kernelcache.img4
-            else
-                ../../irecovery -f kernelcache.img4
-            fi
-        else
-            ../../irecovery -f kernelcache.img4
-        fi
+        ../../irecovery -f kernelcache.img4
         ../../irecovery -c bootx &
         cd ../../
         exit
@@ -472,6 +447,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     if [[ "$1" == *"9"* ]]; then
         ./sshpass -p "alpine" scp -P 2222 ./ios9/fstab root@localhost:/mnt1/etc/
     elif [[ "$1" == *"8"* ]]; then
+        ./sshpass -p "alpine" scp -r -P 2222 ./keybags root@localhost:/mnt2
         ./sshpass -p "alpine" scp -P 2222 ./fstab root@localhost:/mnt1/etc/
     else
         ./sshpass -p "alpine" scp -r -P 2222 ./keybags root@localhost:/mnt2
@@ -490,10 +466,10 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         else
             ./sshpass -p "alpine" scp -P 2222 ./data_ark.plist.tar root@localhost:/mnt2/
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/data_ark.plist.tar -C /mnt2"
-            ./sshpass -p "alpine" scp -P 2222 ./jb/com.saurik.Cydia.Startup.plist root@localhost:/mnt1/System/Library/LaunchDaemons
-            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/chown root:wheel /mnt1/System/Library/LaunchDaemons/com.saurik.Cydia.Startup.plist"
         fi
     fi
+    ./sshpass -p "alpine" scp -P 2222 ./jb/com.saurik.Cydia.Startup.plist root@localhost:/mnt1/System/Library/LaunchDaemons
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/chown root:wheel /mnt1/System/Library/LaunchDaemons/com.saurik.Cydia.Startup.plist"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/OS.tar"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/log/asl/SweepStore"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/Library/PreinstalledAssets/*"
@@ -521,15 +497,15 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/AppleInternal.tar'
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt2/mobile/Library/Caches/com.apple.MobileGestalt.plist'
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mv /mnt1/System/Library/LaunchDaemons/com.apple.CommCenter.plist /mnt1/System/Library/LaunchDaemons/com.apple.CommCenter.plis_"
-    elif [[ "$1" == *"9"* || "$1" == *"8"* ]]; then
+    #elif [[ "$1" == *"9"* || "$1" == *"8"* ]]; then
         #./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/sbin/umount /mnt2'
         #./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/bin/dd if=/dev/disk0s1s2 of=/mnt1/out.img bs=512 count=8192'
         #./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/out.img ./$deviceid/$1/NoMoreSIGABRT.img
         #./Kernel64Patcher ./$deviceid/$1/NoMoreSIGABRT.img ./$deviceid/$1/NoMoreSIGABRT.patched -n
         #./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/NoMoreSIGABRT.patched root@localhost:/mnt1/out.img
         #./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/bin/dd if=/mnt1/out.img of=/dev/disk0s1s2 bs=512 count=8192'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'cp /mnt1/usr/libexec/keybagd /mnt1/usr/libexec/keybagd.bak'
-        ./sshpass -p "alpine" scp -P 2222 ./fixkeybag root@localhost:/mnt1/usr/libexec/keybagd
+        #./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'cp /mnt1/usr/libexec/keybagd /mnt1/usr/libexec/keybagd.bak'
+        #./sshpass -p "alpine" scp -P 2222 ./fixkeybag root@localhost:/mnt1/usr/libexec/keybagd
     fi
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/usr/lib/libmis.dylib"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram oblit-inprogress=5"
@@ -546,16 +522,12 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         ../../irecovery -f iBEC.img4
         ../../irecovery -f devicetree.img4
         ../../irecovery -c devicetree
-        if [[ "$1" == *"8"* ]]; then
-            ../../irecovery -f full_kernelcache.img4
-        else
-            ../../irecovery -f kernelcache.img4
-        fi
+        ../../irecovery -f kernelcache.img4
         ../../irecovery -c bootx &
         cd ../../
     fi
     _kill_if_running iproxy
-    if [[ "$1" == *"9"* || "$1" == *"8"* ]]; then
+    if [[ "$1" == *"9"* ]]; then
         echo "step one, wait for it to generate a keybag"
         echo "there should be verbose on the iphone screen and then stop after a bit"
         echo "once it gets stuck, put the phone back into dfu for next step"
@@ -591,11 +563,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
             ../../irecovery -f iBEC.img4
             ../../irecovery -f devicetree.img4
             ../../irecovery -c devicetree
-            if [[ "$1" == *"8"* ]]; then
-                ../../irecovery -f full_kernelcache.img4
-            else
-                ../../irecovery -f kernelcache.img4
-            fi
+            ../../irecovery -f kernelcache.img4
             ../../irecovery -c bootx &
             cd ../../
         fi
