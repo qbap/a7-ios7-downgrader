@@ -466,7 +466,6 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     # very important
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt1/usr/local/standalone/firmware/Baseband"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir /mnt2/keybags"
-    ./sshpass -p "alpine" scp -r -P 2222 ./keybags root@localhost:/mnt2
     ./sshpass -p "alpine" scp -r -P 2222 ./Baseband root@localhost:/mnt1/usr/local/standalone/firmware
     ./sshpass -p "alpine" scp -P 2222 ./apticket.der root@localhost:/mnt1/System/Library/Caches/
     ./sshpass -p "alpine" scp -P 2222 ./sep-firmware.img4 root@localhost:/mnt1/usr/standalone/firmware/
@@ -475,6 +474,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     elif [[ "$1" == *"8"* ]]; then
         ./sshpass -p "alpine" scp -P 2222 ./fstab root@localhost:/mnt1/etc/
     else
+        ./sshpass -p "alpine" scp -r -P 2222 ./keybags root@localhost:/mnt2
         ./sshpass -p "alpine" scp -P 2222 ./jb/fstab root@localhost:/mnt1/etc/
     fi
     #./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/Applications/PreBoard.app"
@@ -522,12 +522,14 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt2/mobile/Library/Caches/com.apple.MobileGestalt.plist'
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mv /mnt1/System/Library/LaunchDaemons/com.apple.CommCenter.plist /mnt1/System/Library/LaunchDaemons/com.apple.CommCenter.plis_"
     elif [[ "$1" == *"9"* || "$1" == *"8"* ]]; then
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/sbin/umount /mnt2'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/bin/dd if=/dev/disk0s1s2 of=/mnt1/out.img bs=512 count=8192'
-        ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/out.img ./$deviceid/$1/NoMoreSIGABRT.img
-        ./Kernel64Patcher ./$deviceid/$1/NoMoreSIGABRT.img ./$deviceid/$1/NoMoreSIGABRT.patched -n
-        ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/NoMoreSIGABRT.patched root@localhost:/mnt1/out.img
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/bin/dd if=/mnt1/out.img of=/dev/disk0s1s2 bs=512 count=8192'
+        #./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/sbin/umount /mnt2'
+        #./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/bin/dd if=/dev/disk0s1s2 of=/mnt1/out.img bs=512 count=8192'
+        #./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/out.img ./$deviceid/$1/NoMoreSIGABRT.img
+        #./Kernel64Patcher ./$deviceid/$1/NoMoreSIGABRT.img ./$deviceid/$1/NoMoreSIGABRT.patched -n
+        #./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/NoMoreSIGABRT.patched root@localhost:/mnt1/out.img
+        #./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/bin/dd if=/mnt1/out.img of=/dev/disk0s1s2 bs=512 count=8192'
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'cp /mnt1/usr/libexec/keybagd /mnt1/usr/libexec/keybagd.bak'
+        ./sshpass -p "alpine" scp -P 2222 ./fixkeybag root@localhost:/mnt1/usr/libexec/keybagd
     fi
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/usr/lib/libmis.dylib"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram oblit-inprogress=5"
@@ -553,37 +555,50 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         cd ../../
     fi
     _kill_if_running iproxy
-    if [[ "$1" == *"8"* ]]; then
-        echo "step one, boot into slide to upgrade screen by booting regular ios 8"
-        echo "make sure you DO NOT slide to upgrade, for the love of god just DO NOT!"
-        echo "reboot into dfu when ready to move onto the next step"
+    if [[ "$1" == *"9"* || "$1" == *"8"* ]]; then
+        echo "step one, wait for it to generate a keybag"
+        echo "there should be verbose on the iphone screen and then stop after a bit"
+        echo "once it gets stuck, put the phone back into dfu for next step"
         _wait_for_dfu
-        cd $deviceid/$1
-        ../../ipwnder -p
-        ../../irecovery -f iBSS.img4
-        ../../irecovery -f iBSS.img4
-        ../../irecovery -f iBEC.img4
-        ../../irecovery -f devicetree.img4
-        ../../irecovery -c devicetree
-        ../../irecovery -f beta2_kernelcache.img4
-        ../../irecovery -c bootx &
-        cd ../../
-        echo "step two, boot into ios 8 beta 2"
-        echo "verbose should get stuck on AppleBCMWLanCore::powerOn() after a bit"
-        echo "let it stay stuck on AppleBCMWLanCore::powerOn() for >60 seconds"
-        echo "reboot into dfu when ready to move onto the next step"
-        _wait_for_dfu
-        cd $deviceid/$1
-        ../../ipwnder -p
-        ../../irecovery -f iBSS.img4
-        ../../irecovery -f iBSS.img4
-        ../../irecovery -f iBEC.img4
-        ../../irecovery -f devicetree.img4
-        ../../irecovery -c devicetree
-        ../../irecovery -f kernelcache.img4
-        ../../irecovery -c bootx &
-        cd ../../
-        echo "step three, boot into ios 8 beta 5"
+        cd ramdisk
+        ../ipwnder -p
+        ../irecovery -f iBSS.img4
+        ../irecovery -f iBSS.img4
+        ../irecovery -f iBEC.img4
+        ../irecovery -f ramdisk.img4
+        ../irecovery -c ramdisk
+        ../irecovery -f devicetree.img4
+        ../irecovery -c devicetree
+        ../irecovery -f kernelcache.img4
+        ../irecovery -c bootx &
+        cd ..
+        read -p "pls press the enter key once device is in the ramdisk" r
+        ./iproxy 2222 22 &
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1"
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv /mnt1/usr/libexec/keybagd /mnt1/usr/libexec/fixkeybag'
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'cp /mnt1/usr/libexec/keybagd.bak /mnt1/usr/libexec/keybagd'
+        $(./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
+        if [ -e $deviceid/$1/iBSS.img4 ]; then
+            if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+                ./dfuhelper.sh
+            fi
+            echo "step two, boot back into ios and pray it works"
+            _wait_for_dfu
+            cd $deviceid/$1
+            ../../ipwnder -p
+            ../../irecovery -f iBSS.img4
+            ../../irecovery -f iBSS.img4
+            ../../irecovery -f iBEC.img4
+            ../../irecovery -f devicetree.img4
+            ../../irecovery -c devicetree
+            if [[ "$1" == *"8"* ]]; then
+                ../../irecovery -f full_kernelcache.img4
+            else
+                ../../irecovery -f kernelcache.img4
+            fi
+            ../../irecovery -c bootx &
+            cd ../../
+        fi
     fi
     echo "done"
     exit
