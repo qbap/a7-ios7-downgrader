@@ -458,6 +458,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     ./sshpass -p "alpine" scp -P 2222 ./apticket.der root@localhost:/mnt1/System/Library/Caches/
     ./sshpass -p "alpine" scp -P 2222 ./sep-firmware.img4 root@localhost:/mnt1/usr/standalone/firmware/
     if [[ "$1" == *"9"* ]]; then
+        ./sshpass -p "alpine" scp -r -P 2222 ./keybags root@localhost:/mnt2
         ./sshpass -p "alpine" scp -P 2222 ./ios9/fstab root@localhost:/mnt1/etc/
     elif [[ "$1" == *"8"* ]]; then
         ./sshpass -p "alpine" scp -r -P 2222 ./keybags root@localhost:/mnt2
