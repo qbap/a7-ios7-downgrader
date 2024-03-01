@@ -191,7 +191,7 @@ _download_boot_files() {
             ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
             ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
             ./seprmvr64lite jb/12A4297e_kcache.raw $1/$3/kcache.patched
-            ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -m -e -s -b
+            ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -m -e -s -b -a
             ./kerneldiff jb/12A4297e_kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
             ./img4 -i jb/12A4297e_kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
             ./img4 -i jb/12A4297e_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
