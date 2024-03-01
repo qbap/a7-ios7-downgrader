@@ -202,8 +202,10 @@ _download_boot_files() {
             # we need to apply mount_common patch for rootfs rw and vm_map_enter patch for tweak injection
             ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -m -e -s
             ./Kernel64Patcher_2 $1/$3/kcache2.patched $1/$3/kcache3.patched -f
-            pyimg4 im4p create -i $1/$3/kcache3.patched -o $1/$3/kernelcache.img4 --extra $1/$3/kpp.bin -f rkrn --lzss
-            pyimg4 im4p create -i $1/$3/kcache3.patched -o $1/$3/kernelcache --extra $1/$3/kpp.bin -f krnl --lzss
+            pyimg4 im4p create -i $1/$3/kcache3.patched -o $1/$3/kernelcache.im4p.img4 --extra $1/$3/kpp.bin -f rkrn --lzss
+            pyimg4 im4p create -i $1/$3/kcache3.patched -o $1/$3/kernelcache.im4p --extra $1/$3/kpp.bin -f krnl --lzss
+            pyimg4 img4 create -p $1/$3/kernelcache.im4p.img4 -o $1/$3/kernelcache.img4 -m work/IM4M
+            pyimg4 img4 create -p $1/$3/kernelcache.im4p -o $1/$3/kernelcache -m work/IM4M
         elif [[ "$3" == *"7"* ]]; then
             ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
             ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
