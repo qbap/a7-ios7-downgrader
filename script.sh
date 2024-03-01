@@ -498,9 +498,8 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     if [[ "$1" == *"8"* ]]; then
         ./sshpass -p "alpine" scp -P 2222 ./jb/untether.tar root@localhost:/mnt1/
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xvf /mnt1/untether.tar -C /mnt1/'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv /usr/libexec/CrashHousekeeping /usr/libexec/CrashHousekeeping_o'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'cd /mnt1/usr/libexec/'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'ln -s ../../wtfis/untether CrashHousekeeping'
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv /mnt1/usr/libexec/CrashHousekeeping /mnt1/usr/libexec/CrashHousekeeping_o'
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'cd /mnt1/usr/libexec/ && ln -s ../../wtfis/untether CrashHousekeeping'
     fi
     ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/kernelcache root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches
     # stashing on ios 8 not only causes apps to break, but it also breaks your wifi loll
