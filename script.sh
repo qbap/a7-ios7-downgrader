@@ -489,13 +489,17 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/Library/PreinstalledAssets/*"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/Library/Preferences/.GlobalPreferences.plist"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/.forward"
-    #if [[ "$1" == *"9"* || "$1" == *"8"* ]]; then
-    #    # these plists should in theory trick ios into thinking we already migrated& went thru Setup.app
-    #    ./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.purplebuddy.plist root@localhost:/mnt2/mobile/Library/Preferences/
-    #    ./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.purplebuddy.notbackedup.plist root@localhost:/mnt2/mobile/Library/Preferences/
-    #    ./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.migration.plist root@localhost:/mnt2/mobile/Library/Preferences/
-    #fi
+    if [[ "$1" == *"9"* || "$1" == *"8"* ]]; then
+        # these plists should in theory trick ios into thinking we already migrated& went thru Setup.app
+        ./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.purplebuddy.plist root@localhost:/mnt2/mobile/Library/Preferences/
+        ./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.purplebuddy.notbackedup.plist root@localhost:/mnt2/mobile/Library/Preferences/
+        ./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.migration.plist root@localhost:/mnt2/mobile/Library/Preferences/
+    fi
     ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/kernelcache root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches
+    # stashing on ios 8 not only causes apps to break, but it also breaks your wifi loll
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt1/.cydia_no_stash"
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chown root:wheel /mnt1/.cydia_no_stash"
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chmod 777 /mnt1/.cydia_no_stash"
     if [[ "$1" == *"7"* ]]; then
         ./sshpass -p "alpine" scp -P 2222 ./jb/AppleInternal.tar root@localhost:/mnt1/
         ./sshpass -p "alpine" scp -P 2222 ./jb/PrototypeTools.framework.tar root@localhost:/mnt1/
@@ -518,8 +522,6 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         #./Kernel64Patcher ./$deviceid/$1/NoMoreSIGABRT.img ./$deviceid/$1/NoMoreSIGABRT.patched -n
         #./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/NoMoreSIGABRT.patched root@localhost:/mnt1/out.img
         #./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/bin/dd if=/mnt1/out.img of=/dev/disk0s1s2 bs=512 count=8192'
-        #./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'cp /mnt1/usr/libexec/keybagd /mnt1/usr/libexec/keybagd.bak'
-        #./sshpass -p "alpine" scp -P 2222 ./fixkeybag root@localhost:/mnt1/usr/libexec/keybagd
     fi
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/usr/lib/libmis.dylib"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram oblit-inprogress=5"
@@ -541,47 +543,6 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         cd ../../
     fi
     _kill_if_running iproxy
-    if [[ "$1" == *"9"* ]]; then
-        echo "step one, wait for it to generate a keybag"
-        echo "there should be verbose on the iphone screen and then stop after a bit"
-        echo "once it gets stuck, put the phone back into dfu for next step"
-        _wait_for_dfu
-        cd ramdisk
-        ../ipwnder -p
-        ../irecovery -f iBSS.img4
-        ../irecovery -f iBSS.img4
-        ../irecovery -f iBEC.img4
-        ../irecovery -f ramdisk.img4
-        ../irecovery -c ramdisk
-        ../irecovery -f devicetree.img4
-        ../irecovery -c devicetree
-        ../irecovery -f kernelcache.img4
-        ../irecovery -c bootx &
-        cd ..
-        read -p "pls press the enter key once device is in the ramdisk" r
-        ./iproxy 2222 22 &
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1"
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv /mnt1/usr/libexec/keybagd /mnt1/usr/libexec/fixkeybag'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'cp /mnt1/usr/libexec/keybagd.bak /mnt1/usr/libexec/keybagd'
-        $(./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
-        if [ -e $deviceid/$1/iBSS.img4 ]; then
-            if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                ./dfuhelper.sh
-            fi
-            echo "step two, boot back into ios and pray it works"
-            _wait_for_dfu
-            cd $deviceid/$1
-            ../../ipwnder -p
-            ../../irecovery -f iBSS.img4
-            ../../irecovery -f iBSS.img4
-            ../../irecovery -f iBEC.img4
-            ../../irecovery -f devicetree.img4
-            ../../irecovery -c devicetree
-            ../../irecovery -f kernelcache.img4
-            ../../irecovery -c bootx &
-            cd ../../
-        fi
-    fi
     echo "done"
     exit
 else
