@@ -185,32 +185,32 @@ _download_boot_files() {
             ./iBoot64Patcher $1/$3/iBEC.dec $1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1 PE_i_can_has_debugger=1  amfi_unrestrict_task_for_pid=0x0 amfi_allow_any_signature=0x1 amfi_get_out_of_my_way=0x1"
         else
             ./ipatcher $1/$3/iBSS.dec $1/$3/iBSS.patched
-            ./ipatcher $1/$3/iBEC.dec $1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1 PE_i_can_has_debugger=1 amfi_unrestrict_task_for_pid=0x0 amfi_get_out_of_my_way=0x1"
+            ./ipatcher $1/$3/iBEC.dec $1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1 PE_i_can_has_debugger=1 amfi_get_out_of_my_way=0x1"
         fi
         if [[ "$3" == *"8"* ]]; then
             ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
             ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
             ./seprmvr64lite jb/12A4297e_kcache.raw $1/$3/kcache.patched
-            ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -m -s -a -f
+            # app store does not work atm, neither does tweaks
+            # for tweaks to work we need a sandbox patch that can be done with Kernel64Patcher
+            # ios 8.0 GM - 8.4.1 gets slide to upgrade screen when trying to boot without a sandbox patch
+            # see https://files.catbox.moe/wn83g9.mp4 for a video example of why we need sandbox patch
+            # here we are patching vm_map_enter, mount_common, PE_i_can_has_debugger, map_IO, and vm_fault_enter
+            # mount_common and map_IO patches are required to be used in conjunction to enable rootfs rw on ios 8
+            ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -m -e -s -a -f
             ./kerneldiff jb/12A4297e_kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
             ./img4 -i jb/12A4297e_kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
             ./img4 -i jb/12A4297e_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
-            #./seprmvr64lite $1/$3/kcache.raw $1/$3/kcache.patched
-            # we need to apply mount_common patch for rootfs rw and vm_map_enter patch for tweak injection
-            #./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -m -e -s -a -f
-            #./kerneldiff $1/$3/kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
-            #./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
-            #./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
         elif [[ "$3" == *"9"* ]]; then
             ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
             ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
             ./seprmvr64lite $1/$3/kcache.raw $1/$3/kcache.patched
-            # we need to apply mount_common patch for rootfs rw and vm_map_enter patch for tweak injection
-            ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -m -e -s -b
-            #./Kernel64Patcher_2 $1/$3/kcache2.patched $1/$3/kcache3.patched -f
-            cp $1/$3/kcache2.patched $1/$3/kcache3.patched
-            pyimg4 im4p create -i $1/$3/kcache3.patched -o $1/$3/kernelcache.im4p.img4 --extra $1/$3/kpp.bin -f rkrn --lzss
-            pyimg4 im4p create -i $1/$3/kcache3.patched -o $1/$3/kernelcache.im4p --extra $1/$3/kpp.bin -f krnl --lzss
+            # for ios 9 to boot we need a sandbox patch that can be done with Kernel64Patcher
+            # -s patches PE_i_can_has_debugger, which is NOT a sandbox patch
+            # see https://files.catbox.moe/wn83g9.mp4 for a video example
+            ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -s
+            pyimg4 im4p create -i $1/$3/kcache2.patched -o $1/$3/kernelcache.im4p.img4 --extra $1/$3/kpp.bin -f rkrn --lzss
+            pyimg4 im4p create -i $1/$3/kcache2.patched -o $1/$3/kernelcache.im4p --extra $1/$3/kpp.bin -f krnl --lzss
             pyimg4 img4 create -p $1/$3/kernelcache.im4p.img4 -o $1/$3/kernelcache.img4 -m IM4M
             pyimg4 img4 create -p $1/$3/kernelcache.im4p -o $1/$3/kernelcache -m IM4M
         elif [[ "$3" == *"7"* ]]; then
@@ -218,9 +218,9 @@ _download_boot_files() {
             ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
             ./seprmvr64lite $1/$3/kcache.raw $1/$3/kcache.patched
             # we need to apply mount_common patch for rootfs rw and vm_map_enter patch for tweak injection
+            # app store works perfectly, and so does tweaks
             ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -m -e
-            ./Kernel64Patcher_2 $1/$3/kcache2.patched $1/$3/kcache3.patched -f
-            ./kerneldiff $1/$3/kcache.raw $1/$3/kcache3.patched $1/$3/kc.bpatch
+            ./kerneldiff $1/$3/kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
             ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
             ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
         fi
@@ -331,6 +331,23 @@ echo $deviceid
 # we need a shsh file that we can use in order to boot the ios 8 ramdisk
 # in this case we are going to use the ones from SSHRD_Script https://github.com/verygenericname/SSHRD_Script
 ./img4tool -e -s other/shsh/"${check}".shsh -m IM4M
+if [[ "$1" == *"8"* ]]; then
+    if [[ "$1" == "8.0" ]]; then
+        echo "ok"
+    else
+        echo "newer versions of ios 8 do not work, try 8.0 instead"
+        echo "when you type 8.0 we will boot ios 8.0 beta 2"
+        echo "ios 8.0 GM+ does not boot with seprmvr64 without a sandbox patch"
+        echo "as of right now there is no sandbox patch that can be done with Kernel64Patcher"
+        echo "see https://files.catbox.moe/wn83g9.mp4 for a video example"
+        exit
+    fi
+elif [[ "$1" == *"9"* ]]; then
+    echo "ios 9 does not boot with seprmvr64 without a sandbox patch"
+    echo "as of right now there is no sandbox patch that can be done with Kernel64Patcher"
+    echo "see https://files.catbox.moe/wn83g9.mp4 for a video example"
+    exit
+fi
 _download_ramdisk_boot_files $deviceid $replace 8.4.1
 _download_boot_files $deviceid $replace $1
 _download_root_fs $deviceid $replace $1
@@ -429,9 +446,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     echo "step 1, press the letter n on your keyboard and then press enter"
     echo "step 2, press number 1 on your keyboard and press enter"
     echo "step 3, press enter again"
-    if [[ "$1" == *"9"* ]]; then
-        echo "step 4, type 1264563 and then press enter"
-    elif [[ "$1" == *"8"* ]]; then
+    if [[ "$1" == *"9"* || "$1" == *"8"* ]]; then
         echo "step 4, type 1264563 and then press enter"
     else
         echo "step 4, type 864563 and then press enter"
@@ -466,11 +481,12 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     ./sshpass -p "alpine" scp -r -P 2222 ./Baseband root@localhost:/mnt1/usr/local/standalone/firmware
     ./sshpass -p "alpine" scp -P 2222 ./apticket.der root@localhost:/mnt1/System/Library/Caches/
     ./sshpass -p "alpine" scp -P 2222 ./sep-firmware.img4 root@localhost:/mnt1/usr/standalone/firmware/
+    ./sshpass -p "alpine" scp -r -P 2222 ./keybags root@localhost:/mnt2
     if [[ "$1" == *"9"* ]]; then
-        ./sshpass -p "alpine" scp -r -P 2222 ./keybags root@localhost:/mnt2
+        # as of right now we have not tested any rootfs rw patches for ios 9
+        # we are waiting on a sandbox patch before we can do anything in that regard
         ./sshpass -p "alpine" scp -P 2222 ./fstab root@localhost:/mnt1/etc/
     else
-        ./sshpass -p "alpine" scp -r -P 2222 ./keybags root@localhost:/mnt2
         ./sshpass -p "alpine" scp -P 2222 ./jb/fstab root@localhost:/mnt1/etc/
     fi
     #./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/Applications/PreBoard.app"
@@ -488,14 +504,15 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/data_ark.plist.tar -C /mnt2"
         fi
     fi
-    if [[ "$1" == *"8"* ]]; then
-        read -p "would you like to also install Spotify.app? " r
-        if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
-            ./sshpass -p "alpine" scp -P 2222 ./jb/Spotify.app.tar root@localhost:/mnt1/
-            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt1/Spotify.app.tar -C /mnt1/Applications/"
-            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt1/Applications/Spotify.app'
-        fi
-    fi
+    # spotify does not work on ios 8 beta 2 due to missing _NSUserActivityTypeBrowsingWeb in Foundation.framework
+    #if [[ "$1" == *"8"* ]]; then
+    #    read -p "would you like to also install Spotify.app? " r
+    #    if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
+    #        ./sshpass -p "alpine" scp -P 2222 ./jb/Spotify.app.tar root@localhost:/mnt1/
+    #        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt1/Spotify.app.tar -C /mnt1/Applications/"
+    #        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt1/Applications/Spotify.app'
+    #    fi
+    #fi
     ./sshpass -p "alpine" scp -P 2222 ./jb/com.saurik.Cydia.Startup.plist root@localhost:/mnt1/System/Library/LaunchDaemons
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/chown root:wheel /mnt1/System/Library/LaunchDaemons/com.saurik.Cydia.Startup.plist"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/OS.tar"
@@ -509,6 +526,9 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         ./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.purplebuddy.notbackedup.plist root@localhost:/mnt2/mobile/Library/Preferences/
         ./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.migration.plist root@localhost:/mnt2/mobile/Library/Preferences/
     fi
+    #wtfis untether just causes kernel panic on every version of ios 8 that i tested
+    #i was initially trying to get this untether to work in order to get sandbox patch on ios 8
+    #if we get sandbox patch on ios 8 it might fix slide to upgrade screen on iOS 8.0 GM+
     #if [[ "$1" == *"8"* ]]; then
     #    ./sshpass -p "alpine" scp -P 2222 ./jb/untether.tar root@localhost:/mnt1/
     #    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xvf /mnt1/untether.tar -C /mnt1/'
@@ -519,7 +539,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     #    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chmod 777 /mnt1/.installed_wtfis"
     #fi
     ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/kernelcache root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches
-    # stashing on ios 8 not only causes apps to break, but it also breaks your wifi loll
+    # stashing on ios 8 not only causes apps to break, but it also breaks your wifi because of missing sandbox patch
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt1/.cydia_no_stash"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chown root:wheel /mnt1/.cydia_no_stash"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chmod 777 /mnt1/.cydia_no_stash"
@@ -538,6 +558,8 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/AppleInternal.tar'
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt2/mobile/Library/Caches/com.apple.MobileGestalt.plist'
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mv /mnt1/System/Library/LaunchDaemons/com.apple.CommCenter.plist /mnt1/System/Library/LaunchDaemons/com.apple.CommCenter.plis_"
+    # what you are seeing here is a working arm64 NoMoreSIGABRT patch but it does not work for us because we are missing sep
+    # sep is required for encrypted hfs+ partition because otherwise it just causes ios to freeze
     #elif [[ "$1" == *"9"* ]]; then
         #./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/sbin/umount /mnt2'
         #./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/bin/dd if=/dev/disk0s1s2 of=/mnt1/out.img bs=512 count=8192'
@@ -546,8 +568,9 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         #./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/NoMoreSIGABRT.patched root@localhost:/mnt1/out.img
         #./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/bin/dd if=/mnt1/out.img of=/dev/disk0s1s2 bs=512 count=8192'
     fi
+    # libmis.dylib breaks app store on ios 7
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/usr/lib/libmis.dylib"
-    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram oblit-inprogress=5"
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram -c"
     $(./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
     if [ -e $deviceid/$1/iBSS.img4 ]; then
         if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
@@ -566,6 +589,24 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         cd ../../
     fi
     _kill_if_running iproxy
+    if [[ "$1" == *"8"* ]]; then
+        echo "done"
+        echo "it is normal for the phone to take a while to boot on ios 8 beta 2"
+        echo "the device may get stuck on slide to upgrade screen the first boot"
+        echo "if it gets stuck on slide to upgrade screen go and put phone back into dfu"
+        echo "we will then boot the phone again a second time and it will boot fine"
+        _wait_for_dfu
+        cd $deviceid/$1
+        ../../ipwnder -p
+        ../../irecovery -f iBSS.img4
+        ../../irecovery -f iBSS.img4
+        ../../irecovery -f iBEC.img4
+        ../../irecovery -f devicetree.img4
+        ../../irecovery -c devicetree
+        ../../irecovery -f kernelcache.img4
+        ../../irecovery -c bootx &
+        cd ../../
+    fi
     echo "done"
     exit
 else
@@ -575,30 +616,14 @@ else
         ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/kernelcache root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mv /mnt1/System/Library/LaunchDaemons/com.apple.CommCenter.plist /mnt1/System/Library/LaunchDaemons/com.apple.CommCenter.plis_"
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt1/System/Library/Caches/com.apple.dyld/enable-dylibs-to-override-cache"
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt1/.cydia_no_stash"
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chown root:wheel /mnt1/.cydia_no_stash"
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chmod 777 /mnt1/.cydia_no_stash"
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm /mnt1/Applications'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv $(find /mnt2/stash -name Applications) /mnt1/'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm /mnt1/Library/Ringtones'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv $(find /mnt2/stash -name Ringtones) /mnt1/Library'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm /mnt1/Library/Wallpaper'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv $(find /mnt2/stash -name Wallpaper) /mnt1/Library'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm /mnt1/usr/lib/pam'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv $(find /mnt2/stash -name pam) /mnt1/usr/lib'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm /mnt1/usr/include'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv $(find /mnt2/stash -name include) /mnt1/usr/'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm /mnt1/usr/share'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv $(find /mnt2/stash -name share) /mnt1/usr/'
         ./sshpass -p "alpine" scp -P 2222 ./jb/fstab root@localhost:/mnt1/etc/
-         read -p "would you like to also delete Setup.app? " r
+        read -p "would you like to also delete Setup.app? " r
         if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/Applications/Setup.app"
             ./sshpass -p "alpine" scp -P 2222 ./data_ark.plist.tar root@localhost:/mnt2/
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/data_ark.plist.tar -C /mnt2"
         fi
-    #for ios 8 and up it is critical to not ever mount /mnt2 as rw from ssh ever again after first mount
-    #you can however mount /mnt2 as read only on ios 8 and up with the commented out command listed below
+    #for ios 8 and up it is crucial to not ever mount /mnt2 again after installing ios
     #else
         #./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -t hfs -o suid,dev /dev/disk0s1s2 /mnt2"
     fi
