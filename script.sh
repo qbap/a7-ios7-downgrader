@@ -335,7 +335,7 @@ if [[ "$1" == *"8"* ]]; then
         echo "ok"
     else
         echo "newer versions of ios 8 do not work, try 8.0 instead"
-        echo "when you type 8.0 we will boot ios 8.0 beta 2"
+        echo "when you type 8.0 we will boot ios 8.0 beta 4"
         echo "ios 8.0 GM+ does not boot with seprmvr64 without a sandbox patch"
         echo "as of right now there is no sandbox patch that can be done with Kernel64Patcher"
         echo "see https://files.catbox.moe/wn83g9.mp4 for a video example"
@@ -471,6 +471,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_hfs -s -v Data -J -b 4096 -n a=4096,c=4096,e=4096 /dev/disk0s1s2"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_hfs /dev/disk0s1s1 /mnt1"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs -o suid,dev /dev/disk0s1s2 /mnt2"
+    echo "the password is 'alpine' when it asks you"
     scp -P 2222 ./$deviceid/$1/OS.tar root@localhost:/mnt2
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/OS.tar -C /mnt1"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mv -v /mnt1/private/var/* /mnt2"
@@ -503,7 +504,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/data_ark.plist.tar -C /mnt2"
         fi
     fi
-    # spotify does not work on ios 8 beta 2 due to missing _NSUserActivityTypeBrowsingWeb in Foundation.framework
+    # spotify does not work on ios 8 beta 4 due to missing _NSUserActivityTypeBrowsingWeb in Foundation.framework
     if [[ "$1" == *"8"* ]]; then
         read -p "would you like to also install Spotify.app? " r
         if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
@@ -590,7 +591,13 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     _kill_if_running iproxy
     if [[ "$1" == *"8"* ]]; then
         echo "done"
-        echo "it is normal for the phone to take a while to boot on ios 8 beta 2"
+        echo "it is normal for the phone to take a while to boot on ios 8 beta 4"
+        echo "it may stay on a black screen for an extended period of time"
+        echo "however it will eventually boot to the lock screen"
+        echo "when you swipe to unlock you will not see any app icons on home screen"
+        echo "to fix this, swipe up from bottom of screen, tap calculator"
+        echo "then press home button to close out of calculator, then home screen will show"
+        echo "side note"
         echo "the device may get stuck on slide to upgrade screen the first boot"
         echo "if it gets stuck on slide to upgrade screen go and put phone back into dfu"
         echo "we will then boot the phone again a second time and it will boot fine"
