@@ -489,12 +489,6 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         fi
     fi
     if [[ "$1" == *"8"* ]]; then
-        read -p "would you like to also install wtfis.app? " r
-        if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
-            ./sshpass -p "alpine" scp -P 2222 ./jb/wtfis.app.tar root@localhost:/mnt1/
-            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt1/wtfis.app.tar -C /mnt1/Applications/"
-            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt1/Applications/wtfis.app'
-        fi
         read -p "would you like to also install Spotify.app? " r
         if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
             ./sshpass -p "alpine" scp -P 2222 ./jb/Spotify.app.tar root@localhost:/mnt1/
