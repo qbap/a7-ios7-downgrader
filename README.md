@@ -5,7 +5,7 @@
    </h1>
 </div>
 
-<h6 align="center"> Should Support iOS/iPadOS 7.0.1 - 8.0  </h6>
+<h6 align="center"> Should Support iOS/iPadOS 7.0.1 - 8.0b4  </h6>
 
 # Chart of compatibility
 
@@ -17,7 +17,8 @@
 | 7.0.4    | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9744;    | &#9745;     | &#9745;   | &#9745;| &#9744;  |
 | 7.0.6    | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9744;    | &#9745;     | &#9745;   | &#9745;| &#9744;  |
 | 7.1.2    | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9745;| &#9745;  |
-| 8.0      | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9745;    | &#9744;     | &#9744;   | &#9744;| &#9745;  |
+| 8.0b2    | &#9744;   | &#9745; | &#9745;  | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9744;| &#9745;  |
+| 8.0b4    | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9744;| &#9745;  |
 
 ## How do I use this?
 
@@ -79,6 +80,12 @@ wifi does not work unless you connect to an open wifi network, in other words th
 home button does not work unless you are using ios 7.0.3 or higher
 
 this script deletes everything on your phone, including the main os. pls backup all your data before using this script, as it will be unrecoverable after. use this script at your own risk, i am not responsible for any damages caused by you using this script
+
+when booting ios 8 you will find that you wont see any app icons on the home screen when you first slide to unlock. to fix this, slide up from the bottom of the screen and tap on calculator. once in the calculator app, press the home button and then you will be at the home screen and all your app icons will appear as normal
+
+ios 8.0 GM+ does not boot most probably due to missing sandbox patch, you can see https://files.catbox.moe/wn83g9.mp4 for a video example as to why we need sandbox patch to boot. there is a probably that this is what is causing slide to upgrade screen on ios 8.0 GM - ios 8.4.1, but is for sure what is causing ios 9 not to boot as seen in this video example
+
+tweak injection does work on ios 8, but it gets blocked by the sandbox. you can verify this by checking crash logs. once we get working sandbox patch with `Kernel64Patcher` we will have working tweak injection on ios 8
 
 ## Contact
 
