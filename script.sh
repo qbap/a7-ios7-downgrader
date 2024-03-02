@@ -470,8 +470,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_hfs -s -v Data -J -b 4096 -n a=4096,c=4096,e=4096 /dev/disk0s1s2"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_hfs /dev/disk0s1s1 /mnt1"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs -o suid,dev /dev/disk0s1s2 /mnt2"
-    echo "the password is 'alpine' when it asks you"
-    scp -P 2222 ./$deviceid/$1/OS.tar root@localhost:/mnt2
+    ./sshpass -p 'alpine' scp -P 2222 ./$deviceid/$1/OS.tar root@localhost:/mnt2
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/OS.tar -C /mnt1"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mv -v /mnt1/private/var/* /mnt2"
     # very important
@@ -492,24 +491,8 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     read -p "would you like to also delete Setup.app? " r
     if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/Applications/Setup.app"
-        if [[ "$1" == *"9"* || "$1" == *"8"* ]]; then
-            read -p "would you like to install data_ark.plist to /var? " r
-            if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
-                ./sshpass -p "alpine" scp -P 2222 ./data_ark.plist.tar root@localhost:/mnt2/
-                ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/data_ark.plist.tar -C /mnt2"
-            fi
-        else
-            ./sshpass -p "alpine" scp -P 2222 ./data_ark.plist.tar root@localhost:/mnt2/
-            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/data_ark.plist.tar -C /mnt2"
-        fi
-    fi
-    if [[ "$1" == *"8"* ]]; then
-        read -p "would you like to also install Evermusic_Pro.app? " r
-        if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
-            ./sshpass -p "alpine" scp -P 2222 ./jb/Evermusic_Pro.app.tar root@localhost:/mnt1/
-            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt1/Evermusic_Pro.app.tar -C /mnt1/Applications/"
-            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt1/Applications/Evermusic_Pro.app'
-        fi
+        ./sshpass -p "alpine" scp -P 2222 ./data_ark.plist.tar root@localhost:/mnt2/
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/data_ark.plist.tar -C /mnt2"
     fi
     ./sshpass -p "alpine" scp -P 2222 ./jb/com.saurik.Cydia.Startup.plist root@localhost:/mnt1/System/Library/LaunchDaemons
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/chown root:wheel /mnt1/System/Library/LaunchDaemons/com.saurik.Cydia.Startup.plist"
@@ -595,10 +578,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         echo "when you swipe to unlock you will not see any app icons on home screen"
         echo "to fix this, swipe up from bottom of screen, tap calculator"
         echo "then press home button to close out of calculator, then home screen will show"
-        echo "side note"
-        echo "the device may get stuck on slide to upgrade screen the first boot"
-        echo "if it gets stuck on slide to upgrade screen go and put phone back into dfu"
-        echo "we will then boot the phone again a second time and it will boot fine"
+        echo "if you see slide to upgrade screen, put the phone back into dfu"
         _wait_for_dfu
         cd $deviceid/$1
         ../../ipwnder -p
