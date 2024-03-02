@@ -190,17 +190,16 @@ _download_boot_files() {
         if [[ "$3" == *"8"* ]]; then
             ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
             ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
-            ./seprmvr64lite jb/12A4297e_kcache.raw $1/$3/kcache.patched
-            # app store does not work atm, neither does tweaks
+            ./seprmvr64lite jb/12A4331d_kcache.raw $1/$3/kcache.patched
             # for tweaks to work we need a sandbox patch that can be done with Kernel64Patcher
             # ios 8.0 GM - 8.4.1 gets slide to upgrade screen when trying to boot without a sandbox patch
             # see https://files.catbox.moe/wn83g9.mp4 for a video example of why we need sandbox patch
             # here we are patching vm_map_enter, mount_common, PE_i_can_has_debugger, map_IO, and vm_fault_enter
             # mount_common and map_IO patches are required to be used in conjunction to enable rootfs rw on ios 8
             ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -m -e -s -a -f
-            ./kerneldiff jb/12A4297e_kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
-            ./img4 -i jb/12A4297e_kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
-            ./img4 -i jb/12A4297e_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
+            ./kerneldiff jb/12A4331d_kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
+            ./img4 -i jb/12A4331d_kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
+            ./img4 -i jb/12A4331d_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
         elif [[ "$3" == *"9"* ]]; then
             ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
             ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
@@ -256,8 +255,8 @@ _download_root_fs() {
     if [ ! -e $1/$3/OS.tar ]; then
         if [ ! -e $1/$3/OS.dmg ]; then
             if [[ "$3" == "8.0" ]]; then
-                # https://archive.org/download/Apple_iPhone_Firmware/Apple%20iPhone%206.1%20Firmware%208.0%20(8.0.12A4297e)%20(beta2)/
-                ./aria2c https://ia903400.us.archive.org/4/items/Apple_iPhone_Firmware/Apple%20iPhone%206.1%20Firmware%208.0%20%288.0.12A4297e%29%20%28beta2%29/media_ipsw.rar
+                # https://archive.org/download/Apple_iPhone_Firmware/Apple%20iPhone%206.1%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/
+                ./aria2c https://ia903400.us.archive.org/4/items/Apple_iPhone_Firmware/Apple%20iPhone%206.1%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
                 mv media_ipsw.rar $1/$3/media_ipsw.rar
                 cd ./$1/$3
                 ../../7z x media_ipsw.rar
@@ -505,14 +504,14 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         fi
     fi
     # spotify does not work on ios 8 beta 2 due to missing _NSUserActivityTypeBrowsingWeb in Foundation.framework
-    #if [[ "$1" == *"8"* ]]; then
-    #    read -p "would you like to also install Spotify.app? " r
-    #    if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
-    #        ./sshpass -p "alpine" scp -P 2222 ./jb/Spotify.app.tar root@localhost:/mnt1/
-    #        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt1/Spotify.app.tar -C /mnt1/Applications/"
-    #        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt1/Applications/Spotify.app'
-    #    fi
-    #fi
+    if [[ "$1" == *"8"* ]]; then
+        read -p "would you like to also install Spotify.app? " r
+        if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
+            ./sshpass -p "alpine" scp -P 2222 ./jb/Spotify.app.tar root@localhost:/mnt1/
+            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt1/Spotify.app.tar -C /mnt1/Applications/"
+            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt1/Applications/Spotify.app'
+        fi
+    fi
     ./sshpass -p "alpine" scp -P 2222 ./jb/com.saurik.Cydia.Startup.plist root@localhost:/mnt1/System/Library/LaunchDaemons
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/chown root:wheel /mnt1/System/Library/LaunchDaemons/com.saurik.Cydia.Startup.plist"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/OS.tar"
