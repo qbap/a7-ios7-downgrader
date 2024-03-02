@@ -256,12 +256,11 @@ _download_root_fs() {
         if [ ! -e $1/$3/OS.dmg ]; then
             if [[ "$3" == "8.0" ]]; then
                 # https://archive.org/download/Apple_iPhone_Firmware/Apple%20iPhone%206.1%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/
-                ./aria2c https://ia903400.us.archive.org/4/items/Apple_iPhone_Firmware/Apple%20iPhone%206.1%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
-                mv media_ipsw.rar $1/$3/media_ipsw.rar
                 cd ./$1/$3
+                ../../aria2c https://ia903400.us.archive.org/4/items/Apple_iPhone_Firmware/Apple%20iPhone%206.1%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
                 ../../7z x media_ipsw.rar
                 ../../7z x $(find . -name '*.ipsw*')
-                ../../dmg extract 058-01244-038.dmg OS.dmg -k 45f6fbb943e0b9079ae340662e0c408e73c9e0c9bffefef04a8acb89691558660ca75942
+                ../../dmg extract 058-01244-053.dmg OS.dmg -k 5c8b481822b91861c1d19590e790b306daaab2230f89dd275c18356d28fdcd47436a0737
                 cd ../../
             else
                 # Download root fs
