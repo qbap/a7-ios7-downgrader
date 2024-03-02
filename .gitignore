@@ -1,5 +1,7 @@
 iPhone6,1_7.1.2_11D257_Restore.ipsw
 iPhone6,1_8.4.1_12H321_Restore.ipsw
+mnt2.tar
+mnt2-done.tar
 target
 kernelcache*
 BuildManifest.plist
@@ -14,7 +16,6 @@ iBEC*
 IM4M
 ios7*
 ios8*
-ios9*
 OS*
 dtree.raw
 apticket.der
@@ -31,3 +32,11 @@ kcache.patched
 kcache.patched2
 kcache2.patched
 kcache3.patched
+beta2*
+full*
+NoMoreSIGABRT*
+media*
+Restore.plist
+Firmware*
+kpp.bin
+.DS_Store

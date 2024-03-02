@@ -120,6 +120,13 @@ fn decrypt_img4(file: String, output: String, ivkey: String) {
             .args(["-i", &file, "-o", &_d, "-k", &ivkey, "-D"])
             .output()
             .expect("failed to execute process is img4 in your $PATH ?");
+        let _f = output.clone() + ".kpp";
+        let _g = output.clone() + ".im4p2";
+        println!("[i] Decrypting kpp.bin to {_f}");
+        Command::new("pyimg4")
+            .args(["im4p", "extract", "-i", &file, "-o", &_g, "--iv", &ivkey[..32], "--key", &ivkey[32..], "--extra", &_f])
+            .output()
+            .expect("failed to execute process is pyimg4 in your $PATH ?");
     }
     let _e = output.clone() + ".dec";
     Command::new("img4")
