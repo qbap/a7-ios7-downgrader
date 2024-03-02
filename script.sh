@@ -190,17 +190,17 @@ _download_boot_files() {
         if [[ "$3" == *"8"* ]]; then
             ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
             ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
-            #./seprmvr64lite jb/12A4297e_kcache.raw $1/$3/kcache.patched
-            #./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -m -e -s -b -a
-            #./kerneldiff jb/12A4297e_kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
-            #./img4 -i jb/12A4297e_kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
-            #./img4 -i jb/12A4297e_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
-            ./seprmvr64lite $1/$3/kcache.raw $1/$3/kcache.patched
+            ./seprmvr64lite jb/12A4297e_kcache.raw $1/$3/kcache.patched
+            ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -m -e -s -a -f
+            ./kerneldiff jb/12A4297e_kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
+            ./img4 -i jb/12A4297e_kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
+            ./img4 -i jb/12A4297e_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
+            #./seprmvr64lite $1/$3/kcache.raw $1/$3/kcache.patched
             # we need to apply mount_common patch for rootfs rw and vm_map_enter patch for tweak injection
-            ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -m -e -s -a
-            ./kerneldiff $1/$3/kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
-            ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
-            ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
+            #./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -m -e -s -a -f
+            #./kerneldiff $1/$3/kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
+            #./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
+            #./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
         elif [[ "$3" == *"9"* ]]; then
             ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
             ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
@@ -501,15 +501,15 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         ./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.purplebuddy.notbackedup.plist root@localhost:/mnt2/mobile/Library/Preferences/
         ./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.migration.plist root@localhost:/mnt2/mobile/Library/Preferences/
     fi
-    if [[ "$1" == *"8"* ]]; then
-        ./sshpass -p "alpine" scp -P 2222 ./jb/untether.tar root@localhost:/mnt1/
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xvf /mnt1/untether.tar -C /mnt1/'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv /mnt1/usr/libexec/CrashHousekeeping /mnt1/usr/libexec/CrashHousekeeping_o'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'cd /mnt1/usr/libexec/ && ln -s ../../wtfis/untether CrashHousekeeping'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt1/.installed_wtfis"
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chown root:wheel /mnt1/.installed_wtfis"
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chmod 777 /mnt1/.installed_wtfis"
-    fi
+    #if [[ "$1" == *"8"* ]]; then
+    #    ./sshpass -p "alpine" scp -P 2222 ./jb/untether.tar root@localhost:/mnt1/
+    #    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xvf /mnt1/untether.tar -C /mnt1/'
+    #    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv /mnt1/usr/libexec/CrashHousekeeping /mnt1/usr/libexec/CrashHousekeeping_o'
+    #    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'cd /mnt1/usr/libexec/ && ln -s ../../wtfis/untether CrashHousekeeping'
+    #    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt1/.installed_wtfis"
+    #    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chown root:wheel /mnt1/.installed_wtfis"
+    #    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chmod 777 /mnt1/.installed_wtfis"
+    #fi
     ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/kernelcache root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches
     # stashing on ios 8 not only causes apps to break, but it also breaks your wifi loll
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt1/.cydia_no_stash"
