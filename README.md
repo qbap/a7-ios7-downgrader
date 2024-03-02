@@ -18,7 +18,7 @@
 | 7.0.6    | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9744;    | &#9745;     | &#9745;   | &#9745;| &#9744;  |
 | 7.1.2    | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9745;| &#9745;  |
 | 8.0b2    | &#9744;   | &#9745; | &#9745;  | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9744;| &#9745;  |
-| 8.0b4    | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9744;| &#9745;  |
+| 8.0b4    | &#9744;   | &#9745; | &#9745;  | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9744;| &#9745;  |
 
 ## How do I use this?
 
@@ -33,6 +33,10 @@ to use this app, you need to be on a supported version, and have an a7 device
 connect iphone in dfu mode
 
 `sudo ./script.sh 7.1.2`
+
+or
+
+`sudo ./script.sh 8.0` **ios 8 does not have working tweaks or app store
 
 which is unjailbroken
 
@@ -62,6 +66,50 @@ cydia will be installed and work as normal
  - Try getting launch daemons to start automatically on boot, such as ssh
  - Add a boot splash screen
  - Test iPad mini 2 compatibility
+ 
+ ## iOS 8& 9 Support
+
+as of right now the script supports up to ios 8 beta 4
+
+to support newer versions of ios, and subsequently iphone 6 and later we must first
+
+get a sandbox patch working with `Kernel64Patcher` as it is required for newer ios to boot with seprmvr64 patches
+
+ios 8.0 beta 5 can boot with seprmvr64 but it requires many attempts to boot and has many issues such as flickering screen& more
+
+ios 8.0 GM - 8.4.1 gets slide to upgrade screen without sandbox patches
+
+ios 9.0 - 9.3.5 boots past the slide to upgrade screen, but is met with endless sandbox errors during boot
+
+see https://files.catbox.moe/wn83g9.mp4 for a video example of why we need sandbox patches
+
+tldr ios expects `/dev/disk0s1s2` to have `protect` flag on ios 8+
+
+but ios hangs when trying to boot if `/dev/disk0s1s2` has `protect` flag set when using seprmvr64 patches
+
+this is because encrypted var partition requires sep
+
+however, ios 8 and 9 can boot just fine without encrypted var partition
+
+the reason it doesnt though, is because of sandbox
+
+any time smth tries to write to /var, it is met with an err bcz of sandbox on ios 8& 9 if u dont have encrypted /var partition
+
+once we statically patch out sandbox in the kernel, we will be able to boot ios 8& 9 perfectly fine
+
+i hope all this makes sense& if someone can make that patch for me it would be greatly appreciated
+
+app store does not work on ios 8 beta 4, the version we use in the script, bcz of sandbox
+
+it tries to install the app to /var but it cant bcz it is met with an err bcz of sandbox
+
+u can verify this for urself by checking diagnostics& usage crash logs on ios
+
+same thing happens with tweaks. we have fully working tweak injection on ios 8, it just gets blocked bcz of sandbox
+
+mf all of our issues would go away if we got rid of sandbox, ok?
+
+kthxbai
 
 ## Quirks
 
