@@ -585,7 +585,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         cd ../../
     fi
     _kill_if_running iproxy
-    if [[ "$1" == *"8"* ]]; then
+    if [[ "$1" == "8.0" ]]; then
         echo "done"
         echo "it is normal for the phone to take a while to boot on ios 8 beta 4"
         echo "it may stay on a black screen for an extended period of time"
@@ -593,7 +593,29 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         echo "when you swipe to unlock you will not see any app icons on home screen"
         echo "to fix this, swipe up from bottom of screen, tap calculator"
         echo "then press home button to close out of calculator, then home screen will show"
-        echo "if you see slide to upgrade screen, put the phone back into dfu"
+        echo "once you are at the home screen, put the phone back into dfu"
+        _wait_for_dfu
+        cd ramdisk
+        ../ipwnder -p
+        ../irecovery -f iBSS.img4
+        ../irecovery -f iBSS.img4
+        ../irecovery -f iBEC.img4
+        ../irecovery -f ramdisk.img4
+        ../irecovery -c ramdisk
+        ../irecovery -f devicetree.img4
+        ../irecovery -c devicetree
+        ../irecovery -f kernelcache.img4
+        ../irecovery -c bootx &
+        cd ..
+        read -p "pls press the enter key once device is in the ramdisk" r
+        ./iproxy 2222 22 &
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1"
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mv /mnt1/System/Library/PrivateFrameworks/DataMigration.framework /mnt1/System/Library/PrivateFrameworks/DataMigration.framewor_"
+        $(./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
+        _kill_if_running iproxy
+        if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+            ./dfuhelper.sh
+        fi
         _wait_for_dfu
         cd $deviceid/$1
         ../../ipwnder -p
