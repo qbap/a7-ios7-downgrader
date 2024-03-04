@@ -524,10 +524,10 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     #i was initially trying to get this untether to work in order to get sandbox patch on ios 8
     #if we get sandbox patch on ios 8 it might fix slide to upgrade screen on iOS 8.0 GM+
     if [[ "$1" == *"8"* ]]; then
-        ./sshpass -p "alpine" scp -P 2222 ./jb/untether.tar root@localhost:/mnt1/
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xvf /mnt1/untether.tar -C /mnt1/'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv /mnt1/usr/libexec/CrashHousekeeping /mnt1/usr/libexec/CrashHousekeeping_o'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'cd /mnt1/usr/libexec/ && ln -s ../../wtfis/untether CrashHousekeeping'
+    #    ./sshpass -p "alpine" scp -P 2222 ./jb/untether.tar root@localhost:/mnt1/
+    #    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xvf /mnt1/untether.tar -C /mnt1/'
+    #    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv /mnt1/usr/libexec/CrashHousekeeping /mnt1/usr/libexec/CrashHousekeeping_o'
+    #    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'cd /mnt1/usr/libexec/ && ln -s ../../wtfis/untether CrashHousekeeping'
         ./sshpass -p "alpine" scp -P 2222 ./jb/wtfis.app.tar root@localhost:/mnt1/
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xvf /mnt1/wtfis.app.tar -C /mnt1/Applications'
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt1/.installed_wtfis"
