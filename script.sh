@@ -185,7 +185,6 @@ _download_boot_files() {
             ./iBoot64Patcher $1/$3/iBEC.dec $1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1 PE_i_can_has_debugger=1  amfi_unrestrict_task_for_pid=0x0 amfi_allow_any_signature=0x1 amfi_get_out_of_my_way=0x1"
         elif [[ "$3" == *"8"* ]]; then
             ./ipatcher $1/$3/iBSS.dec $1/$3/iBSS.patched
-            # test without PE_i_can_has_debugger etc. to see if we can get wtfis jailbreak to work
             ./ipatcher $1/$3/iBEC.dec $1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 debug=0x2014e"
         else
             ./ipatcher $1/$3/iBSS.dec $1/$3/iBSS.patched
@@ -337,7 +336,12 @@ echo $deviceid
 ./img4tool -e -s other/shsh/"${check}".shsh -m IM4M
 if [[ "$1" == *"8"* ]]; then
     if [[ "$1" == "8.0" ]]; then
-        echo "ok"
+        read -p "ios $1 kernel panics a lot when trying to boot, type yes to proceed " r
+        if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
+            echo "ok"
+        else
+            exit
+        fi
     else
         echo "newer versions of ios 8 do not work, try 8.0 instead"
         echo "when you type 8.0 we will boot ios 8.0 beta 4"
@@ -519,15 +523,14 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     #wtfis untether just causes kernel panic on every version of ios 8 that i tested
     #i was initially trying to get this untether to work in order to get sandbox patch on ios 8
     #if we get sandbox patch on ios 8 it might fix slide to upgrade screen on iOS 8.0 GM+
-    #if [[ "$1" == *"8"* ]]; then
-    #    ./sshpass -p "alpine" scp -P 2222 ./jb/untether.tar root@localhost:/mnt1/
-    #    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xvf /mnt1/untether.tar -C /mnt1/'
-    #    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv /mnt1/usr/libexec/CrashHousekeeping /mnt1/usr/libexec/CrashHousekeeping_o'
-    #    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'cd /mnt1/usr/libexec/ && ln -s ../../wtfis/untether CrashHousekeeping'
-    #    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt1/.installed_wtfis"
-    #    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chown root:wheel /mnt1/.installed_wtfis"
-    #    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chmod 777 /mnt1/.installed_wtfis"
-    #fi
+    if [[ "$1" == *"8"* ]]; then
+        ./sshpass -p "alpine" scp -P 2222 ./jb/untether.tar root@localhost:/mnt1/
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xvf /mnt1/untether.tar -C /mnt1/'
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv /mnt1/usr/libexec/CrashHousekeeping /mnt1/usr/libexec/CrashHousekeeping_o'
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'cd /mnt1/usr/libexec/ && ln -s ../../wtfis/untether CrashHousekeeping'
+        ./sshpass -p "alpine" scp -P 2222 ./jb/wtfis.app.tar root@localhost:/mnt1/
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xvf /mnt1/wtfis.app.tar -C /mnt1/Applications'
+    fi
     ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/kernelcache root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches
     # stashing on ios 8 not only causes apps to break, but it also breaks your wifi because of missing sandbox patch
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt1/.cydia_no_stash"
