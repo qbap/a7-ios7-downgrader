@@ -194,9 +194,9 @@ _download_boot_files() {
             # for tweaks to work we need a sandbox patch that can be done with Kernel64Patcher
             # ios 8.0 GM - 8.4.1 gets slide to upgrade screen when trying to boot without a sandbox patch
             # see https://files.catbox.moe/wn83g9.mp4 for a video example of why we need sandbox patch
-            # here we are patching vm_map_enter, mount_common, PE_i_can_has_debugger, map_IO, and vm_fault_enter
+            # here we are patching vm_map_enter, mount_common, PE_i_can_has_debugger, map_IO, tfp0, and vm_fault_enter
             # mount_common and map_IO patches are required to be used in conjunction to enable rootfs rw on ios 8
-            ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -m -e -s -a -f
+            ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -m -e -s -a -f -t
             ./kerneldiff jb/12A4331d_kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
             ./img4 -i jb/12A4331d_kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
             ./img4 -i jb/12A4331d_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
