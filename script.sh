@@ -198,7 +198,7 @@ _download_boot_files() {
             # see https://files.catbox.moe/wn83g9.mp4 for a video example of why we need sandbox patch
             # here we are patching vm_map_enter, vm_map_protet, tfp0, and sbtrace
             # when u boot u need to run wtfis app which patches vm_fault_enter, sandbox, map_IO, amfi, and many other things
-            ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -e -l -t -p
+            ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -e -l -t
             ./kerneldiff jb/12A4331d_kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
             ./img4 -i jb/12A4331d_kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
             ./img4 -i jb/12A4331d_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
@@ -333,12 +333,7 @@ echo $deviceid
 ./img4tool -e -s other/shsh/"${check}".shsh -m IM4M
 if [[ "$1" == *"8"* ]]; then
     if [[ "$1" == "8.0" ]]; then
-        read -p "ios $1 kernel panics a lot when trying to boot, type yes to proceed " r
-        if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
-            echo "ok"
-        else
-            exit
-        fi
+        echo "ok"
     else
         echo "newer versions of ios 8 do not work, try 8.0 instead"
         echo "when you type 8.0 we will boot ios 8.0 beta 4"
