@@ -502,8 +502,11 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/Applications/Setup.app"
         ./sshpass -p "alpine" scp -P 2222 ./data_ark.plist.tar root@localhost:/mnt2/
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/data_ark.plist.tar -C /mnt2"
-        ./sshpass -p "alpine" scp -P 2222 ./data_ark.plist_2.tar root@localhost:/mnt2/
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/data_ark.plist_2.tar -C /mnt2"
+        if [[ "$1" == *"8"* ]]; then
+            ./sshpass -p "alpine" scp -P 2222 ./data_ark.plist_2.tar root@localhost:/mnt2/
+            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/data_ark.plist_2.tar -C /mnt2"
+            ./sshpass -p "alpine" scp -P 2222 ./jb/mobactivationd_patched root@localhost:/mnt1/System/Library/PrivateFrameworks/MobileActivation.framework/Support/mobactivationd
+        fi
     fi
     ./sshpass -p "alpine" scp -P 2222 ./jb/com.saurik.Cydia.Startup.plist root@localhost:/mnt1/System/Library/LaunchDaemons
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/chown root:wheel /mnt1/System/Library/LaunchDaemons/com.saurik.Cydia.Startup.plist"
@@ -512,7 +515,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/Library/PreinstalledAssets/*"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/Library/Preferences/.GlobalPreferences.plist"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/.forward"
-    if [[ "$1" == *"9"* || "$1" == *"8"* ]]; then
+    if [[ "$1" == *"8"* ]]; then
         # these plists should in theory trick ios into thinking we already migrated& went thru Setup.app
         ./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.purplebuddy.plist root@localhost:/mnt2/mobile/Library/Preferences/
         ./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.purplebuddy.notbackedup.plist root@localhost:/mnt2/mobile/Library/Preferences/
