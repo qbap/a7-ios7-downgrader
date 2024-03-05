@@ -500,12 +500,12 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     read -p "would you like to also delete Setup.app? " r
     if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/Applications/Setup.app"
-        ./sshpass -p "alpine" scp -P 2222 ./data_ark.plist.tar root@localhost:/mnt2/
+        ./sshpass -p "alpine" scp -P 2222 ./jb/data_ark.plist.tar root@localhost:/mnt2/
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/data_ark.plist.tar -C /mnt2"
         if [[ "$1" == *"8"* ]]; then
-            ./sshpass -p "alpine" scp -P 2222 ./data_ark.plist_2.tar root@localhost:/mnt2/
+            ./sshpass -p "alpine" scp -P 2222 ./jb/data_ark.plist_2.tar root@localhost:/mnt2/
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/data_ark.plist_2.tar -C /mnt2"
-            ./sshpass -p "alpine" scp -P 2222 ./jb/mobactivationd_patched root@localhost:/mnt1/System/Library/PrivateFrameworks/MobileActivation.framework/Support/mobactivationd
+            ./sshpass -p "alpine" scp -P 2222 ./jb/mobactivationd root@localhost:/mnt1/System/Library/PrivateFrameworks/MobileActivation.framework/Support/mobactivationd
         fi
     fi
     ./sshpass -p "alpine" scp -P 2222 ./jb/com.saurik.Cydia.Startup.plist root@localhost:/mnt1/System/Library/LaunchDaemons
@@ -610,7 +610,7 @@ else
         read -p "would you like to also delete Setup.app? " r
         if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/Applications/Setup.app"
-            ./sshpass -p "alpine" scp -P 2222 ./data_ark.plist.tar root@localhost:/mnt2/
+            ./sshpass -p "alpine" scp -P 2222 ./jb/data_ark.plist.tar root@localhost:/mnt2/
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/data_ark.plist.tar -C /mnt2"
         fi
     #for ios 8 and up it is crucial to not ever mount /mnt2 again after installing ios
