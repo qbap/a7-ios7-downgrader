@@ -17,8 +17,7 @@
 | 7.0.4    | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9744;    | &#9745;     | &#9745;   | &#9745;| &#9744;  |
 | 7.0.6    | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9744;    | &#9745;     | &#9745;   | &#9745;| &#9744;  |
 | 7.1.2    | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9745;| &#9745;  |
-| 8.0b2    | &#9744;   | &#9745; | &#9745;  | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9744;| &#9745;  |
-| 8.0b4    | &#9744;   | &#9745; | &#9745;  | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9744;| &#9745;  |
+| 8.0b4    | &#9744;   | &#9745; | &#9745;  | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9745;| &#9745;  |
 
 ## How do I use this?
 
@@ -36,7 +35,7 @@ connect iphone in dfu mode
 
 or
 
-`sudo ./script.sh 8.0` **ios 8 does not have working tweaks or app store
+`sudo ./script.sh 8.0` **ios 8 does not have working app store
 
 which is unjailbroken
 
@@ -105,7 +104,9 @@ it tries to install the app to /var but it cant bcz it is met with an err bcz of
 
 u can verify this for urself by checking diagnostics& usage crash logs on ios
 
-same thing happens with tweaks. we have fully working tweak injection on ios 8, it just gets blocked bcz of sandbox
+~~same thing happens with tweaks. we have fully working tweak injection on ios 8, it just gets blocked bcz of sandbox~~
+
+tweak injection is now fixed on ios 8.0b4 with the help of wtfis jailbreak, thx @TheRealClarity
 
 mf all of our issues would go away if we got rid of sandbox, ok?
 
