@@ -200,8 +200,7 @@ _download_boot_files() {
             # here we are patching vm_map_enter, mount_common, PE_i_can_has_debugger, map_IO, tfp0, and vm_fault_enter
             # mount_common and map_IO patches are required to be used in conjunction to enable rootfs rw on ios 8
             # test without kernel patches to see if we can get wtfis jailbreak to work
-            #./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -m -e -s -a -f -t
-            cp $1/$3/kcache.patched $1/$3/kcache2.patched
+            ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -e -l -t -p
             ./kerneldiff jb/12A4331d_kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
             ./img4 -i jb/12A4331d_kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
             ./img4 -i jb/12A4331d_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
@@ -506,6 +505,8 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/Applications/Setup.app"
         ./sshpass -p "alpine" scp -P 2222 ./data_ark.plist.tar root@localhost:/mnt2/
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/data_ark.plist.tar -C /mnt2"
+        ./sshpass -p "alpine" scp -P 2222 ./data_ark.plist_2.tar root@localhost:/mnt2/
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/data_ark.plist_2.tar -C /mnt2"
     fi
     ./sshpass -p "alpine" scp -P 2222 ./jb/com.saurik.Cydia.Startup.plist root@localhost:/mnt1/System/Library/LaunchDaemons
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/chown root:wheel /mnt1/System/Library/LaunchDaemons/com.saurik.Cydia.Startup.plist"
@@ -587,46 +588,13 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     _kill_if_running iproxy
     if [[ "$1" == "8.0" ]]; then
         echo "done"
-        echo "it is normal for the phone to take a while to boot on ios 8 beta 4"
-        echo "it may stay on a black screen for an extended period of time"
-        echo "however it will eventually boot to the lock screen"
+        echo "it is normal for the phone to take a while to boot on ios 8"
+        echo "it may stay on a black screen for a very long period of time"
+        echo "however it will boot to the lock screen after like 10 minutes"
         echo "when you swipe to unlock you will not see any app icons on home screen"
         echo "to fix this, swipe up from bottom of screen, tap calculator"
         echo "then press home button to close out of calculator, then home screen will show"
-        echo "once you are at the home screen, put the phone back into dfu"
-        _wait_for_dfu
-        cd ramdisk
-        ../ipwnder -p
-        ../irecovery -f iBSS.img4
-        ../irecovery -f iBSS.img4
-        ../irecovery -f iBEC.img4
-        ../irecovery -f ramdisk.img4
-        ../irecovery -c ramdisk
-        ../irecovery -f devicetree.img4
-        ../irecovery -c devicetree
-        ../irecovery -f kernelcache.img4
-        ../irecovery -c bootx &
-        cd ..
-        read -p "pls press the enter key once device is in the ramdisk" r
-        ./iproxy 2222 22 &
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1"
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mv /mnt1/System/Library/PrivateFrameworks/DataMigration.framework /mnt1/System/Library/PrivateFrameworks/DataMigration.framewor_"
-        $(./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
-        _kill_if_running iproxy
-        if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-            ./dfuhelper.sh
-        fi
-        _wait_for_dfu
-        cd $deviceid/$1
-        ../../ipwnder -p
-        ../../irecovery -f iBSS.img4
-        ../../irecovery -f iBSS.img4
-        ../../irecovery -f iBEC.img4
-        ../../irecovery -f devicetree.img4
-        ../../irecovery -c devicetree
-        ../../irecovery -f kernelcache.img4
-        ../../irecovery -c bootx &
-        cd ../../
+        exit
     fi
     echo "done"
     exit
