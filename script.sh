@@ -198,7 +198,7 @@ _download_boot_files() {
             # see https://files.catbox.moe/wn83g9.mp4 for a video example of why we need sandbox patch
             # here we are patching vm_map_enter, vm_map_protet, tfp0, and sbtrace
             # when u boot u need to run wtfis app which patches vm_fault_enter, sandbox, map_IO, amfi, and many other things
-            ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -e -l -t
+            ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -e -l -t -p
             ./kerneldiff jb/12A4331d_kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
             ./img4 -i jb/12A4331d_kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
             ./img4 -i jb/12A4331d_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
