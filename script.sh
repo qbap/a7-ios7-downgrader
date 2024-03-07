@@ -542,14 +542,14 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chmod 777 /mnt1/.installed_wtfis"
     fi
     if [[ "$1" == *"9"* || "$1" == *"8"* ]]; then
-        read -p "would you like to also install Evermusic_Pro.app? " r
+        read -p "would you like to also install Evermusic_Free.app? " r
         if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
-            # so uh this is version 2.2 of evermusic pro which is the first version with wifi drive support
+            # so uh this is version 2.2 of evermusic which is the first version with wifi drive support
             # however since we are installing it to /Applications idk how tf its supposed to save mp3 files
             # cuz normally it saves the mp3 files to data folder on the /var partition
-            ./sshpass -p "alpine" scp -P 2222 ./jb/Evermusic_Pro.app.tar root@localhost:/mnt1/
-            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt1/Evermusic_Pro.app.tar -C /mnt1/Applications/"
-            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt1/Applications/Evermusic_Pro.app'
+            ./sshpass -p "alpine" scp -P 2222 ./jb/Evermusic_Free.app.tar root@localhost:/mnt1/
+            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt1/Evermusic_Free.app.tar -C /mnt1/Applications/"
+            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt1/Applications/Evermusic_Free.app'
         fi
     fi
     ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/kernelcache root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches
