@@ -185,7 +185,7 @@ _download_boot_files() {
             ./iBoot64Patcher $1/$3/iBEC.dec $1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1 PE_i_can_has_debugger=1  amfi_unrestrict_task_for_pid=0x0 amfi_allow_any_signature=0x1 amfi_get_out_of_my_way=0x1"
         elif [[ "$3" == *"8"* ]]; then
             ./ipatcher $1/$3/iBSS.dec $1/$3/iBSS.patched
-            ./ipatcher $1/$3/iBEC.dec $1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1 amfi_get_out_of_my_way=0x1"
+            ./ipatcher $1/$3/iBEC.dec $1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1"
         else
             ./ipatcher $1/$3/iBSS.dec $1/$3/iBSS.patched
             ./ipatcher $1/$3/iBEC.dec $1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1 PE_i_can_has_debugger=1 amfi_get_out_of_my_way=0x1"
@@ -196,9 +196,9 @@ _download_boot_files() {
             ./seprmvr64lite jb/12A4331d_kcache.raw $1/$3/kcache.patched
             # ios 8.0 GM - 8.4.1 gets slide to upgrade screen when trying to boot without a sandbox patch
             # see https://files.catbox.moe/wn83g9.mp4 for a video example of why we need sandbox patch
-            # here we are patching vm_map_enter, vm_map_protet, tfp0, and sbtrace
-            # when u boot u need to run wtfis app which patches vm_fault_enter, sandbox, map_IO, amfi, and many other things
-            ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -e -l -t -p
+            # here we are patching tfp0, sbtrace, vm_fault_enter, mount_common, and map_IO
+            # when u boot u need to run wtfis app or use the wtfis untether which patches sandbox
+            ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -t -p -f -a -m
             ./kerneldiff jb/12A4331d_kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
             ./img4 -i jb/12A4331d_kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
             ./img4 -i jb/12A4331d_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
@@ -485,8 +485,6 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     if [[ "$1" == *"9"* ]]; then
         # as of right now we have not tested any rootfs rw patches for ios 9
         # we are waiting on a sandbox patch before we can do anything in that regard
-        ./sshpass -p "alpine" scp -P 2222 ./fstab root@localhost:/mnt1/etc/
-    elif [[ "$1" == *"8"* ]]; then
         ./sshpass -p "alpine" scp -P 2222 ./fstab root@localhost:/mnt1/etc/
     else
         ./sshpass -p "alpine" scp -P 2222 ./jb/fstab root@localhost:/mnt1/etc/
