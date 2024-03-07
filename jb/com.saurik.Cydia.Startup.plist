@@ -8,7 +8,7 @@
 	<string>/usr/libexec/cydia/startup</string>
 	<key>RunAtLoad</key>
 	<true/>
-        <key>UserName</key>
-        <string>root</string>
+	<key>UserName</key>
+	<string>root</string>
 </dict>
 </plist>

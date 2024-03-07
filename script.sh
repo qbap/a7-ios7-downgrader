@@ -496,17 +496,25 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/Applications/Setup.app"
         ./sshpass -p "alpine" scp -P 2222 ./jb/data_ark.plist.tar root@localhost:/mnt2/
+        # yeah so this doesnt do shit on ios 7.x, it is still unactivated on ios 7.x
+        # however app store works and there is no hello screen when u boot
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/data_ark.plist.tar -C /mnt2"
         if [[ "$1" == *"8"* ]]; then
+            # this actually works reliably on ios 8 beta 4 /w full factoryactivation
+            # gotta love a patched mobactivationd+ data_ark.plist
             ./sshpass -p "alpine" scp -P 2222 ./jb/data_ark.plist_2.tar root@localhost:/mnt2/
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/data_ark.plist_2.tar -C /mnt2"
             ./sshpass -p "alpine" scp -P 2222 ./jb/mobactivationd root@localhost:/mnt1/System/Library/PrivateFrameworks/MobileActivation.framework/Support/mobactivationd
             ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/PrivateFrameworks/MobileActivation.framework/Support/mobactivationd ./$deviceid/$1/mobactivationd
+            # patch _set_brick_state, dealwith_activation, handle_deactivate& check_build_expired
             ./Kernel64Patcher ./$deviceid/$1/mobactivationd ./$deviceid/$1/mobactivationd_patched -g -b -c -d
             ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/mobactivationd_patched root@localhost:/mnt1/System/Library/PrivateFrameworks/MobileActivation.framework/Support/mobactivationd
         fi
     fi
+    # fix cydia launch daemon not running at boot
     ./sshpass -p "alpine" scp -P 2222 ./jb/com.saurik.Cydia.Startup.plist root@localhost:/mnt1/System/Library/LaunchDaemons
+    # uicache -a on every boot
+    ./sshpass -p "alpine" scp -P 2222 ./jb/startup root@localhost:/mnt1/usr/libexec/cydia/startup
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/chown root:wheel /mnt1/System/Library/LaunchDaemons/com.saurik.Cydia.Startup.plist"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/OS.tar"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/log/asl/SweepStore"
@@ -519,9 +527,10 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         ./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.purplebuddy.notbackedup.plist root@localhost:/mnt2/mobile/Library/Preferences/
         ./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.migration.plist root@localhost:/mnt2/mobile/Library/Preferences/
     fi
-    #wtfis untether just causes kernel panic on every version of ios 8 that i tested
-    #i was initially trying to get this untether to work in order to get sandbox patch on ios 8
-    #if we get sandbox patch on ios 8 it might fix slide to upgrade screen on iOS 8.0 GM+
+    # wtfis untether works but is very unreliable and causes kernel panic >70% of the time
+    # also worthy to point out that the wtfis untether runs after the slide to uprade screen, not before
+    # so it is not able to fix our sandbox issues on ios 8.0+
+    # so we are instead using wtfis.app which has 100% success rate when patching the kernel& sandbox on ios 8 beta 4
     if [[ "$1" == *"8"* ]]; then
     #    ./sshpass -p "alpine" scp -P 2222 ./jb/untether.tar root@localhost:/mnt1/
     #    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xvf /mnt1/untether.tar -C /mnt1/'
@@ -536,6 +545,9 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     if [[ "$1" == *"9"* || "$1" == *"8"* ]]; then
         read -p "would you like to also install Evermusic_Pro.app? " r
         if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
+            # so uh this is version 2.2 of evermusic pro which is the first version with wifi drive support
+            # however since we are installing it to /Applications idk how tf its supposed to save mp3 files
+            # cuz normally it saves the mp3 files to data folder on the /var partition
             ./sshpass -p "alpine" scp -P 2222 ./jb/Evermusic_Pro.app.tar root@localhost:/mnt1/
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt1/Evermusic_Pro.app.tar -C /mnt1/Applications/"
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt1/Applications/Evermusic_Pro.app'
