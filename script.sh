@@ -568,7 +568,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chown root:wheel /mnt1/.cydia_no_stash"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chmod 777 /mnt1/.cydia_no_stash"
     if [[ "$1" == *"8"* ]]; then
-        ./sshpass -p "alpine" scp -P 2222 ./jb/AppleInternal_ios8.tar root@localhost:/mnt1/
+        ./sshpass -p "alpine" scp -P 2222 ./jb/AppleInternal.tar root@localhost:/mnt1/
         ./sshpass -p "alpine" scp -P 2222 ./jb/PrototypeTools.framework_ios8.tar root@localhost:/mnt1/
         ./sshpass -p "alpine" scp -P 2222 ./jb/SystemVersion_ios8.plist root@localhost:/mnt1/System/Library/CoreServices/SystemVersion.plist
         ./sshpass -p "alpine" scp -P 2222 ./jb/SpringBoard-Internal.strings root@localhost:/mnt1/System/Library/CoreServices/SpringBoard.app/en.lproj/
@@ -577,9 +577,9 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar -xvf /mnt1/PrototypeTools.framework_ios8.tar -C /mnt1/System/Library/PrivateFrameworks/'
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt1/System/Library/PrivateFrameworks/PrototypeTools.framework'
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/PrototypeTools.framework_ios8.tar'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar -xvf /mnt1/AppleInternal_ios8.tar -C /mnt1/'
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar -xvf /mnt1/AppleInternal.tar -C /mnt1/'
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt1/AppleInternal/'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/AppleInternal_ios8.tar'
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/AppleInternal.tar'
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt2/mobile/Library/Caches/com.apple.MobileGestalt.plist'
     elif [[ "$1" == *"7"* ]]; then
         ./sshpass -p "alpine" scp -P 2222 ./jb/AppleInternal.tar root@localhost:/mnt1/
