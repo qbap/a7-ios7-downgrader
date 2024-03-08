@@ -357,7 +357,11 @@ if [ -e $deviceid/$1/iBSS.img4 ]; then
         # if we already have installed ios using this script we can just boot the existing kernelcache
         _wait_for_dfu
         cd $deviceid/$1
-        ../../ipwnder -p
+        if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" ]]; then
+            ../../gaster pwn
+        else
+            ../../ipwnder -p
+        fi
         ../../irecovery -f iBSS.img4
         ../../irecovery -f iBSS.img4
         ../../irecovery -f iBEC.img4
@@ -374,7 +378,11 @@ if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (D
 fi
 _wait_for_dfu
 cd ramdisk
-../ipwnder -p
+if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" ]]; then
+    ../gaster pwn
+else
+    ../ipwnder -p
+fi
 ../irecovery -f iBSS.img4
 ../irecovery -f iBSS.img4
 ../irecovery -f iBEC.img4
@@ -428,7 +436,11 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     fi
     _wait_for_dfu
     cd ramdisk
-    ../ipwnder -p
+    if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" ]]; then
+        ../gaster pwn
+    else
+        ../ipwnder -p
+    fi
     ../irecovery -f iBSS.img4
     ../irecovery -f iBSS.img4
     ../irecovery -f iBEC.img4
@@ -604,7 +616,11 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         fi
         _wait_for_dfu
         cd $deviceid/$1
-        ../../ipwnder -p
+        if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" ]]; then
+            ../../gaster pwn
+        else
+            ../../ipwnder -p
+        fi
         ../../irecovery -f iBSS.img4
         ../../irecovery -f iBSS.img4
         ../../irecovery -f iBEC.img4
@@ -655,7 +671,11 @@ if [ -e $deviceid/$1/iBSS.img4 ]; then
     fi    
     _wait_for_dfu
      cd $deviceid/$1
-    ../../ipwnder -p
+    if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" ]]; then
+        ../../gaster pwn
+    else
+        ../../ipwnder -p
+    fi
     ../../irecovery -f iBSS.img4
     ../../irecovery -f iBSS.img4
     ../../irecovery -f iBEC.img4
