@@ -107,7 +107,7 @@ _download_ramdisk_boot_files() {
         # we need to download restore ramdisk for ios 8.4.1
         # in this example we are using a modified copy of the ssh tar from SSHRD_Script https://github.com/verygenericname/SSHRD_Script
         # this modified copy of the ssh tar fixes a few issues on ios 8 and adds some executables we need
-        hdiutil resize -size 80M ramdisk/RestoreRamDisk.dmg
+        hdiutil resize -size 120M ramdisk/RestoreRamDisk.dmg
         hdiutil attach -mountpoint /tmp/ramdisk ramdisk/RestoreRamDisk.dmg
         sudo diskutil enableOwnership /tmp/ramdisk
         sudo ./gnutar -xvf iram.tar -C /tmp/ramdisk
@@ -118,7 +118,7 @@ _download_ramdisk_boot_files() {
         ./iBoot64Patcher ramdisk/iBEC.dec ramdisk/iBEC.patched -b "rd=md0 debug=0x2014e amfi=0xff cs_enforcement_disable=1 -v wdt=-1 nand-enable-reformat=1 -restore -progress"
         ./img4 -i ramdisk/iBSS.patched -o ramdisk/iBSS.img4 -M IM4M -A -T ibss
         ./img4 -i ramdisk/iBEC.patched -o ramdisk/iBEC.img4 -M IM4M -A -T ibec
-        ./Kernel64Patcher2 ramdisk/kcache.patched ramdisk/kcache.patched -a
+        ./Kernel64Patcher2 ramdisk/kcache.raw ramdisk/kcache.patched -a
         ./kerneldiff ramdisk/kcache.raw ramdisk/kcache.patched ramdisk/kc.bpatch
         ./img4 -i ramdisk/kernelcache.dec -o ramdisk/kernelcache.img4 -M IM4M -T rkrn -P ramdisk/kc.bpatch
         ./img4 -i ramdisk/kernelcache.dec -o ramdisk/kernelcache -M IM4M -T krnl -P ramdisk/kc.bpatch
