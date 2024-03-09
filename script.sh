@@ -115,7 +115,7 @@ _download_ramdisk_boot_files() {
         hdiutil detach /tmp/ramdisk
         ./img4 -i ramdisk/RestoreRamDisk.dmg -o ramdisk/ramdisk.img4 -M IM4M -A -T rdsk
         ./iBoot64Patcher ramdisk/iBSS.dec ramdisk/iBSS.patched
-        ./iBoot64Patcher ramdisk/iBEC.dec ramdisk/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 -progress" -n
+        ./iBoot64Patcher ramdisk/iBEC.dec ramdisk/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 -restore -progress" -n
         ./img4 -i ramdisk/iBSS.patched -o ramdisk/iBSS.img4 -M IM4M -A -T ibss
         ./img4 -i ramdisk/iBEC.patched -o ramdisk/iBEC.img4 -M IM4M -A -T ibec
         ./img4 -i ramdisk/devicetree.dec -o ramdisk/devicetree.img4 -M IM4M -T rdtr
