@@ -111,7 +111,7 @@ _download_ramdisk_boot_files() {
         hdiutil resize -size 100M ramdisk/RestoreRamDisk.dmg
         hdiutil attach -mountpoint /tmp/ramdisk ramdisk/RestoreRamDisk.dmg
         sudo diskutil enableOwnership /tmp/ramdisk
-        sudo ./gnutar -xzvf ssh.tar -C /tmp/ramdisk
+        sudo ./gnutar -xvf ssh.tar -C /tmp/ramdisk
         hdiutil detach /tmp/ramdisk
         ./img4 -i ramdisk/RestoreRamDisk.dmg -o ramdisk/ramdisk.img4 -M IM4M -A -T rdsk
         ./iBoot64Patcher ramdisk/iBSS.dec ramdisk/iBSS.patched
