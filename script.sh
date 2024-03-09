@@ -118,7 +118,7 @@ _download_ramdisk_boot_files() {
         ./iBoot64Patcher ramdisk/iBEC.dec ramdisk/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 -progress" -n
         ./img4 -i ramdisk/iBSS.patched -o ramdisk/iBSS.img4 -M IM4M -A -T ibss
         ./img4 -i ramdisk/iBEC.patched -o ramdisk/iBEC.img4 -M IM4M -A -T ibec
-        ./img4 -i ramdisk/devicetree.dec -o ramdisk/devicetree.img4 -A -M IM4M -T rdtr
+        ./img4 -i ramdisk/devicetree.dec -o ramdisk/devicetree.img4 -M IM4M -T rdtr
         ./Kernel64Patcher2 ramdisk/kcache.raw ramdisk/kcache2.patched -a
         pyimg4 im4p create -i ramdisk/kcache2.patched -o ramdisk/kernelcache.im4p.img4 --extra ramdisk/kpp.bin -f rkrn --lzss
         pyimg4 im4p create -i ramdisk/kcache2.patched -o ramdisk/kernelcache.im4p --extra ramdisk/kpp.bin -f krnl --lzss
