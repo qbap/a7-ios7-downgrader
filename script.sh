@@ -443,6 +443,18 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         echo "missing ./keybags, which is required in order to proceed. exiting.."
         exit
     fi
+    if [ ! -e ./$deviceid/FUD ]; then
+        read -p "missing ./FUD, which is recommended in order to proceed. press enter to continue.. " r
+    fi
+    if [ ! -e ./$deviceid/firmware ]; then
+        read -p "missing ./firmware, which is recommended in order to proceed. press enter to continue.. " r
+    fi
+    if [ ! -e ./$deviceid/local ]; then
+        read -p "missing ./local, which is recommended in order to proceed. press enter to continue.. " r
+    fi
+    if [ ! -e ./$deviceid/com.apple.factorydata ]; then
+        read -p "missing ./com.apple.factorydata, which is recommended in order to proceed. press enter to continue.. " r
+    fi
     # this command erases the nand so we can create new partitions
     remote_cmd "lwvm init"
     sleep 2
