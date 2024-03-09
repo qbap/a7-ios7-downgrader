@@ -115,7 +115,7 @@ _download_ramdisk_boot_files() {
         ./img4tool -c ramdisk/ramdisk.im4p -t rdsk ramdisk/RestoreRamDisk.dmg
         ./img4tool -c ramdisk/ramdisk.img4 -p ramdisk/ramdisk.im4p -m IM4M
         ./iBoot64Patcher ramdisk/iBSS.dec ramdisk/iBSS.patched
-        ./iBoot64Patcher ramdisk/iBEC.dec ramdisk/iBEC.patched -b "rd=md0 debug=0x2014e -v wdt=-1 nand-enable-reformat=1 -progress"
+        ./iBoot64Patcher ramdisk/iBEC.dec ramdisk/iBEC.patched -b "rd=md0 debug=0x2014e -v wdt=-1 nand-enable-reformat=1 -restore"
         ./img4 -i ramdisk/iBSS.patched -o ramdisk/iBSS.img4 -M IM4M -A -T ibss
         ./img4 -i ramdisk/iBEC.patched -o ramdisk/iBEC.img4 -M IM4M -A -T ibec
         ./Kernel64Patcher2 ramdisk/kcache.raw ramdisk/kcache.patched -a
