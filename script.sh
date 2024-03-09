@@ -218,22 +218,13 @@ _download_boot_files() {
             ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
             ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
             if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" ]]; then
-                #./seprmvr64lite jb/12A93651a_kcache.raw $1/$3/kcache.patched
-                # ios 8.0 GM - 8.4.1 gets slide to upgrade screen when trying to boot without a sandbox patch
-                # see https://files.catbox.moe/wn83g9.mp4 for a video example of why we need sandbox patch
-                # here we are patching tfp0, sbtrace, vm_fault_enter, mount_common, and map_IO
-                # when u boot u need to run wtfis app or use the wtfis untether which patches sandbox
-                #./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -t -p -f -a -m
-                #./kerneldiff jb/12A93651a_kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
-                #./img4 -i jb/12A93651a_kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
-                #./img4 -i jb/12A93651a_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
-            ./seprmvr64lite $1/$3/kcache.raw $1/$3/kcache.patched
-            # we need to apply mount_common patch for rootfs rw and vm_map_enter patch for tweak injection
-            # app store works perfectly, and so does tweaks
-            ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -t -p -f -a -m
-            ./kerneldiff $1/$3/kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
-            ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
-            ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
+                ./seprmvr64lite $1/$3/kcache.raw $1/$3/kcache.patched
+                # we need to apply mount_common patch for rootfs rw and vm_map_enter patch for tweak injection
+                # app store works perfectly, and so does tweaks
+                ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -t -p -f -a -m
+                ./kerneldiff $1/$3/kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
+                ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
+                ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
             else
                 ./seprmvr64lite jb/12A4331d_kcache.raw $1/$3/kcache.patched
                 # ios 8.0 GM - 8.4.1 gets slide to upgrade screen when trying to boot without a sandbox patch
@@ -298,14 +289,25 @@ _download_root_fs() {
     
     if [ ! -e $1/$3/OS.tar ]; then
         if [ ! -e $1/$3/OS.dmg ]; then
-            if [[ "$3" == "8.0.3" ]]; then
-                # https://archive.org/download/Apple_iPhone_Firmware/Apple%20iPhone%206.1%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/
-                cd ./$1/$3
-                ../../aria2c https://ia903400.us.archive.org/4/items/Apple_iPhone_Firmware/Apple%20iPhone%206.1%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
-                ../../7z x media_ipsw.rar
-                ../../7z x $(find . -name '*.ipsw*')
-                ../../dmg extract 058-01244-053.dmg OS.dmg -k 5c8b481822b91861c1d19590e790b306daaab2230f89dd275c18356d28fdcd47436a0737
-                cd ../../
+            if [[ "$3" == "8.0" ]]; then
+                if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" ]]; then
+                    ./pzb -g BuildManifest.plist "$ipswurl"
+                    # Download root fs
+                    ./pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
+                    # Decrypt root fs
+                    # note that as per src/decrypt.rs it will rename the file to OS.dmg by default
+                    cargo run decrypt $1 $3 "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -l
+                    osfn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
+                    mv $(echo $osfn | sed "s/dmg/bin/g") $1/$3/OS.dmg
+                else
+                    # https://archive.org/download/Apple_iPhone_Firmware/Apple%20iPhone%206.1%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/
+                    cd ./$1/$3
+                    ../../aria2c https://ia903400.us.archive.org/4/items/Apple_iPhone_Firmware/Apple%20iPhone%206.1%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
+                    ../../7z x media_ipsw.rar
+                    ../../7z x $(find . -name '*.ipsw*')
+                    ../../dmg extract 058-01244-053.dmg OS.dmg -k 5c8b481822b91861c1d19590e790b306daaab2230f89dd275c18356d28fdcd47436a0737
+                    cd ../../
+                fi
             else
                 ./pzb -g BuildManifest.plist "$ipswurl"
                 # Download root fs
@@ -659,6 +661,13 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/HealthMigrator.migrator/'
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/MobileNotes.migrator/'
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/MobileSlideShow.migrator/'
+        if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" ]]; then
+            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/MobileSafari.migrator/'
+            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/MapsDataClassMigrator.migrator/'
+            if [[ "$1" == "8.0" ]]; then
+                ./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.datamigrator_patched root@localhost:/mnt1/System/Library/PrivateFrameworks/DataMigration.framework/XPCServices/com.apple.datamigrator.xpc/com.apple.datamigrator
+            fi
+        fi
         # fix sideloading apps
         ./sshpass -p "alpine" scp -P 2222 ./jb/lockdownd root@localhost:/mnt1/usr/libexec/lockdownd
     elif [[ "$1" == *"7"* ]]; then
