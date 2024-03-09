@@ -108,14 +108,14 @@ _download_ramdisk_boot_files() {
         # we need to download restore ramdisk for ios 8.4.1
         # in this example we are using a modified copy of the ssh tar from SSHRD_Script https://github.com/verygenericname/SSHRD_Script
         # this modified copy of the ssh tar fixes a few issues on ios 8 and adds some executables we need
-        hdiutil resize -size 100M ramdisk/RestoreRamDisk.dmg
+        hdiutil resize -size 90M ramdisk/RestoreRamDisk.dmg
         hdiutil attach -mountpoint /tmp/ramdisk ramdisk/RestoreRamDisk.dmg
         sudo diskutil enableOwnership /tmp/ramdisk
         sudo ./gnutar -xvf iram.tar -C /tmp/ramdisk
         hdiutil detach /tmp/ramdisk
         ./img4 -i ramdisk/RestoreRamDisk.dmg -o ramdisk/ramdisk.img4 -M IM4M -A -T rdsk
         ./iBoot64Patcher ramdisk/iBSS.dec ramdisk/iBSS.patched
-        ./iBoot64Patcher ramdisk/iBEC.dec ramdisk/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 -progress"
+        ./iBoot64Patcher ramdisk/iBEC.dec ramdisk/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 -progress" -n
         ./img4 -i ramdisk/iBSS.patched -o ramdisk/iBSS.img4 -M IM4M -A -T ibss
         ./img4 -i ramdisk/iBEC.patched -o ramdisk/iBEC.img4 -M IM4M -A -T ibec
         ./img4 -i ramdisk/devicetree.dec -o ramdisk/devicetree.img4 -A -M IM4M -T rdtr
