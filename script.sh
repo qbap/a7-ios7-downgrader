@@ -119,7 +119,8 @@ _download_ramdisk_boot_files() {
         ./img4 -i ramdisk/iBSS.patched -o ramdisk/iBSS.img4 -M IM4M -A -T ibss
         ./img4 -i ramdisk/iBEC.patched -o ramdisk/iBEC.img4 -M IM4M -A -T ibec
         ./img4 -i ramdisk/devicetree.dec -o ramdisk/devicetree.img4 -M IM4M -T rdtr
-        ./Kernel64Patcher2 ramdisk/kcache.raw ramdisk/kcache2.patched -a
+        ./seprmvr64 ramdisk/kcache.raw ramdisk/kcache.patched
+        ./Kernel64Patcher2 ramdisk/kcache.patched ramdisk/kcache2.patched -a
         pyimg4 im4p create -i ramdisk/kcache2.patched -o ramdisk/kernelcache.im4p.img4 --extra ramdisk/kpp.bin -f rkrn --lzss
         pyimg4 im4p create -i ramdisk/kcache2.patched -o ramdisk/kernelcache.im4p --extra ramdisk/kpp.bin -f krnl --lzss
         pyimg4 img4 create -p ramdisk/kernelcache.im4p.img4 -o ramdisk/kernelcache.img4 -m IM4M
