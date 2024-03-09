@@ -105,10 +105,7 @@ _download_ramdisk_boot_files() {
         
         rm -rf BuildManifest.plist
         
-        # we need to download restore ramdisk for ios 8.4.1
-        # in this example we are using a modified copy of the ssh tar from SSHRD_Script https://github.com/verygenericname/SSHRD_Script
-        # this modified copy of the ssh tar fixes a few issues on ios 8 and adds some executables we need
-        hdiutil resize -size 120M ramdisk/RestoreRamDisk.dmg
+        hdiutil resize -size 80M ramdisk/RestoreRamDisk.dmg
         hdiutil attach -mountpoint /tmp/ramdisk ramdisk/RestoreRamDisk.dmg
         sudo diskutil enableOwnership /tmp/ramdisk
         sudo ./gnutar -xvf iram.tar -C /tmp/ramdisk
@@ -116,15 +113,11 @@ _download_ramdisk_boot_files() {
         ./img4tool -c ramdisk/ramdisk.im4p -t rdsk ramdisk/RestoreRamDisk.dmg
         ./img4tool -c ramdisk/ramdisk.img4 -p ramdisk/ramdisk.im4p -m IM4M
         ./iBoot64Patcher ramdisk/iBSS.dec ramdisk/iBSS.patched
-        ./iBoot64Patcher ramdisk/iBEC.dec ramdisk/iBEC.patched -b "rd=md0 debug=0x2014e -v wdt=-1 nand-enable-reformat=1 -restore"
+        ./iBoot64Patcher ramdisk/iBEC.dec ramdisk/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 -progress"
         ./img4 -i ramdisk/iBSS.patched -o ramdisk/iBSS.img4 -M IM4M -A -T ibss
         ./img4 -i ramdisk/iBEC.patched -o ramdisk/iBEC.img4 -M IM4M -A -T ibec
+        ./img4 -i ramdisk/kernelcache.dec -o ramdisk/kernelcache.img4 -M IM4M -T rkrn
         ./img4 -i ramdisk/devicetree.dec -o ramdisk/devicetree.img4 -A -M IM4M -T rdtr
-        ./Kernel64Patcher2 ramdisk/kcache.raw ramdisk/kcache2.patched -a
-        pyimg4 im4p create -i ramdisk/kcache2.patched -o ramdisk/kernelcache.im4p.img4 --extra ramdisk/kpp.bin -f rkrn --lzss
-        pyimg4 im4p create -i ramdisk/kcache2.patched -o ramdisk/kernelcache.im4p --extra ramdisk/kpp.bin -f krnl --lzss
-        pyimg4 img4 create -p ramdisk/kernelcache.im4p.img4 -o ramdisk/kernelcache.img4 -m IM4M
-        pyimg4 img4 create -p ramdisk/kernelcache.im4p -o ramdisk/kernelcache -m IM4M
     fi
 }
 _download_boot_files() {
@@ -380,7 +373,7 @@ elif [[ "$1" == *"9"* ]]; then
     echo "see https://files.catbox.moe/wn83g9.mp4 for a video example"
     exit
 fi
-_download_ramdisk_boot_files $deviceid $replace 11.2
+_download_ramdisk_boot_files $deviceid $replace 9.3.2
 _download_boot_files $deviceid $replace $1
 _download_root_fs $deviceid $replace $1
 if [ -e $deviceid/$1/iBSS.img4 ]; then
