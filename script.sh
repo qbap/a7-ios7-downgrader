@@ -319,18 +319,29 @@ _download_root_fs() {
                 mv $(echo $osfn | sed "s/dmg/bin/g") $1/$3/OS.dmg
             fi
         fi
-        ./dmg build $1/$3/OS.dmg $1/$3/rw.dmg
-        hdiutil attach -mountpoint /tmp/ios $1/$3/rw.dmg
-        sudo diskutil enableOwnership /tmp/ios
-        sudo mkdir /tmp/ios2
-        sudo rm -rf /tmp/ios2
-        sudo cp -a /tmp/ios/. /tmp/ios2/
-        sudo tar -xvf ./jb/cydia.tar -C /tmp/ios2
-        sudo ./gnutar -cvf $1/$3/OS.tar -C /tmp/ios2 .
-        hdiutil detach /tmp/ios
-        rm -rf /tmp/ios
-        sudo rm -rf /tmp/ios2
-        ./irecovery -f /dev/null
+        if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" ]]; then
+            ./dmg build $1/$3/OS.dmg $1/$3/rw.dmg
+            hdiutil attach -mountpoint /tmp/ios $1/$3/rw.dmg
+            sudo diskutil enableOwnership /tmp/ios
+            sudo ./gnutar -cvf $1/$3/OS.tar -C /tmp/ios /tmp/ios2 .
+            hdiutil detach /tmp/ios
+            rm -rf /tmp/ios
+            sudo rm -rf /tmp/ios2
+            ./irecovery -f /dev/null
+        else
+            ./dmg build $1/$3/OS.dmg $1/$3/rw.dmg
+            hdiutil attach -mountpoint /tmp/ios $1/$3/rw.dmg
+            sudo diskutil enableOwnership /tmp/ios
+            sudo mkdir /tmp/ios2
+            sudo rm -rf /tmp/ios2
+            sudo cp -a /tmp/ios/. /tmp/ios2/
+            sudo tar -xvf ./jb/cydia.tar -C /tmp/ios2
+            sudo ./gnutar -cvf $1/$3/OS.tar -C /tmp/ios2 .
+            hdiutil detach /tmp/ios
+            rm -rf /tmp/ios
+            sudo rm -rf /tmp/ios2
+            ./irecovery -f /dev/null
+        fi
     fi
 
     rm -rf BuildManifest.plist
