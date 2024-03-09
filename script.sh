@@ -57,6 +57,7 @@ _download_ramdisk_boot_files() {
                 mv $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1).dec ramdisk/kcache.raw
                 mv $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1).im4p ramdisk/kernelcache.dec
             else
+                pyimg4 im4p extract -i $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) -o ramdisk/kernelcache.im4p2 --extra ramdisk/kpp.bin
                 ./img4 -i $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) -o ramdisk/kcache.raw
                 ./img4 -i $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) -o ramdisk/kernelcache.dec -D
             fi
@@ -118,11 +119,12 @@ _download_ramdisk_boot_files() {
         ./iBoot64Patcher ramdisk/iBEC.dec ramdisk/iBEC.patched -b "rd=md0 debug=0x2014e -v wdt=-1 nand-enable-reformat=1 -restore"
         ./img4 -i ramdisk/iBSS.patched -o ramdisk/iBSS.img4 -M IM4M -A -T ibss
         ./img4 -i ramdisk/iBEC.patched -o ramdisk/iBEC.img4 -M IM4M -A -T ibec
-        ./Kernel64Patcher2 ramdisk/kcache.raw ramdisk/kcache.patched -a
-        ./kerneldiff ramdisk/kcache.raw ramdisk/kcache.patched ramdisk/kc.bpatch
-        ./img4 -i ramdisk/kernelcache.dec -o ramdisk/kernelcache.img4 -M IM4M -T rkrn -P ramdisk/kc.bpatch
-        ./img4 -i ramdisk/kernelcache.dec -o ramdisk/kernelcache -M IM4M -T krnl -P ramdisk/kc.bpatch
         ./img4 -i ramdisk/devicetree.dec -o ramdisk/devicetree.img4 -A -M IM4M -T rdtr
+        ./Kernel64Patcher2 ramdisk/kcache.raw ramdisk/kcache2.patched -a
+        pyimg4 im4p create -i ramdisk/kcache2.patched -o ramdisk/kernelcache.im4p.img4 --extra ramdisk/kpp.bin -f rkrn --lzss
+        pyimg4 im4p create -i ramdisk/kcache2.patched -o ramdisk/kernelcache.im4p --extra ramdisk/kpp.bin -f krnl --lzss
+        pyimg4 img4 create -p ramdisk/kernelcache.im4p.img4 -o ramdisk/kernelcache.img4 -m IM4M
+        pyimg4 img4 create -p ramdisk/kernelcache.im4p -o ramdisk/kernelcache -m IM4M
     fi
 }
 _download_boot_files() {
