@@ -4,6 +4,11 @@ oscheck=$(uname)
 version="$1"
 dir="$(pwd)/"
 
+if [ -z "$2" ]; then
+    echo "./script.sh <target os ver> <current os ver>"
+    exit
+fi
+
 _wait_for_dfu() {
     if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
         echo "[*] Waiting for device in DFU mode"
@@ -379,10 +384,6 @@ elif [[ "$1" == *"9"* ]]; then
     echo "see https://files.catbox.moe/wn83g9.mp4 for a video example"
     exit
 fi
-if [ -z "$2" ]; then
-    echo "./script.sh <target os ver> <current os ver>"
-    exit
-fi
 _download_ramdisk_boot_files $deviceid $replace $2
 _download_boot_files $deviceid $replace $1
 _download_root_fs $deviceid $replace $1
@@ -434,8 +435,7 @@ sleep 2
 read -p "would you like to wipe this phone and install ios $1? " r
 if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     if [ ! -e ./$deviceid/apticket.der ]; then
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1"
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -t hfs /dev/disk0s1s2 /mnt2"
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/mount_filesystems"
         mkdir $deviceid
         ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/Caches/apticket.der ./$deviceid/apticket.der
         ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/usr/standalone/firmware/sep-firmware.img4 ./$deviceid/sep-firmware.img4
@@ -444,6 +444,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/usr/standalone/firmware ./$deviceid/firmware
         ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/usr/local ./$deviceid/local
         ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt2/keybags ./$deviceid/keybags
+        ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt2/wireless ./$deviceid/wireless
         ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/System/Library/Caches/com.apple.factorydata ./$deviceid/com.apple.factorydata
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt1"
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt2"
@@ -475,6 +476,9 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     fi
     if [ ! -e ./$deviceid/com.apple.factorydata ]; then
         read -p "missing ./com.apple.factorydata, which is recommended in order to proceed. press enter to continue.. " r
+    fi
+    if [ ! -e ./$deviceid/wireless ]; then
+        read -p "missing ./wireless, which is recommended in order to proceed. press enter to continue.. " r
     fi
     # this command erases the nand so we can create new partitions
     remote_cmd "lwvm init"
