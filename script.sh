@@ -435,7 +435,7 @@ sleep 2
 read -p "would you like to wipe this phone and install ios $1? " r
 if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     if [ ! -e ./$deviceid/apticket.der ]; then
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/mount_filesystems"
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "bash -c mount_filesystems"
         mkdir $deviceid
         ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/Caches/apticket.der ./$deviceid/apticket.der
         ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/usr/standalone/firmware/sep-firmware.img4 ./$deviceid/sep-firmware.img4
