@@ -42,3 +42,8 @@ kpp.bin
 .DS_Store
 mobactivationd*
 *.bin
+wireless
+local
+firmware
+FUD
+com.apple.factorydata
