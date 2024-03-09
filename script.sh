@@ -102,10 +102,13 @@ _download_ramdisk_boot_files() {
         ./img4tool -c ramdisk/ramdisk.im4p -t rdsk ramdisk/RestoreRamDisk.dmg
         ./img4tool -c ramdisk/ramdisk.img4 -p ramdisk/ramdisk.im4p -m IM4M
         ./iBoot64Patcher ramdisk/iBSS.dec ramdisk/iBSS.patched
-        ./iBoot64Patcher ramdisk/iBEC.dec ramdisk/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 -progress"
+        ./iBoot64Patcher ramdisk/iBEC.dec ramdisk/iBEC.patched -b "rd=md0 debug=0x2014e amfi=0xff cs_enforcement_disable=1 -v wdt=-1 nand-enable-reformat=1 -restore -progress"
         ./img4 -i ramdisk/iBSS.patched -o ramdisk/iBSS.img4 -M IM4M -A -T ibss
         ./img4 -i ramdisk/iBEC.patched -o ramdisk/iBEC.img4 -M IM4M -A -T ibec
-        ./img4 -i ramdisk/kernelcache.dec -o ramdisk/kernelcache.img4 -M IM4M -T rkrn
+        ./Kernel64Patcher2 ramdisk/kcache.patched ramdisk/kcache.patched -a
+        ./kerneldiff ramdisk/kcache.raw ramdisk/kcache.patched ramdisk/kc.bpatch
+        ./img4 -i ramdisk/kernelcache.dec -o ramdisk/kernelcache.img4 -M IM4M -T rkrn -P ramdisk/kc.bpatch
+        ./img4 -i ramdisk/kernelcache.dec -o ramdisk/kernelcache -M IM4M -T krnl -P ramdisk/kc.bpatch
         ./img4 -i ramdisk/devicetree.dec -o ramdisk/devicetree.img4 -A -M IM4M -T rdtr
     fi
 }
