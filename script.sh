@@ -94,15 +94,15 @@ _download_ramdisk_boot_files() {
         # we need to download restore ramdisk for ios 8.4.1
         # in this example we are using a modified copy of the ssh tar from SSHRD_Script https://github.com/verygenericname/SSHRD_Script
         # this modified copy of the ssh tar fixes a few issues on ios 8 and adds some executables we need
-        hdiutil resize -size 60M ramdisk/RestoreRamDisk.dmg
+        hdiutil resize -size 80M ramdisk/RestoreRamDisk.dmg
         hdiutil attach -mountpoint /tmp/ramdisk ramdisk/RestoreRamDisk.dmg
         sudo diskutil enableOwnership /tmp/ramdisk
         sudo ./gnutar -xvf iram.tar -C /tmp/ramdisk
         hdiutil detach /tmp/ramdisk
         ./img4tool -c ramdisk/ramdisk.im4p -t rdsk ramdisk/RestoreRamDisk.dmg
         ./img4tool -c ramdisk/ramdisk.img4 -p ramdisk/ramdisk.im4p -m IM4M
-        ./ipatcher ramdisk/iBSS.dec ramdisk/iBSS.patched
-        ./ipatcher ramdisk/iBEC.dec ramdisk/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 -progress"
+        ./iBoot64Patcher ramdisk/iBSS.dec ramdisk/iBSS.patched
+        ./iBoot64Patcher ramdisk/iBEC.dec ramdisk/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 -progress"
         ./img4 -i ramdisk/iBSS.patched -o ramdisk/iBSS.img4 -M IM4M -A -T ibss
         ./img4 -i ramdisk/iBEC.patched -o ramdisk/iBEC.img4 -M IM4M -A -T ibec
         ./img4 -i ramdisk/kernelcache.dec -o ramdisk/kernelcache.img4 -M IM4M -T rkrn
@@ -362,7 +362,7 @@ elif [[ "$1" == *"9"* ]]; then
     echo "see https://files.catbox.moe/wn83g9.mp4 for a video example"
     exit
 fi
-_download_ramdisk_boot_files $deviceid $replace 8.4.1
+_download_ramdisk_boot_files $deviceid $replace 9.3.2
 _download_boot_files $deviceid $replace $1
 _download_root_fs $deviceid $replace $1
 if [ -e $deviceid/$1/iBSS.img4 ]; then
