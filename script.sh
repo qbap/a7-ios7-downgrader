@@ -51,7 +51,7 @@ _download_ramdisk_boot_files() {
             ./pzb -g $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) "$ipswurl"
             # Decrypt kernelcache
             # note that as per src/decrypt.rs it will not rename the file
-            if [[ ! "$3" == *"11"* ]]; then
+            if [[ ! "$3" == *"10"* ]]; then
                 cargo run decrypt $1 $3 $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) -l
                 # so we shall rename the file ourselves
                 mv $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1).dec ramdisk/kcache.raw
@@ -83,7 +83,7 @@ _download_ramdisk_boot_files() {
             # Download DeviceTree
             ./pzb -g $(awk "/""$2""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
             # Decrypt DeviceTree
-            if [[ ! "$3" == *"11"* ]]; then
+            if [[ ! "$3" == *"10"* ]]; then
                 cargo run decrypt $1 $3 $(awk "/""$2""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]all_flash.*production[/]//' | sed 's/Firmware[/]all_flash[/]//') -l
                 mv $(awk "/""$2""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]all_flash.*production[/]//' | sed 's/Firmware[/]all_flash[/]//').dec ramdisk/DeviceTree.dec
             else
@@ -95,7 +95,7 @@ _download_ramdisk_boot_files() {
             # Download RestoreRamDisk
             ./pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
             # Decrypt RestoreRamDisk
-            if [[ ! "$3" == *"11"* ]]; then
+            if [[ ! "$3" == *"10"* ]]; then
                 cargo run decrypt $1 $3 "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -l
                 mv "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)".dec ramdisk/RestoreRamDisk.dmg
             else
@@ -105,7 +105,10 @@ _download_ramdisk_boot_files() {
         
         rm -rf BuildManifest.plist
         
-        hdiutil resize -size 80M ramdisk/RestoreRamDisk.dmg
+        # we need to download restore ramdisk for ios 8.4.1
+        # in this example we are using a modified copy of the ssh tar from SSHRD_Script https://github.com/verygenericname/SSHRD_Script
+        # this modified copy of the ssh tar fixes a few issues on ios 8 and adds some executables we need
+        hdiutil resize -size 120M ramdisk/RestoreRamDisk.dmg
         hdiutil attach -mountpoint /tmp/ramdisk ramdisk/RestoreRamDisk.dmg
         sudo diskutil enableOwnership /tmp/ramdisk
         sudo ./gnutar -xvf iram.tar -C /tmp/ramdisk
@@ -116,8 +119,12 @@ _download_ramdisk_boot_files() {
         ./iBoot64Patcher ramdisk/iBEC.dec ramdisk/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 -progress"
         ./img4 -i ramdisk/iBSS.patched -o ramdisk/iBSS.img4 -M IM4M -A -T ibss
         ./img4 -i ramdisk/iBEC.patched -o ramdisk/iBEC.img4 -M IM4M -A -T ibec
-        ./img4 -i ramdisk/kernelcache.dec -o ramdisk/kernelcache.img4 -M IM4M -T rkrn
         ./img4 -i ramdisk/devicetree.dec -o ramdisk/devicetree.img4 -A -M IM4M -T rdtr
+        ./Kernel64Patcher2 ramdisk/kcache.raw ramdisk/kcache2.patched -a
+        pyimg4 im4p create -i ramdisk/kcache2.patched -o ramdisk/kernelcache.im4p.img4 --extra ramdisk/kpp.bin -f rkrn --lzss
+        pyimg4 im4p create -i ramdisk/kcache2.patched -o ramdisk/kernelcache.im4p --extra ramdisk/kpp.bin -f krnl --lzss
+        pyimg4 img4 create -p ramdisk/kernelcache.im4p.img4 -o ramdisk/kernelcache.img4 -m IM4M
+        pyimg4 img4 create -p ramdisk/kernelcache.im4p -o ramdisk/kernelcache -m IM4M
     fi
 }
 _download_boot_files() {
@@ -373,7 +380,7 @@ elif [[ "$1" == *"9"* ]]; then
     echo "see https://files.catbox.moe/wn83g9.mp4 for a video example"
     exit
 fi
-_download_ramdisk_boot_files $deviceid $replace 9.3.2
+_download_ramdisk_boot_files $deviceid $replace 11.2
 _download_boot_files $deviceid $replace $1
 _download_root_fs $deviceid $replace $1
 if [ -e $deviceid/$1/iBSS.img4 ]; then
@@ -424,8 +431,8 @@ sleep 2
 read -p "would you like to wipe this phone and install ios $1? " r
 if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     if [ ! -e ./$deviceid/apticket.der ]; then
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t apfs /dev/disk0s1s1 /mnt1"
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -t apfs /dev/disk0s1s2 /mnt2"
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1"
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -t hfs /dev/disk0s1s2 /mnt2"
         mkdir $deviceid
         ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/Caches/apticket.der ./$deviceid/apticket.der
         ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/usr/standalone/firmware/sep-firmware.img4 ./$deviceid/sep-firmware.img4
