@@ -379,7 +379,11 @@ elif [[ "$1" == *"9"* ]]; then
     echo "see https://files.catbox.moe/wn83g9.mp4 for a video example"
     exit
 fi
-_download_ramdisk_boot_files $deviceid $replace 11.4
+if [ -z "$2" ]; then
+    echo "./script.sh <target os ver> <current os ver>"
+    exit
+fi
+_download_ramdisk_boot_files $deviceid $replace $2
 _download_boot_files $deviceid $replace $1
 _download_root_fs $deviceid $replace $1
 if [ -e $deviceid/$1/iBSS.img4 ]; then
