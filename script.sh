@@ -396,7 +396,6 @@ if [[ "$1" == *"8"* ]]; then
         echo "ios 8.0 GM+ does not boot with seprmvr64 without a sandbox patch"
         echo "as of right now there is no sandbox patch that can be done with Kernel64Patcher"
         echo "see https://files.catbox.moe/wn83g9.mp4 for a video example"
-        exit
     fi
 elif [[ "$1" == *"9"* ]]; then
     echo "ios 9 does not boot with seprmvr64 without a sandbox patch"
