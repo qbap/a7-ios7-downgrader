@@ -221,8 +221,7 @@ _download_boot_files() {
                 ./seprmvr64lite $1/$3/kcache.raw $1/$3/kcache.patched
                 # we need to apply mount_common patch for rootfs rw and vm_map_enter patch for tweak injection
                 # app store works perfectly, and so does tweaks
-                #./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -a -m
-                cp $1/$3/kcache.patched $1/$3/kcache2.patched
+                ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -t -p -f -a -m
                 ./kerneldiff $1/$3/kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
                 ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
                 ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
@@ -320,16 +319,16 @@ _download_root_fs() {
                 mv $(echo $osfn | sed "s/dmg/bin/g") $1/$3/OS.dmg
             fi
         fi
-        if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" ]]; then
-            ./dmg build $1/$3/OS.dmg $1/$3/rw.dmg
-            hdiutil attach -mountpoint /tmp/ios $1/$3/rw.dmg
-            sudo diskutil enableOwnership /tmp/ios
-            sudo ./gnutar -cvf $1/$3/OS.tar -C /tmp/ios /tmp/ios2 .
-            hdiutil detach /tmp/ios
-            rm -rf /tmp/ios
-            sudo rm -rf /tmp/ios2
-            ./irecovery -f /dev/null
-        else
+        #if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" ]]; then
+        #    ./dmg build $1/$3/OS.dmg $1/$3/rw.dmg
+        #    hdiutil attach -mountpoint /tmp/ios $1/$3/rw.dmg
+        #    sudo diskutil enableOwnership /tmp/ios
+        #    sudo ./gnutar -cvf $1/$3/OS.tar -C /tmp/ios /tmp/ios2 .
+        #    hdiutil detach /tmp/ios
+        #    rm -rf /tmp/ios
+        #    sudo rm -rf /tmp/ios2
+        #    ./irecovery -f /dev/null
+        #else
             ./dmg build $1/$3/OS.dmg $1/$3/rw.dmg
             hdiutil attach -mountpoint /tmp/ios $1/$3/rw.dmg
             sudo diskutil enableOwnership /tmp/ios
@@ -342,7 +341,7 @@ _download_root_fs() {
             rm -rf /tmp/ios
             sudo rm -rf /tmp/ios2
             ./irecovery -f /dev/null
-        fi
+        #fi
     fi
 
     rm -rf BuildManifest.plist
@@ -581,8 +580,8 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         # as of right now we have not tested any rootfs rw patches for ios 9
         # we are waiting on a sandbox patch before we can do anything in that regard
         ./sshpass -p "alpine" scp -P 2222 ./fstab root@localhost:/mnt1/etc/
-    elif [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" ]]; then
-        ./sshpass -p "alpine" scp -P 2222 ./fstab root@localhost:/mnt1/etc/
+    #elif [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" ]]; then
+    #    ./sshpass -p "alpine" scp -P 2222 ./fstab root@localhost:/mnt1/etc/
     else
         ./sshpass -p "alpine" scp -P 2222 ./jb/fstab root@localhost:/mnt1/etc/
     fi
@@ -674,16 +673,19 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/HealthMigrator.migrator/'
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/MobileNotes.migrator/'
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/MobileSlideShow.migrator/'
-        if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" ]]; then
-            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/MobileSafari.migrator/'
-            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/MapsDataClassMigrator.migrator/'
-        fi
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/MobileSafari.migrator/'
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/MapsDataClassMigrator.migrator/'
+        # fix slide to upgrade screen
         ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/PrivateFrameworks/DataMigration.framework/XPCServices/com.apple.datamigrator.xpc/com.apple.datamigrator ./$deviceid/$1/com.apple.datamigrator
         ./datamigrator64patcher ./$deviceid/$1/com.apple.datamigrator ./$deviceid/$1/com.apple.datamigrator_patched -n
         ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/com.apple.datamigrator_patched root@localhost:/mnt1/System/Library/PrivateFrameworks/DataMigration.framework/XPCServices/com.apple.datamigrator.xpc/com.apple.datamigrator
         # fix sideloading apps
         if [[ "$1" == "8.0" ]]; then
-            ./sshpass -p "alpine" scp -P 2222 ./jb/lockdownd root@localhost:/mnt1/usr/libexec/lockdownd
+            if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" ]]; then
+                echo "lockdownd not compatible"
+            else
+                ./sshpass -p "alpine" scp -P 2222 ./jb/lockdownd root@localhost:/mnt1/usr/libexec/lockdownd
+            fi
         fi
     elif [[ "$1" == *"7"* ]]; then
         ./sshpass -p "alpine" scp -P 2222 ./jb/AppleInternal.tar root@localhost:/mnt1/
