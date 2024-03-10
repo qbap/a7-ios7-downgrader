@@ -456,9 +456,13 @@ if [ -e $deviceid/$1/iBSS.img4 ]; then
         ../../irecovery -f iBEC.img4
         ../../irecovery -f devicetree.img4
         ../../irecovery -c devicetree
-        read -p "would you like to boot release kernel ios $1? " r
-        if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
-            ../../irecovery -f kernelcache2.img4
+        if [[ "$1" == *"8"* ]]; then
+            read -p "would you like to boot release kernel ios $1? " r
+            if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
+                ../../irecovery -f kernelcache2.img4
+            else
+                ../../irecovery -f kernelcache.img4
+            fi
         else
             ../../irecovery -f kernelcache.img4
         fi
@@ -775,20 +779,22 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         ../../irecovery -f iBEC.img4
         ../../irecovery -f devicetree.img4
         ../../irecovery -c devicetree
-        ../../irecovery -f kernelcache.img4
+        if [[ "$1" == *"8"* ]]; then
+            read -p "would you like to boot release kernel ios $1? " r
+            if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
+                ../../irecovery -f kernelcache2.img4
+            else
+                ../../irecovery -f kernelcache.img4
+            fi
+        else
+            ../../irecovery -f kernelcache.img4
+        fi
         ../../irecovery -c bootx &
         cd ../../
     fi
     _kill_if_running iproxy
     if [[ "$1" == "8.0" ]]; then
         echo "done"
-        echo "if you see slide to upgrade screen just re run this script a few times"
-        echo "it is normal for the phone to take a while to boot on ios 8"
-        echo "it may stay on a black screen for a very long period of time the first boot"
-        echo "however it will boot to the lock screen after like 10 minutes"
-        echo "when you swipe to unlock you will not see any app icons on home screen"
-        echo "to fix this, swipe up from bottom of screen, tap calculator"
-        echo "then press home button to close out of calculator, then home screen will show"
         exit
     fi
     echo "done"
