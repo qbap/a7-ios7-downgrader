@@ -218,16 +218,16 @@ _download_boot_files() {
             ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
             ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
             if [[ "$1" == "iPhone7,2" || "$1" == "iPhone7,1" ]]; then
-                ./seprmvr64lite jb/12A93311h_kcache.raw $1/$3/kcache.patched
+                ./seprmvr64lite jb/12A93651a_kcache.raw $1/$3/kcache.patched
                 # ios 8.0 GM - 8.4.1 gets slide to upgrade screen when trying to boot without a sandbox patch
                 # see https://files.catbox.moe/wn83g9.mp4 for a video example of why we need sandbox patch
                 # here we are patching tfp0, sbtrace, vm_fault_enter, mount_common, and map_IO
                 # when u boot u need to run wtfis app or use the wtfis untether which patches sandbox
                 ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -t -p -f -a -m
                 # 12A93311h is ios 8 beta 4 dev kernel
-                ./kerneldiff jb/12A93311h_kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
-                ./img4 -i jb/12A93311h_kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
-                ./img4 -i jb/12A93311h_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
+                ./kerneldiff jb/12A93651a_kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
+                ./img4 -i jb/12A93651a_kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
+                ./img4 -i jb/12A93651a_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
                 
                 rm $1/$3/kcache.patched
                 rm $1/$3/kcache2.patched
