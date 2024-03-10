@@ -676,6 +676,8 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/MapsDataClassMigrator.migrator/'
             if [[ "$1" == "8.0" ]]; then
                 ./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.datamigrator_patched root@localhost:/mnt1/System/Library/PrivateFrameworks/DataMigration.framework/XPCServices/com.apple.datamigrator.xpc/com.apple.datamigrator
+            elif [[ "$1" == "8.4.1" ]]; then
+                ./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.datamigrator_8.4.1_patched root@localhost:/mnt1/System/Library/PrivateFrameworks/DataMigration.framework/XPCServices/com.apple.datamigrator.xpc/com.apple.datamigrator
             fi
         fi
         # fix sideloading apps
