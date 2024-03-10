@@ -598,10 +598,10 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
             # gotta love a patched mobactivationd+ data_ark.plist
             ./sshpass -p "alpine" scp -P 2222 ./jb/data_ark.plist_2.tar root@localhost:/mnt2/
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/data_ark.plist_2.tar -C /mnt2"
-            ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/PrivateFrameworks/MobileActivation.framework/Support/mobactivationd ./$deviceid/$1/mobactivationd
+            ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/PrivateFrameworks/MobileActivation.framework/Support/mobactivationd ./$deviceid/$1/mobactivationd.raw
             # patch _set_brick_state, dealwith_activation, handle_deactivate& check_build_expired
-            ./Kernel64Patcher ./$deviceid/$1/mobactivationd ./$deviceid/$1/mobactivationd_patched -g -b -c -d
-            ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/mobactivationd_patched root@localhost:/mnt1/System/Library/PrivateFrameworks/MobileActivation.framework/Support/mobactivationd
+            ./mobactivationd64patcher ./$deviceid/$1/mobactivationd.raw ./$deviceid/$1/mobactivationd.patched -g -b -c -d
+            ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/mobactivationd.patched root@localhost:/mnt1/System/Library/PrivateFrameworks/MobileActivation.framework/Support/mobactivationd
         fi
     fi
     # fix cydia launch daemon not running at boot
