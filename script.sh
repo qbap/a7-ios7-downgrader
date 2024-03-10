@@ -238,6 +238,16 @@ _download_boot_files() {
                 ./kerneldiff $1/$3/kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
                 ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
                 ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
+                
+                rm $1/$3/kcache.patched
+                rm $1/$3/kcache2.patched
+                rm $1/$3/kc.bpatch
+                
+                ./seprmvr64lite $1/$3/kcache.raw $1/$3/kcache.patched
+                ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -t -p -f -a -m
+                ./kerneldiff $1/$3/kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
+                ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache2.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
+                ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache2 -M IM4M -T krnl -P $1/$3/kc.bpatch
             else
                 ./seprmvr64lite jb/12A4331d_kcache.raw $1/$3/kcache.patched
                 # ios 8.0 GM - 8.4.1 gets slide to upgrade screen when trying to boot without a sandbox patch
@@ -249,6 +259,16 @@ _download_boot_files() {
                 ./kerneldiff jb/12A4331d_kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
                 ./img4 -i jb/12A4331d_kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
                 ./img4 -i jb/12A4331d_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
+                
+                rm $1/$3/kcache.patched
+                rm $1/$3/kcache2.patched
+                rm $1/$3/kc.bpatch
+                
+                ./seprmvr64lite $1/$3/kcache.raw $1/$3/kcache.patched
+                ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -t -p -f -a -m
+                ./kerneldiff $1/$3/kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
+                ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache2.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
+                ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache2 -M IM4M -T krnl -P $1/$3/kc.bpatch
             fi
         elif [[ "$3" == *"9"* ]]; then
             ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
@@ -436,7 +456,12 @@ if [ -e $deviceid/$1/iBSS.img4 ]; then
         ../../irecovery -f iBEC.img4
         ../../irecovery -f devicetree.img4
         ../../irecovery -c devicetree
-        ../../irecovery -f kernelcache.img4
+        read -p "would you like to boot release kernel ios $1? " r
+        if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
+            ../../irecovery -f kernelcache2.img4
+        else
+            ../../irecovery -f kernelcache.img4
+        fi
         ../../irecovery -c bootx &
         cd ../../
         exit
@@ -660,7 +685,11 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt1/Applications/Evermusic_Free.app'
         fi
     fi
-    ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/kernelcache root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches
+    if [[ "$1" == *"8"* ]]; then
+        ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/kernelcache2 root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches/kernelcache
+    else
+        ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/kernelcache root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches
+    fi
     # stashing on ios 8 not only causes apps to break, but it also breaks your wifi because of missing sandbox patch
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt1/.cydia_no_stash"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chown root:wheel /mnt1/.cydia_no_stash"
