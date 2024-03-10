@@ -221,7 +221,7 @@ _download_boot_files() {
                 ./seprmvr64lite $1/$3/kcache.raw $1/$3/kcache.patched
                 # we need to apply mount_common patch for rootfs rw and vm_map_enter patch for tweak injection
                 # app store works perfectly, and so does tweaks
-                ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -t -p -f -a -m
+                ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -a -m
                 ./kerneldiff $1/$3/kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
                 ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
                 ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
