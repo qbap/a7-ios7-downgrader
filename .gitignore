@@ -40,7 +40,7 @@ Restore.plist
 Firmware*
 kpp.bin
 .DS_Store
-mobactivationd*
+mobactivationd.*
 *.bin
 wireless
 local
