@@ -455,7 +455,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     if [ ! -e ./$deviceid/apticket.der ]; then
         if [[ "$2" == *"7"* || "$2" == *"9"* || "$2" == "10.0" || "$2" == "10.1" || "$2" == "10.2" ]]; then
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_hfs /dev/disk0s1s1 /mnt1"
-            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs -o suid,dev /dev/disk0s1s2 /mnt2"
+            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -t hfs /dev/disk0s1s2 /mnt2"
         else
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "bash -c mount_filesystems"
         fi
@@ -601,12 +601,12 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/Library/PreinstalledAssets/*"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/Library/Preferences/.GlobalPreferences.plist"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/.forward"
-    if [[ "$1" == *"8"* ]]; then
+    #if [[ "$1" == *"8"* ]]; then
         # these plists should in theory trick ios into thinking we already migrated& went thru Setup.app
-        ./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.purplebuddy.plist root@localhost:/mnt2/mobile/Library/Preferences/
-        ./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.purplebuddy.notbackedup.plist root@localhost:/mnt2/mobile/Library/Preferences/
-        ./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.migration.plist root@localhost:/mnt2/mobile/Library/Preferences/
-    fi
+        #./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.purplebuddy.plist root@localhost:/mnt2/mobile/Library/Preferences/
+        #./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.purplebuddy.notbackedup.plist root@localhost:/mnt2/mobile/Library/Preferences/
+        #./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.migration.plist root@localhost:/mnt2/mobile/Library/Preferences/
+    #fi
     # wtfis untether works but is very unreliable and causes kernel panic >70% of the time
     # also worthy to point out that the wtfis untether runs after the slide to uprade screen, not before
     # so it is not able to fix our sandbox issues on ios 8.0+
@@ -663,7 +663,6 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/MobileSafari.migrator/'
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/MapsDataClassMigrator.migrator/'
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/InternationalSupportMigrator.migrator/'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/RestorePostProcess.migrator/'
         # fix slide to upgrade screen
         ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/PrivateFrameworks/DataMigration.framework/XPCServices/com.apple.datamigrator.xpc/com.apple.datamigrator ./$deviceid/$1/com.apple.datamigrator
         ./datamigrator64patcher ./$deviceid/$1/com.apple.datamigrator ./$deviceid/$1/com.apple.datamigrator_patched -n
@@ -672,10 +671,6 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/usr/libexec/lockdownd ./$deviceid/$1/lockdownd.raw
         ./lockdownd64patcher ./$deviceid/$1/lockdownd.raw ./$deviceid/$1/lockdownd.patched -u -l
         ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/lockdownd.patched root@localhost:/mnt1/usr/libexec/lockdownd
-        # fix securityd
-        ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/usr/libexec/securityd ./$deviceid/$1/securityd.raw
-        ./securityd64patcher ./$deviceid/$1/securityd.raw ./$deviceid/$1/securityd.patched -d -l
-        ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/securityd.patched root@localhost:/mnt1/usr/libexec/securityd
     elif [[ "$1" == *"7"* ]]; then
         ./sshpass -p "alpine" scp -P 2222 ./jb/AppleInternal.tar root@localhost:/mnt1/
         ./sshpass -p "alpine" scp -P 2222 ./jb/PrototypeTools.framework.tar root@localhost:/mnt1/
