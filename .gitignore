@@ -49,3 +49,4 @@ FUD
 com.apple.factorydata
 com.apple.datamigrator*
 lockdownd.*
+securityd.*

@@ -673,6 +673,10 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/usr/libexec/lockdownd ./$deviceid/$1/lockdownd.raw
         ./lockdownd64patcher ./$deviceid/$1/lockdownd.raw ./$deviceid/$1/lockdownd.patched -u -l
         ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/lockdownd.patched root@localhost:/mnt1/usr/libexec/lockdownd
+        # fix securityd
+        ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/usr/libexec/securityd ./$deviceid/$1/securityd.raw
+        ./securityd64patcher ./$deviceid/$1/securityd.raw ./$deviceid/$1/securityd.patched -d -l
+        ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/securityd.patched root@localhost:/mnt1/usr/libexec/securityd
     elif [[ "$1" == *"7"* ]]; then
         ./sshpass -p "alpine" scp -P 2222 ./jb/AppleInternal.tar root@localhost:/mnt1/
         ./sshpass -p "alpine" scp -P 2222 ./jb/PrototypeTools.framework.tar root@localhost:/mnt1/
