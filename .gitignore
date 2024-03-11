@@ -40,4 +40,13 @@ Restore.plist
 Firmware*
 kpp.bin
 .DS_Store
-mobactivationd*
+mobactivationd.*
+*.bin
+wireless
+local
+firmware
+FUD
+com.apple.factorydata
+com.apple.datamigrator*
+lockdownd.*
+securityd.*

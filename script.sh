@@ -4,6 +4,11 @@ oscheck=$(uname)
 version="$1"
 dir="$(pwd)/"
 
+if [ -z "$2" ]; then
+    echo "./script.sh <target os ver> <current os ver>"
+    exit
+fi
+
 _wait_for_dfu() {
     if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
         echo "[*] Waiting for device in DFU mode"
@@ -51,10 +56,15 @@ _download_ramdisk_boot_files() {
             ./pzb -g $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) "$ipswurl"
             # Decrypt kernelcache
             # note that as per src/decrypt.rs it will not rename the file
-            cargo run decrypt $1 $3 $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) -l
-            # so we shall rename the file ourselves
-            mv $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1).dec ramdisk/kcache.raw
-            mv $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1).im4p ramdisk/kernelcache.dec
+            if [[ "$3" == *"7"* || "$3" == *"8"* || "$3" == *"9"* ]]; then
+                cargo run decrypt $1 $3 $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) -l
+                # so we shall rename the file ourselves
+                mv $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1).dec ramdisk/kcache.raw
+                mv $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1).im4p ramdisk/kernelcache.dec
+            else
+                ./img4 -i $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) -o ramdisk/kcache.raw
+                ./img4 -i $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) -o ramdisk/kernelcache.dec -D
+            fi
         fi
 
         if [ ! -e ramdisk/iBSS.dec ]; then
@@ -77,36 +87,64 @@ _download_ramdisk_boot_files() {
             # Download DeviceTree
             ./pzb -g $(awk "/""$2""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
             # Decrypt DeviceTree
-            cargo run decrypt $1 $3 $(awk "/""$2""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]all_flash.*production[/]//') -l
-            mv $(awk "/""$2""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]all_flash.*production[/]//').dec ramdisk/DeviceTree.dec
+            if [[ "$3" == *"7"* || "$3" == *"8"* || "$3" == *"9"* ]]; then
+                cargo run decrypt $1 $3 $(awk "/""$2""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]all_flash.*production[/]//' | sed 's/Firmware[/]all_flash[/]//') -l
+                mv $(awk "/""$2""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]all_flash.*production[/]//' | sed 's/Firmware[/]all_flash[/]//').dec ramdisk/DeviceTree.dec
+            else
+                mv $(awk "/""$2""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]all_flash.*production[/]//' | sed 's/Firmware[/]all_flash[/]//') ramdisk/DeviceTree.dec
+            fi
         fi
 
         if [ ! -e ramdisk/RestoreRamDisk.dmg ]; then
             # Download RestoreRamDisk
             ./pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
             # Decrypt RestoreRamDisk
-            cargo run decrypt $1 $3 "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -l
-            mv "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)".dec ramdisk/RestoreRamDisk.dmg
+            if [[ "$3" == *"7"* || "$3" == *"8"* || "$3" == *"9"* ]]; then
+                cargo run decrypt $1 $3 "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -l
+                mv "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)".dec ramdisk/RestoreRamDisk.dmg
+            else
+                ./img4 -i "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -o ramdisk/RestoreRamDisk.dmg
+            fi
         fi
         
         rm -rf BuildManifest.plist
         
-        # we need to download restore ramdisk for ios 8.4.1
-        # in this example we are using a modified copy of the ssh tar from SSHRD_Script https://github.com/verygenericname/SSHRD_Script
-        # this modified copy of the ssh tar fixes a few issues on ios 8 and adds some executables we need
-        hdiutil resize -size 60M ramdisk/RestoreRamDisk.dmg
-        hdiutil attach -mountpoint /tmp/ramdisk ramdisk/RestoreRamDisk.dmg
-        sudo diskutil enableOwnership /tmp/ramdisk
-        sudo ./gnutar -xvf iram.tar -C /tmp/ramdisk
-        hdiutil detach /tmp/ramdisk
-        ./img4tool -c ramdisk/ramdisk.im4p -t rdsk ramdisk/RestoreRamDisk.dmg
-        ./img4tool -c ramdisk/ramdisk.img4 -p ramdisk/ramdisk.im4p -m IM4M
-        ./ipatcher ramdisk/iBSS.dec ramdisk/iBSS.patched
-        ./ipatcher ramdisk/iBEC.dec ramdisk/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 -progress"
-        ./img4 -i ramdisk/iBSS.patched -o ramdisk/iBSS.img4 -M IM4M -A -T ibss
-        ./img4 -i ramdisk/iBEC.patched -o ramdisk/iBEC.img4 -M IM4M -A -T ibec
-        ./img4 -i ramdisk/kernelcache.dec -o ramdisk/kernelcache.img4 -M IM4M -T rkrn
-        ./img4 -i ramdisk/devicetree.dec -o ramdisk/devicetree.img4 -A -M IM4M -T rdtr
+        if [[ "$3" == *"7"* || "$3" == *"8"* || "$3" == *"9"* ]]; then
+            hdiutil resize -size 80M ramdisk/RestoreRamDisk.dmg
+            hdiutil attach -mountpoint /tmp/ramdisk ramdisk/RestoreRamDisk.dmg
+            sudo diskutil enableOwnership /tmp/ramdisk
+            sudo ./gnutar -xvf iram.tar -C /tmkkp/ramdisk
+            hdiutil detach /tmp/ramdisk
+            ./img4tool -c ramdisk/ramdisk.im4p -t rdsk ramdisk/RestoreRamDisk.dmg
+            ./img4tool -c ramdisk/ramdisk.img4 -p ramdisk/ramdisk.im4p -m IM4M
+            if [[ "$3" == *"9"* ]]; then
+                ./iBoot64Patcher ramdisk/iBSS.dec ramdisk/iBSS.patched
+                ./iBoot64Patcher ramdisk/iBEC.dec ramdisk/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 -progress"
+            else
+                ./ipatcher ramdisk/iBSS.dec ramdisk/iBSS.patched
+                ./ipatcher ramdisk/iBEC.dec ramdisk/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 -progress"
+            fi
+            ./img4 -i ramdisk/iBSS.patched -o ramdisk/iBSS.img4 -M IM4M -A -T ibss
+            ./img4 -i ramdisk/iBEC.patched -o ramdisk/iBEC.img4 -M IM4M -A -T ibec
+            ./img4 -i ramdisk/kernelcache.dec -o ramdisk/kernelcache.img4 -M IM4M -T rkrn
+            ./img4 -i ramdisk/devicetree.dec -o ramdisk/devicetree.img4 -A -M IM4M -T rdtr
+        else
+            hdiutil resize -size 100M ramdisk/RestoreRamDisk.dmg
+            hdiutil attach -mountpoint /tmp/ramdisk ramdisk/RestoreRamDisk.dmg
+            sudo diskutil enableOwnership /tmp/ramdisk
+            sudo ./gnutar -xvf ssh.tar -C /tmp/ramdisk
+            hdiutil detach /tmp/ramdisk
+            ./img4 -i ramdisk/RestoreRamDisk.dmg -o ramdisk/ramdisk.img4 -M IM4M -A -T rdsk
+            ./iBoot64Patcher ramdisk/iBSS.dec ramdisk/iBSS.patched
+            ./iBoot64Patcher ramdisk/iBEC.dec ramdisk/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 -restore -progress" -n
+            ./img4 -i ramdisk/iBSS.patched -o ramdisk/iBSS.img4 -M IM4M -A -T ibss
+            ./img4 -i ramdisk/iBEC.patched -o ramdisk/iBEC.img4 -M IM4M -A -T ibec
+            ./Kernel64Patcher2 ramdisk/kcache.raw ramdisk/kcache2.patched -a
+            ./kerneldiff ramdisk/kcache.raw ramdisk/kcache2.patched ramdisk/kc.bpatch
+            ./img4 -i ramdisk/kernelcache.dec -o ramdisk/kernelcache.img4 -M IM4M -T rkrn -P ramdisk/kc.bpatch
+            ./img4 -i ramdisk/kernelcache.dec -o ramdisk/kernelcache -M IM4M -T krnl -P ramdisk/kc.bpatch
+            ./img4 -i ramdisk/devicetree.dec -o ramdisk/devicetree.img4 -M IM4M -T rdtr
+        fi
     fi
 }
 _download_boot_files() {
@@ -195,16 +233,17 @@ _download_boot_files() {
         if [[ "$3" == *"8"* ]]; then
             ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
             ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
-            if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" ]]; then
-                ./seprmvr64lite jb/12A93651a_kcache.raw $1/$3/kcache.patched
-                # ios 8.0 GM - 8.4.1 gets slide to upgrade screen when trying to boot without a sandbox patch
-                # see https://files.catbox.moe/wn83g9.mp4 for a video example of why we need sandbox patch
-                # here we are patching tfp0, sbtrace, vm_fault_enter, mount_common, and map_IO
-                # when u boot u need to run wtfis app or use the wtfis untether which patches sandbox
+            if [[ "$1" == "iPhone7,2" || "$1" == "iPhone7,1" ]]; then
+                ./seprmvr64lite $1/$3/kcache.raw $1/$3/kcache.patched
+                # -t -p -f -a -m
+                # vm_fault_enter patch is required for ios 8 to boot with seprmvr64
+                # otherwise stuck on apple logo during bootk
+                #./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -f
+                # it seems the phone reboots randomly if u dont have the rest of the patches
                 ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -t -p -f -a -m
-                ./kerneldiff jb/12A93651a_kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
-                ./img4 -i jb/12A93651a_kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
-                ./img4 -i jb/12A93651a_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
+                ./kerneldiff $1/$3/kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
+                ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
+                ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
             else
                 ./seprmvr64lite jb/12A4331d_kcache.raw $1/$3/kcache.patched
                 # ios 8.0 GM - 8.4.1 gets slide to upgrade screen when trying to boot without a sandbox patch
@@ -212,6 +251,7 @@ _download_boot_files() {
                 # here we are patching tfp0, sbtrace, vm_fault_enter, mount_common, and map_IO
                 # when u boot u need to run wtfis app or use the wtfis untether which patches sandbox
                 ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -t -p -f -a -m
+                # 12A4331d is ios 8 beta 4 release kernel
                 ./kerneldiff jb/12A4331d_kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
                 ./img4 -i jb/12A4331d_kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
                 ./img4 -i jb/12A4331d_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
@@ -270,13 +310,24 @@ _download_root_fs() {
     if [ ! -e $1/$3/OS.tar ]; then
         if [ ! -e $1/$3/OS.dmg ]; then
             if [[ "$3" == "8.0" ]]; then
-                # https://archive.org/download/Apple_iPhone_Firmware/Apple%20iPhone%206.1%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/
-                cd ./$1/$3
-                ../../aria2c https://ia903400.us.archive.org/4/items/Apple_iPhone_Firmware/Apple%20iPhone%206.1%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
-                ../../7z x media_ipsw.rar
-                ../../7z x $(find . -name '*.ipsw*')
-                ../../dmg extract 058-01244-053.dmg OS.dmg -k 5c8b481822b91861c1d19590e790b306daaab2230f89dd275c18356d28fdcd47436a0737
-                cd ../../
+                if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" ]]; then
+                    ./pzb -g BuildManifest.plist "$ipswurl"
+                    # Download root fs
+                    ./pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
+                    # Decrypt root fs
+                    # note that as per src/decrypt.rs it will rename the file to OS.dmg by default
+                    cargo run decrypt $1 $3 "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -l
+                    osfn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
+                    mv $(echo $osfn | sed "s/dmg/bin/g") $1/$3/OS.dmg
+                else
+                    # https://archive.org/download/Apple_iPhone_Firmware/Apple%20iPhone%206.1%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/
+                    cd ./$1/$3
+                    ../../aria2c https://ia903400.us.archive.org/4/items/Apple_iPhone_Firmware/Apple%20iPhone%206.1%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
+                    ../../7z x media_ipsw.rar
+                    ../../7z x $(find . -name '*.ipsw*')
+                    ../../dmg extract 058-01244-053.dmg OS.dmg -k 5c8b481822b91861c1d19590e790b306daaab2230f89dd275c18356d28fdcd47436a0737
+                    cd ../../
+                fi
             else
                 ./pzb -g BuildManifest.plist "$ipswurl"
                 # Download root fs
@@ -345,24 +396,12 @@ echo $deviceid
 # we need a shsh file that we can use in order to boot the ios 8 ramdisk
 # in this case we are going to use the ones from SSHRD_Script https://github.com/verygenericname/SSHRD_Script
 ./img4tool -e -s other/shsh/"${check}".shsh -m IM4M
-if [[ "$1" == *"8"* ]]; then
-    if [[ "$1" == "8.0" ]]; then
-        echo "ok"
-    else
-        echo "newer versions of ios 8 do not work, try 8.0 instead"
-        echo "when you type 8.0 we will boot ios 8.0 beta 4"
-        echo "ios 8.0 GM+ does not boot with seprmvr64 without a sandbox patch"
-        echo "as of right now there is no sandbox patch that can be done with Kernel64Patcher"
-        echo "see https://files.catbox.moe/wn83g9.mp4 for a video example"
-        exit
-    fi
-elif [[ "$1" == *"9"* ]]; then
-    echo "ios 9 does not boot with seprmvr64 without a sandbox patch"
-    echo "as of right now there is no sandbox patch that can be done with Kernel64Patcher"
+if [[ "$1" == *"9"* ]]; then
+    echo "ios 9 does not work right now"
     echo "see https://files.catbox.moe/wn83g9.mp4 for a video example"
     exit
 fi
-_download_ramdisk_boot_files $deviceid $replace 8.4.1
+_download_ramdisk_boot_files $deviceid $replace $2
 _download_boot_files $deviceid $replace $1
 _download_root_fs $deviceid $replace $1
 if [ -e $deviceid/$1/iBSS.img4 ]; then
@@ -412,29 +451,39 @@ read -p "pls press the enter key once device is in the ramdisk " r
 sleep 2
 read -p "would you like to wipe this phone and install ios $1? " r
 if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
-    if [ ! -e apticket.der ]; then
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1"
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -t hfs -o ro,nosuid,nodev /dev/disk0s1s2 /mnt2"
-        ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/Caches/apticket.der ./apticket.der
-        ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/usr/standalone/firmware/sep-firmware.img4 ./sep-firmware.img4
-        ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/usr/local/standalone/firmware/Baseband ./Baseband
-        ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt2/keybags ./keybags
+    if [[ ! -e ./$deviceid/apticket.der || ! -e ./$deviceid/sep-firmware.img4 || ! -e ./$deviceid/Baseband || ! -e ./$deviceid/keybags ]]; then
+        if [[ "$2" == *"7"* || "$2" == *"8"* || "$2" == *"9"* || "$2" == "10.0" || "$2" == "10.1" || "$2" == "10.2" ]]; then
+            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_hfs /dev/disk0s1s1 /mnt1"
+            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -t hfs /dev/disk0s1s2 /mnt2"
+        else
+            ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "bash -c mount_filesystems"
+        fi
+        mkdir $deviceid
+        ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/Caches/apticket.der ./$deviceid/apticket.der
+        ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/usr/standalone/firmware/sep-firmware.img4 ./$deviceid/sep-firmware.img4
+        ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/usr/standalone/firmware/FUD ./$deviceid/FUD
+        ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/usr/local/standalone/firmware/Baseband ./$deviceid/Baseband
+        ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/usr/standalone/firmware ./$deviceid/firmware
+        ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/usr/local ./$deviceid/local
+        ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt2/keybags ./$deviceid/keybags
+        ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt2/wireless ./$deviceid/wireless
+        ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/System/Library/Caches/com.apple.factorydata ./$deviceid/com.apple.factorydata
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt1"
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt2"
     fi
-    if [ ! -e apticket.der ]; then
+    if [ ! -e ./$deviceid/apticket.der ]; then
         echo "missing ./apticket.der, which is required in order to proceed. exiting.."
         exit
     fi
-    if [ ! -e sep-firmware.img4 ]; then
+    if [ ! -e ./$deviceid/sep-firmware.img4 ]; then
         echo "missing ./sep-firmware.img4, which is required in order to proceed. exiting.."
         exit
     fi
-    if [ ! -e Baseband ]; then
+    if [ ! -e ./$deviceid/Baseband ]; then
         echo "missing ./Baseband, which is required in order to proceed. exiting.."
         exit
     fi
-    if [ ! -e keybags ]; then
+    if [ ! -e ./$deviceid/keybags ]; then
         echo "missing ./keybags, which is required in order to proceed. exiting.."
         exit
     fi
@@ -504,10 +553,17 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     # very important
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt1/usr/local/standalone/firmware/Baseband"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir /mnt2/keybags"
-    ./sshpass -p "alpine" scp -r -P 2222 ./Baseband root@localhost:/mnt1/usr/local/standalone/firmware
-    ./sshpass -p "alpine" scp -P 2222 ./apticket.der root@localhost:/mnt1/System/Library/Caches/
-    ./sshpass -p "alpine" scp -P 2222 ./sep-firmware.img4 root@localhost:/mnt1/usr/standalone/firmware/
-    ./sshpass -p "alpine" scp -r -P 2222 ./keybags root@localhost:/mnt2
+    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt2/wireless/baseband_data"
+    ./sshpass -p "alpine" scp -r -P 2222 ./$deviceid/Baseband root@localhost:/mnt1/usr/local/standalone/firmware
+    ./sshpass -p "alpine" scp -P 2222 ./$deviceid/apticket.der root@localhost:/mnt1/System/Library/Caches/
+    ./sshpass -p "alpine" scp -P 2222 ./$deviceid/sep-firmware.img4 root@localhost:/mnt1/usr/standalone/firmware/
+    ./sshpass -p "alpine" scp -r -P 2222 ./$deviceid/keybags root@localhost:/mnt2
+    if [ -e ./$deviceid/FUD ]; then
+        ./sshpass -p "alpine" scp -r -P 2222 ./$deviceid/FUD root@localhost:/mnt1/usr/standalone/firmware
+    fi
+    if [ -e ./$deviceid/com.apple.factorydata ]; then
+        ./sshpass -p "alpine" scp -r -P 2222 ./$deviceid/com.apple.factorydata root@localhost:/mnt1/System/Library/Caches
+    fi
     if [[ "$1" == *"9"* ]]; then
         # as of right now we have not tested any rootfs rw patches for ios 9
         # we are waiting on a sandbox patch before we can do anything in that regard
@@ -528,10 +584,10 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
             # gotta love a patched mobactivationd+ data_ark.plist
             ./sshpass -p "alpine" scp -P 2222 ./jb/data_ark.plist_2.tar root@localhost:/mnt2/
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/data_ark.plist_2.tar -C /mnt2"
-            ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/PrivateFrameworks/MobileActivation.framework/Support/mobactivationd ./$deviceid/$1/mobactivationd
+            ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/PrivateFrameworks/MobileActivation.framework/Support/mobactivationd ./$deviceid/$1/mobactivationd.raw
             # patch _set_brick_state, dealwith_activation, handle_deactivate& check_build_expired
-            ./Kernel64Patcher ./$deviceid/$1/mobactivationd ./$deviceid/$1/mobactivationd_patched -g -b -c -d
-            ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/mobactivationd_patched root@localhost:/mnt1/System/Library/PrivateFrameworks/MobileActivation.framework/Support/mobactivationd
+            ./mobactivationd64patcher ./$deviceid/$1/mobactivationd.raw ./$deviceid/$1/mobactivationd.patched -g -b -c -d
+            ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/mobactivationd.patched root@localhost:/mnt1/System/Library/PrivateFrameworks/MobileActivation.framework/Support/mobactivationd
         fi
     fi
     # fix cydia launch daemon not running at boot
@@ -603,8 +659,17 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/HealthMigrator.migrator/'
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/MobileNotes.migrator/'
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/MobileSlideShow.migrator/'
-        # fix sideloading apps
-        ./sshpass -p "alpine" scp -P 2222 ./jb/lockdownd root@localhost:/mnt1/usr/libexec/lockdownd
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/MobileSafari.migrator/'
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/MapsDataClassMigrator.migrator/'
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/InternationalSupportMigrator.migrator/'
+        # fix slide to upgrade screen
+        ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/PrivateFrameworks/DataMigration.framework/XPCServices/com.apple.datamigrator.xpc/com.apple.datamigrator ./$deviceid/$1/com.apple.datamigrator
+        ./datamigrator64patcher ./$deviceid/$1/com.apple.datamigrator ./$deviceid/$1/com.apple.datamigrator_patched -n
+        ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/com.apple.datamigrator_patched root@localhost:/mnt1/System/Library/PrivateFrameworks/DataMigration.framework/XPCServices/com.apple.datamigrator.xpc/com.apple.datamigrator
+        # fix lockdownd to enable sideloading
+        ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/usr/libexec/lockdownd ./$deviceid/$1/lockdownd.raw
+        ./lockdownd64patcher ./$deviceid/$1/lockdownd.raw ./$deviceid/$1/lockdownd.patched -u -l
+        ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/lockdownd.patched root@localhost:/mnt1/usr/libexec/lockdownd
     elif [[ "$1" == *"7"* ]]; then
         ./sshpass -p "alpine" scp -P 2222 ./jb/AppleInternal.tar root@localhost:/mnt1/
         ./sshpass -p "alpine" scp -P 2222 ./jb/PrototypeTools.framework.tar root@localhost:/mnt1/
@@ -657,13 +722,6 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     _kill_if_running iproxy
     if [[ "$1" == "8.0" ]]; then
         echo "done"
-        echo "if you see slide to upgrade screen just re run this script a few times"
-        echo "it is normal for the phone to take a while to boot on ios 8"
-        echo "it may stay on a black screen for a very long period of time the first boot"
-        echo "however it will boot to the lock screen after like 10 minutes"
-        echo "when you swipe to unlock you will not see any app icons on home screen"
-        echo "to fix this, swipe up from bottom of screen, tap calculator"
-        echo "then press home button to close out of calculator, then home screen will show"
         exit
     fi
     echo "done"
@@ -682,9 +740,9 @@ else
             ./sshpass -p "alpine" scp -P 2222 ./jb/data_ark.plist.tar root@localhost:/mnt2/
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/data_ark.plist.tar -C /mnt2"
         fi
-    #for ios 8 and up it is crucial to not ever mount /mnt2 again after installing ios
-    #else
-        #./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -t hfs -o suid,dev /dev/disk0s1s2 /mnt2"
+    #for ios 8 and up it is crucial to not ever write to /mnt2 again after installing ios
+    else
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -t hfs /dev/disk0s1s2 /mnt2"
     fi
     ssh -p2222 root@localhost
     $(./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
