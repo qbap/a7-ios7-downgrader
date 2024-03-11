@@ -452,7 +452,7 @@ read -p "pls press the enter key once device is in the ramdisk " r
 sleep 2
 read -p "would you like to wipe this phone and install ios $1? " r
 if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
-    if [ ! -e ./$deviceid/apticket.der ]; then
+    if [[ ! -e ./$deviceid/apticket.der || ! -e ./$deviceid/sep-firmware.img4 || ! -e ./$deviceid/Baseband || ! -e ./$deviceid/keybags ]]; then
         if [[ "$2" == *"7"* || "$2" == *"9"* || "$2" == "10.0" || "$2" == "10.1" || "$2" == "10.2" ]]; then
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_hfs /dev/disk0s1s1 /mnt1"
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -t hfs /dev/disk0s1s2 /mnt2"
