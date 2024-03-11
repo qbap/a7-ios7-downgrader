@@ -33,11 +33,17 @@ to use this app, you need to be on a supported version, and have an a7 device
 
 connect iphone in dfu mode
 
-`sudo ./script.sh 7.1.2`
+`sudo ./script.sh 7.1.2 <original ios version>`
 
 or
 
-`sudo ./script.sh 8.0` **ios 8 does not have working app store
+`sudo ./script.sh 8.0 <original ios version>` **ios 8 does not have working app store
+
+replace <original ios version> with the version of ios you are running rn
+
+so if u r on ios 11.4.1 type 11.4.1
+
+this is used to be able to mount filesystems on ramdisk and backup the necessary files we need to downgrade
 
 which is unjailbroken
 
