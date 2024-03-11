@@ -346,7 +346,6 @@ _download_root_fs() {
         sudo rm -rf /tmp/ios2
         sudo cp -a /tmp/ios/. /tmp/ios2/
         sudo tar -xvf ./jb/cydia.tar -C /tmp/ios2
-        sudo tar --preserve-permissions -xvf ./iphone6_support.tar -C /tmp/ios2
         sudo ./gnutar -cvf $1/$3/OS.tar -C /tmp/ios2 .
         hdiutil detach /tmp/ios
         rm -rf /tmp/ios
