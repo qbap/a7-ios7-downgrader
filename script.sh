@@ -216,27 +216,16 @@ _download_boot_files() {
             ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
             ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
             if [[ "$1" == "iPhone7,2" || "$1" == "iPhone7,1" ]]; then
-                ./seprmvr64lite jb/12A93311h_kcache.raw $1/$3/kcache.patched
-                # ios 8.0 GM - 8.4.1 gets slide to upgrade screen when trying to boot without a sandbox patch
-                # see https://files.catbox.moe/wn83g9.mp4 for a video example of why we need sandbox patch
-                # here we are patching tfp0, sbtrace, vm_fault_enter, mount_common, and map_IO
-                # when u boot u need to run wtfis app or use the wtfis untether which patches sandbox
-                ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -t -p -f -a -m
-                # 12A93311h is ios 8 beta 4 dev kernel
-                ./kerneldiff jb/12A93311h_kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
-                ./img4 -i jb/12A93311h_kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
-                ./img4 -i jb/12A93311h_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
-                
-                rm $1/$3/kcache.patched
-                rm $1/$3/kcache2.patched
-                rm $1/$3/kc.bpatch
-                
                 ./seprmvr64lite $1/$3/kcache.raw $1/$3/kcache.patched
-                ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -f
-#-t -p -f -a -m
+                # -t -p -f -a -m
+                # vm_fault_enter patch is required for ios 8 to boot with seprmvr64
+                # otherwise stuck on apple logo during bootk
+                #./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -f
+                # it seems the phone reboots randomly if u dont have the rest of the patches
+                ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -t -p -f -a -m
                 ./kerneldiff $1/$3/kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
-                ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache2.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
-                ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache2 -M IM4M -T krnl -P $1/$3/kc.bpatch
+                ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
+                ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
             else
                 ./seprmvr64lite jb/12A4331d_kcache.raw $1/$3/kcache.patched
                 # ios 8.0 GM - 8.4.1 gets slide to upgrade screen when trying to boot without a sandbox patch
@@ -248,16 +237,6 @@ _download_boot_files() {
                 ./kerneldiff jb/12A4331d_kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
                 ./img4 -i jb/12A4331d_kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
                 ./img4 -i jb/12A4331d_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
-                
-                rm $1/$3/kcache.patched
-                rm $1/$3/kcache2.patched
-                rm $1/$3/kc.bpatch
-                
-                ./seprmvr64lite $1/$3/kcache.raw $1/$3/kcache.patched
-                ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -t -p -f -a -m
-                ./kerneldiff $1/$3/kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
-                ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache2.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
-                ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache2 -M IM4M -T krnl -P $1/$3/kc.bpatch
             fi
         elif [[ "$3" == *"9"* ]]; then
             ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
@@ -342,30 +321,19 @@ _download_root_fs() {
                 mv $(echo $osfn | sed "s/dmg/bin/g") $1/$3/OS.dmg
             fi
         fi
-        #if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" ]]; then
-        #    ./dmg build $1/$3/OS.dmg $1/$3/rw.dmg
-        #    hdiutil attach -mountpoint /tmp/ios $1/$3/rw.dmg
-        #    sudo diskutil enableOwnership /tmp/ios
-        #    sudo ./gnutar -cvf $1/$3/OS.tar -C /tmp/ios /tmp/ios2 .
-        #    hdiutil detach /tmp/ios
-        #    rm -rf /tmp/ios
-        #    sudo rm -rf /tmp/ios2
-        #    ./irecovery -f /dev/null
-        #else
-            ./dmg build $1/$3/OS.dmg $1/$3/rw.dmg
-            hdiutil attach -mountpoint /tmp/ios $1/$3/rw.dmg
-            sudo diskutil enableOwnership /tmp/ios
-            sudo mkdir /tmp/ios2
-            sudo rm -rf /tmp/ios2
-            sudo cp -a /tmp/ios/. /tmp/ios2/
-            sudo tar -xvf ./jb/cydia.tar -C /tmp/ios2
-            sudo tar --preserve-permissions -xvf ./iphone6_support.tar -C /tmp/ios2
-            sudo ./gnutar -cvf $1/$3/OS.tar -C /tmp/ios2 .
-            hdiutil detach /tmp/ios
-            rm -rf /tmp/ios
-            sudo rm -rf /tmp/ios2
-            ./irecovery -f /dev/null
-        #fi
+        ./dmg build $1/$3/OS.dmg $1/$3/rw.dmg
+        hdiutil attach -mountpoint /tmp/ios $1/$3/rw.dmg
+        sudo diskutil enableOwnership /tmp/ios
+        sudo mkdir /tmp/ios2
+        sudo rm -rf /tmp/ios2
+        sudo cp -a /tmp/ios/. /tmp/ios2/
+        sudo tar -xvf ./jb/cydia.tar -C /tmp/ios2
+        sudo tar --preserve-permissions -xvf ./iphone6_support.tar -C /tmp/ios2
+        sudo ./gnutar -cvf $1/$3/OS.tar -C /tmp/ios2 .
+        hdiutil detach /tmp/ios
+        rm -rf /tmp/ios
+        sudo rm -rf /tmp/ios2
+        ./irecovery -f /dev/null
     fi
 
     rm -rf BuildManifest.plist
@@ -446,16 +414,7 @@ if [ -e $deviceid/$1/iBSS.img4 ]; then
         ../../irecovery -f iBEC.img4
         ../../irecovery -f devicetree.img4
         ../../irecovery -c devicetree
-        if [[ "$1" == *"8"* ]]; then
-            read -p "would you like to boot release kernel ios $1? " r
-            if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
-                ../../irecovery -f kernelcache2.img4
-            else
-                ../../irecovery -f kernelcache.img4
-            fi
-        else
-            ../../irecovery -f kernelcache.img4
-        fi
+        ../../irecovery -f kernelcache.img4
         ../../irecovery -c bootx &
         cd ../../
         exit
@@ -613,8 +572,6 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         # as of right now we have not tested any rootfs rw patches for ios 9
         # we are waiting on a sandbox patch before we can do anything in that regard
         ./sshpass -p "alpine" scp -P 2222 ./fstab root@localhost:/mnt1/etc/
-    elif [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" ]]; then
-        ./sshpass -p "alpine" scp -P 2222 ./fstab root@localhost:/mnt1/etc/
     else
         ./sshpass -p "alpine" scp -P 2222 ./jb/fstab root@localhost:/mnt1/etc/
     fi
@@ -647,12 +604,12 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/Library/PreinstalledAssets/*"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/Library/Preferences/.GlobalPreferences.plist"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/.forward"
-    #if [[ "$1" == *"8"* ]]; then
+    if [[ "$1" == *"8"* ]]; then
         # these plists should in theory trick ios into thinking we already migrated& went thru Setup.app
-        #./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.purplebuddy.plist root@localhost:/mnt2/mobile/Library/Preferences/
-        #./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.purplebuddy.notbackedup.plist root@localhost:/mnt2/mobile/Library/Preferences/
-        #./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.migration.plist root@localhost:/mnt2/mobile/Library/Preferences/
-    #fi
+        ./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.purplebuddy.plist root@localhost:/mnt2/mobile/Library/Preferences/
+        ./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.purplebuddy.notbackedup.plist root@localhost:/mnt2/mobile/Library/Preferences/
+        ./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.migration.plist root@localhost:/mnt2/mobile/Library/Preferences/
+    fi
     # wtfis untether works but is very unreliable and causes kernel panic >70% of the time
     # also worthy to point out that the wtfis untether runs after the slide to uprade screen, not before
     # so it is not able to fix our sandbox issues on ios 8.0+
@@ -679,11 +636,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt1/Applications/Evermusic_Free.app'
         fi
     fi
-    #if [[ "$1" == *"8"* ]]; then
-    #    ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/kernelcache2 root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches/kernelcache
-    #else
-        ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/kernelcache root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches
-    #fi
+    ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/kernelcache root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches
     # stashing on ios 8 not only causes apps to break, but it also breaks your wifi because of missing sandbox patch
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt1/.cydia_no_stash"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chown root:wheel /mnt1/.cydia_no_stash"
@@ -765,16 +718,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         ../../irecovery -f iBEC.img4
         ../../irecovery -f devicetree.img4
         ../../irecovery -c devicetree
-        if [[ "$1" == *"8"* ]]; then
-            read -p "would you like to boot release kernel ios $1? " r
-            if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
-                ../../irecovery -f kernelcache2.img4
-            else
-                ../../irecovery -f kernelcache.img4
-            fi
-        else
-            ../../irecovery -f kernelcache.img4
-        fi
+        ../../irecovery -f kernelcache.img4
         ../../irecovery -c bootx &
         cd ../../
     fi
