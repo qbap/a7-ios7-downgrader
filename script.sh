@@ -232,7 +232,8 @@ _download_boot_files() {
                 rm $1/$3/kc.bpatch
                 
                 ./seprmvr64lite $1/$3/kcache.raw $1/$3/kcache.patched
-                ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -t -p -f -a -m
+                ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -f
+#-t -p -f -a -m
                 ./kerneldiff $1/$3/kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
                 ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache2.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
                 ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache2 -M IM4M -T krnl -P $1/$3/kc.bpatch
@@ -612,8 +613,8 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         # as of right now we have not tested any rootfs rw patches for ios 9
         # we are waiting on a sandbox patch before we can do anything in that regard
         ./sshpass -p "alpine" scp -P 2222 ./fstab root@localhost:/mnt1/etc/
-    #elif [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" ]]; then
-    #    ./sshpass -p "alpine" scp -P 2222 ./fstab root@localhost:/mnt1/etc/
+    elif [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" ]]; then
+        ./sshpass -p "alpine" scp -P 2222 ./fstab root@localhost:/mnt1/etc/
     else
         ./sshpass -p "alpine" scp -P 2222 ./jb/fstab root@localhost:/mnt1/etc/
     fi
