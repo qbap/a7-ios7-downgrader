@@ -748,7 +748,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt1/AppleInternal/'
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/AppleInternal.tar'
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt2/mobile/Library/Caches/com.apple.MobileGestalt.plist'
-        #./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mv /mnt1/System/Library/LaunchDaemons/com.apple.CommCenter.plist /mnt1/System/Library/LaunchDaemons/com.apple.CommCenter.plis_"
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mv /mnt1/System/Library/LaunchDaemons/com.apple.CommCenter.plist /mnt1/System/Library/LaunchDaemons/com.apple.CommCenter.plis_"
         # fix lockdownd to enable sideloading
         ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/usr/libexec/lockdownd ./$deviceid/$1/lockdownd.raw
         ./lockdownd64patcher ./$deviceid/$1/lockdownd.raw ./$deviceid/$1/lockdownd.patched -u -l -g -b -c -d
