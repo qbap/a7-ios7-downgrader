@@ -623,6 +623,11 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     if [ -e ./$deviceid/0.0/com.apple.factorydata ]; then
         ./sshpass -p "alpine" scp -r -P 2222 ./$deviceid/0.0/com.apple.factorydata root@localhost:/mnt1/System/Library/Caches
     fi
+    if [ -e ./$deviceid/0.0/wireless ]; then
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt2/wireless/Library/Preferences/"
+        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt2/wireless/Library/Databases/"
+        ./sshpass -p "alpine" scp -r -P 2222 ./$deviceid/0.0/wireless/Library/Preferences/ root@localhost:/mnt2/wireless/Library/Preferences/
+    fi
     if [[ "$1" == "9."* ]]; then
         # as of right now we have not tested any rootfs rw patches for ios 9
         # we are waiting on a sandbox patch before we can do anything in that regard
@@ -743,7 +748,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt1/AppleInternal/'
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/AppleInternal.tar'
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt2/mobile/Library/Caches/com.apple.MobileGestalt.plist'
-        ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mv /mnt1/System/Library/LaunchDaemons/com.apple.CommCenter.plist /mnt1/System/Library/LaunchDaemons/com.apple.CommCenter.plis_"
+        #./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mv /mnt1/System/Library/LaunchDaemons/com.apple.CommCenter.plist /mnt1/System/Library/LaunchDaemons/com.apple.CommCenter.plis_"
         # fix lockdownd to enable sideloading
         ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/usr/libexec/lockdownd ./$deviceid/$1/lockdownd.raw
         ./lockdownd64patcher ./$deviceid/$1/lockdownd.raw ./$deviceid/$1/lockdownd.patched -u -l -g -b -c -d
