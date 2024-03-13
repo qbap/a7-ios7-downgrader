@@ -486,15 +486,33 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "bash -c mount_filesystems"
         fi
         mkdir $deviceid
-        ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/Caches/apticket.der ./$deviceid/apticket.der
-        ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/usr/standalone/firmware/sep-firmware.img4 ./$deviceid/sep-firmware.img4
-        ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/usr/standalone/firmware/FUD ./$deviceid/FUD
-        ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/usr/local/standalone/firmware/Baseband ./$deviceid/Baseband
-        ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/usr/standalone/firmware ./$deviceid/firmware
-        ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/usr/local ./$deviceid/local
-        ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt2/keybags ./$deviceid/keybags
-        ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt2/wireless ./$deviceid/wireless
-        ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/System/Library/Caches/com.apple.factorydata ./$deviceid/com.apple.factorydata
+        if [ ! -e ./$deviceid/apticket.der ]; then
+            ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/Caches/apticket.der ./$deviceid/apticket.der
+        fi
+        if [ ! -e ./$deviceid/sep-firmware.img4 ]; then
+            ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/usr/standalone/firmware/sep-firmware.img4 ./$deviceid/sep-firmware.img4
+        fi
+        if [ ! -e ./$deviceid/FUD ]; then
+            ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/usr/standalone/firmware/FUD ./$deviceid/FUD
+        fi
+        if [ ! -e ./$deviceid/Baseband ]; then
+            ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/usr/local/standalone/firmware/Baseband ./$deviceid/Baseband
+        fi
+        if [ ! -e ./$deviceid/firmware ]; then
+            ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/usr/standalone/firmware ./$deviceid/firmware
+        fi
+        if [ ! -e ./$deviceid/local ]; then
+            ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/usr/local ./$deviceid/local
+        fi
+        if [ ! -e ./$deviceid/keybags ]; then
+            ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt2/keybags ./$deviceid/keybags
+        fi
+        if [ ! -e ./$deviceid/wireless ]; then
+            ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt2/wireless ./$deviceid/wireless
+        fi
+        if [ ! -e ./$deviceid/com.apple.factorydata ]; then
+            ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/System/Library/Caches/com.apple.factorydata ./$deviceid/com.apple.factorydata
+        fi
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt1"
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt2"
     fi
@@ -519,6 +537,8 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     sleep 2
     $(./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
     _kill_if_running iproxy
+    rm -rf ramdisk
+    _download_ramdisk_boot_files  $deviceid $replace 11.4.1
     echo "device should now reboot into recovery, pls wait"
     echo "once in recovery you should follow instructions online to go back into dfu"
     if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
