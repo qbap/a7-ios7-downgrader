@@ -416,8 +416,10 @@ if [[ "$1" == "9."* ]]; then
 fi
 if [[ ! -e ./$deviceid/0.0/apticket.der || ! -e ./$deviceid/0.0/sep-firmware.img4 || ! -e ./$deviceid/0.0/Baseband || ! -e ./$deviceid/0.0/keybags ]]; then
     _download_ramdisk_boot_files $deviceid $replace $2
-else
+elif [[ "$1" == "7."* ]]; then
     _download_ramdisk_boot_files $deviceid $replace 8.4.1
+else
+    _download_ramdisk_boot_files $deviceid $replace 11.4.1
 fi
 _download_boot_files $deviceid $replace $1
 _download_root_fs $deviceid $replace $1
@@ -521,6 +523,13 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         fi
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt1"
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt2"
+        if [[ "$1" == "7."* ]]; then
+            rm -rf ramdisk
+            _download_ramdisk_boot_files $deviceid $replace 8.4.1
+        else
+            rm -rf ramdisk
+            _download_ramdisk_boot_files $deviceid $replace 11.4.1
+        fi
     fi
     if [ ! -e ./$deviceid/0.0/apticket.der ]; then
         echo "missing ./apticket.der, which is required in order to proceed. exiting.."
@@ -543,10 +552,6 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     sleep 2
     $(./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
     _kill_if_running iproxy
-    if [[ "$2" == "12."* || "$2" == "11.0" ]]; then
-        rm -rf ramdisk
-        _download_ramdisk_boot_files $deviceid $replace 8.4.1
-    fi
     echo "device should now reboot into recovery, pls wait"
     echo "once in recovery you should follow instructions online to go back into dfu"
     if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
