@@ -480,57 +480,57 @@ read -p "pls press the enter key once device is in the ramdisk " r
 sleep 2
 read -p "would you like to wipe this phone and install ios $1? " r
 if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
-    if [[ ! -e ./$deviceid/apticket.der || ! -e ./$deviceid/sep-firmware.img4 || ! -e ./$deviceid/Baseband || ! -e ./$deviceid/keybags ]]; then
+    mkdir -p ./$deviceid/0.0/
+    if [[ ! -e ./$deviceid/0.0/apticket.der || ! -e ./$deviceid/0.0/sep-firmware.img4 || ! -e ./0.0/$deviceid/Baseband || ! -e ./0.0/$deviceid/keybags ]]; then
         if [[ "$2" == "7."* || "$2" == "8."* || "$2" == "9."* || "$2" == "10.0" || "$2" == "10.1" || "$2" == "10.2" ]]; then
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_hfs /dev/disk0s1s1 /mnt1"
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -t hfs /dev/disk0s1s2 /mnt2"
         else
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "bash -c mount_filesystems"
         fi
-        mkdir $deviceid
-        if [ ! -e ./$deviceid/apticket.der ]; then
-            ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/Caches/apticket.der ./$deviceid/apticket.der
+        if [ ! -e ./$deviceid/0.0/apticket.der ]; then
+            ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/Caches/apticket.der ./$deviceid/0.0/apticket.der
         fi
-        if [ ! -e ./$deviceid/sep-firmware.img4 ]; then
-            ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/usr/standalone/firmware/sep-firmware.img4 ./$deviceid/sep-firmware.img4
+        if [ ! -e ./$deviceid/0.0/sep-firmware.img4 ]; then
+            ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/usr/standalone/firmware/sep-firmware.img4 ./$deviceid/0.0/sep-firmware.img4
         fi
-        if [ ! -e ./$deviceid/FUD ]; then
-            ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/usr/standalone/firmware/FUD ./$deviceid/FUD
+        if [ ! -e ./$deviceid/0.0/FUD ]; then
+            ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/usr/standalone/firmware/FUD ./$deviceid/0.0/FUD
         fi
-        if [ ! -e ./$deviceid/Baseband ]; then
-            ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/usr/local/standalone/firmware/Baseband ./$deviceid/Baseband
+        if [ ! -e ./$deviceid/0.0/Baseband ]; then
+            ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/usr/local/standalone/firmware/Baseband ./$deviceid/0.0/Baseband
         fi
-        if [ ! -e ./$deviceid/firmware ]; then
-            ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/usr/standalone/firmware ./$deviceid/firmware
+        if [ ! -e ./$deviceid/0.0/firmware ]; then
+            ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/usr/standalone/firmware ./$deviceid/0.0/firmware
         fi
-        if [ ! -e ./$deviceid/local ]; then
-            ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/usr/local ./$deviceid/local
+        if [ ! -e ./$deviceid/0.0/local ]; then
+            ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/usr/local ./$deviceid/0.0/local
         fi
-        if [ ! -e ./$deviceid/keybags ]; then
-            ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt2/keybags ./$deviceid/keybags
+        if [ ! -e ./$deviceid/0.0/keybags ]; then
+            ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt2/keybags ./$deviceid/0.0/keybags
         fi
-        if [ ! -e ./$deviceid/wireless ]; then
-            ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt2/wireless ./$deviceid/wireless
+        if [ ! -e ./$deviceid/0.0/wireless ]; then
+            ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt2/wireless ./$deviceid/0.0/wireless
         fi
-        if [ ! -e ./$deviceid/com.apple.factorydata ]; then
-            ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/System/Library/Caches/com.apple.factorydata ./$deviceid/com.apple.factorydata
+        if [ ! -e ./$deviceid/0.0/com.apple.factorydata ]; then
+            ./sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/System/Library/Caches/com.apple.factorydata ./$deviceid/0.0/com.apple.factorydata
         fi
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt1"
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt2"
     fi
-    if [ ! -e ./$deviceid/apticket.der ]; then
+    if [ ! -e ./$deviceid/0.0/apticket.der ]; then
         echo "missing ./apticket.der, which is required in order to proceed. exiting.."
         exit
     fi
-    if [ ! -e ./$deviceid/sep-firmware.img4 ]; then
+    if [ ! -e ./$deviceid/0.0/sep-firmware.img4 ]; then
         echo "missing ./sep-firmware.img4, which is required in order to proceed. exiting.."
         exit
     fi
-    if [ ! -e ./$deviceid/Baseband ]; then
+    if [ ! -e ./$deviceid/0.0/Baseband ]; then
         echo "missing ./Baseband, which is required in order to proceed. exiting.."
         exit
     fi
-    if [ ! -e ./$deviceid/keybags ]; then
+    if [ ! -e ./$deviceid/0.0/keybags ]; then
         echo "missing ./keybags, which is required in order to proceed. exiting.."
         exit
     fi
@@ -539,8 +539,11 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     sleep 2
     $(./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
     _kill_if_running iproxy
-    rm -rf ramdisk
-    _download_ramdisk_boot_files  $deviceid $replace 11.4.1
+    if [[ "$2" == "12."* ]]; then
+        # we must do this otherwise we will get "No external trust cache found" kernel panic
+        rm -rf ramdisk
+        _download_ramdisk_boot_files  $deviceid $replace 11.4.1
+    fi
     echo "device should now reboot into recovery, pls wait"
     echo "once in recovery you should follow instructions online to go back into dfu"
     if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
@@ -618,15 +621,15 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt1/usr/local/standalone/firmware/Baseband"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir /mnt2/keybags"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt2/wireless/baseband_data"
-    ./sshpass -p "alpine" scp -r -P 2222 ./$deviceid/Baseband root@localhost:/mnt1/usr/local/standalone/firmware
-    ./sshpass -p "alpine" scp -P 2222 ./$deviceid/apticket.der root@localhost:/mnt1/System/Library/Caches/
-    ./sshpass -p "alpine" scp -P 2222 ./$deviceid/sep-firmware.img4 root@localhost:/mnt1/usr/standalone/firmware/
-    ./sshpass -p "alpine" scp -r -P 2222 ./$deviceid/keybags root@localhost:/mnt2
-    if [ -e ./$deviceid/FUD ]; then
-        ./sshpass -p "alpine" scp -r -P 2222 ./$deviceid/FUD root@localhost:/mnt1/usr/standalone/firmware
+    ./sshpass -p "alpine" scp -r -P 2222 ./$deviceid/0.0/Baseband root@localhost:/mnt1/usr/local/standalone/firmware
+    ./sshpass -p "alpine" scp -P 2222 ./$deviceid/0.0/apticket.der root@localhost:/mnt1/System/Library/Caches/
+    ./sshpass -p "alpine" scp -P 2222 ./$deviceid/0.0/sep-firmware.img4 root@localhost:/mnt1/usr/standalone/firmware/
+    ./sshpass -p "alpine" scp -r -P 2222 ./$deviceid/0.0/keybags root@localhost:/mnt2
+    if [ -e ./$deviceid/0.0/FUD ]; then
+        ./sshpass -p "alpine" scp -r -P 2222 ./$deviceid/0.0/FUD root@localhost:/mnt1/usr/standalone/firmware
     fi
-    if [ -e ./$deviceid/com.apple.factorydata ]; then
-        ./sshpass -p "alpine" scp -r -P 2222 ./$deviceid/com.apple.factorydata root@localhost:/mnt1/System/Library/Caches
+    if [ -e ./$deviceid/0.0/com.apple.factorydata ]; then
+        ./sshpass -p "alpine" scp -r -P 2222 ./$deviceid/0.0/com.apple.factorydata root@localhost:/mnt1/System/Library/Caches
     fi
     if [[ "$1" == "9."* ]]; then
         # as of right now we have not tested any rootfs rw patches for ios 9
