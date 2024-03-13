@@ -116,7 +116,7 @@ _download_ramdisk_boot_files() {
             hdiutil resize -size 80M ramdisk/RestoreRamDisk.dmg
             hdiutil attach -mountpoint /tmp/ramdisk ramdisk/RestoreRamDisk.dmg
             sudo diskutil enableOwnership /tmp/ramdisk
-            sudo ./gnutar -xvf iram.tar -C /tmkkp/ramdisk
+            sudo ./gnutar -xvf iram.tar -C /tmp/ramdisk
             hdiutil detach /tmp/ramdisk
             ./img4tool -c ramdisk/ramdisk.im4p -t rdsk ramdisk/RestoreRamDisk.dmg
             ./img4tool -c ramdisk/ramdisk.img4 -p ramdisk/ramdisk.im4p -m IM4M
