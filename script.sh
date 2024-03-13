@@ -539,8 +539,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     sleep 2
     $(./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
     _kill_if_running iproxy
-    if [[ "$2" == "12."* ]]; then
-        # we must do this otherwise we will get "No external trust cache found" kernel panic
+    if [[ "$2" == "12."* || "$2" == "11.0" ]]; then
         rm -rf ramdisk
         _download_ramdisk_boot_files  $deviceid $replace 11.4.1
     fi
