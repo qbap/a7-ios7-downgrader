@@ -43,6 +43,8 @@ replace <original ios version> with the version of ios you are running rn
 
 so if u r on ios 11.4.1 type 11.4.1
 
+**if you are on 12.5.6 or 12.5.7, make sure you type 12.5.5 instead. this is because https://www.theiphonewiki.com/wiki/Firmware_Keys/12.x#iPhone does not have firmware keys for newer versions of ios 12 and the script will fail
+
 this is used to be able to mount filesystems on ramdisk and backup the necessary files we need to downgrade
 
 which is unjailbroken
