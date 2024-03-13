@@ -414,7 +414,11 @@ if [[ "$1" == "9."* ]]; then
     echo "see https://files.catbox.moe/wn83g9.mp4 for a video example"
     exit
 fi
-_download_ramdisk_boot_files $deviceid $replace $2
+if [[ ! -e ./$deviceid/0.0/apticket.der || ! -e ./$deviceid/0.0/sep-firmware.img4 || ! -e ./$deviceid/0.0/Baseband || ! -e ./$deviceid/0.0/keybags ]]; then
+    _download_ramdisk_boot_files $deviceid $replace $2
+else
+    _download_ramdisk_boot_files $deviceid $replace 8.4.1
+fi
 _download_boot_files $deviceid $replace $1
 _download_root_fs $deviceid $replace $1
 if [ -e $deviceid/$1/iBSS.img4 ]; then
@@ -541,7 +545,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     _kill_if_running iproxy
     if [[ "$2" == "12."* || "$2" == "11.0" ]]; then
         rm -rf ramdisk
-        _download_ramdisk_boot_files  $deviceid $replace 11.4.1
+        _download_ramdisk_boot_files $deviceid $replace 8.4.1
     fi
     echo "device should now reboot into recovery, pls wait"
     echo "once in recovery you should follow instructions online to go back into dfu"
