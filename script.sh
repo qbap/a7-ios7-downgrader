@@ -56,7 +56,7 @@ _download_ramdisk_boot_files() {
             ./pzb -g $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) "$ipswurl"
             # Decrypt kernelcache
             # note that as per src/decrypt.rs it will not rename the file
-            if [[ "$3" == *"7"* || "$3" == *"8"* || "$3" == *"9"* ]]; then
+            if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* ]]; then
                 cargo run decrypt $1 $3 $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) -l
                 # so we shall rename the file ourselves
                 mv $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1).dec ramdisk/kcache.raw
@@ -87,7 +87,7 @@ _download_ramdisk_boot_files() {
             # Download DeviceTree
             ./pzb -g $(awk "/""$2""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
             # Decrypt DeviceTree
-            if [[ "$3" == *"7"* || "$3" == *"8"* || "$3" == *"9"* ]]; then
+            if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* ]]; then
                 cargo run decrypt $1 $3 $(awk "/""$2""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]all_flash.*production[/]//' | sed 's/Firmware[/]all_flash[/]//') -l
                 mv $(awk "/""$2""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]all_flash.*production[/]//' | sed 's/Firmware[/]all_flash[/]//').dec ramdisk/DeviceTree.dec
             else
@@ -99,17 +99,27 @@ _download_ramdisk_boot_files() {
             # Download RestoreRamDisk
             ./pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
             # Decrypt RestoreRamDisk
-            if [[ "$3" == *"7"* || "$3" == *"8"* || "$3" == *"9"* ]]; then
+            if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* ]]; then
                 cargo run decrypt $1 $3 "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -l
                 mv "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)".dec ramdisk/RestoreRamDisk.dmg
             else
                 ./img4 -i "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -o ramdisk/RestoreRamDisk.dmg
             fi
         fi
+
+        if [[ "$3" == "12."* ]]; then
+
+        if [ ! -e ramdisk/trustcache.img4 ]; then
+            # Download TrustCache
+            ./pzb -g Firmware/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)".trustcache "$ipswurl"
+             mv "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)".trustcache ramdisk/trustcache.im4p
+        fi
+
+        fi
         
         rm -rf BuildManifest.plist
         
-        if [[ "$3" == *"7"* || "$3" == *"8"* || "$3" == *"9"* ]]; then
+        if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* ]]; then
             hdiutil resize -size 80M ramdisk/RestoreRamDisk.dmg
             hdiutil attach -mountpoint /tmp/ramdisk ramdisk/RestoreRamDisk.dmg
             sudo diskutil enableOwnership /tmp/ramdisk
@@ -117,7 +127,7 @@ _download_ramdisk_boot_files() {
             hdiutil detach /tmp/ramdisk
             ./img4tool -c ramdisk/ramdisk.im4p -t rdsk ramdisk/RestoreRamDisk.dmg
             ./img4tool -c ramdisk/ramdisk.img4 -p ramdisk/ramdisk.im4p -m IM4M
-            if [[ "$3" == *"9"* ]]; then
+            if [[ "$3" == *"9."* ]]; then
                 ./iBoot64Patcher ramdisk/iBSS.dec ramdisk/iBSS.patched
                 ./iBoot64Patcher ramdisk/iBEC.dec ramdisk/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 -progress"
             else
@@ -129,7 +139,7 @@ _download_ramdisk_boot_files() {
             ./img4 -i ramdisk/kernelcache.dec -o ramdisk/kernelcache.img4 -M IM4M -T rkrn
             ./img4 -i ramdisk/devicetree.dec -o ramdisk/devicetree.img4 -A -M IM4M -T rdtr
         else
-            hdiutil resize -size 100M ramdisk/RestoreRamDisk.dmg
+            hdiutil resize -size 120M ramdisk/RestoreRamDisk.dmg
             hdiutil attach -mountpoint /tmp/ramdisk ramdisk/RestoreRamDisk.dmg
             sudo diskutil enableOwnership /tmp/ramdisk
             sudo ./gnutar -xvf ssh.tar -C /tmp/ramdisk
@@ -143,6 +153,9 @@ _download_ramdisk_boot_files() {
             ./kerneldiff ramdisk/kcache.raw ramdisk/kcache2.patched ramdisk/kc.bpatch
             ./img4 -i ramdisk/kernelcache.dec -o ramdisk/kernelcache.img4 -M IM4M -T rkrn -P ramdisk/kc.bpatch
             ./img4 -i ramdisk/kernelcache.dec -o ramdisk/kernelcache -M IM4M -T krnl -P ramdisk/kc.bpatch
+        if [[ "$3" == "12."* ]]; then
+            ./img4 -i ramdisk/trustcache.im4p -o ramdisk/trustcache.img4 -M IM4M -T rtsc
+fi
             ./img4 -i ramdisk/devicetree.dec -o ramdisk/devicetree.img4 -M IM4M -T rdtr
         fi
     fi
@@ -220,17 +233,17 @@ _download_boot_files() {
         
         rm -rf BuildManifest.plist
         
-        if [[ "$3" == *"9"* ]]; then
+        if [[ "$3" == "9."* ]]; then
             ./iBoot64Patcher $1/$3/iBSS.dec $1/$3/iBSS.patched
             ./iBoot64Patcher $1/$3/iBEC.dec $1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1 PE_i_can_has_debugger=1  amfi_unrestrict_task_for_pid=0x0 amfi_allow_any_signature=0x1 amfi_get_out_of_my_way=0x1"
-        elif [[ "$3" == *"8"* ]]; then
+        elif [[ "$3" == "8."* ]]; then
             ./ipatcher $1/$3/iBSS.dec $1/$3/iBSS.patched
             ./ipatcher $1/$3/iBEC.dec $1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1"
         else
             ./ipatcher $1/$3/iBSS.dec $1/$3/iBSS.patched
             ./ipatcher $1/$3/iBEC.dec $1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1 PE_i_can_has_debugger=1"
         fi
-        if [[ "$3" == *"8"* ]]; then
+        if [[ "$3" == "8."* ]]; then
             ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
             ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
             if [[ "$1" == "iPhone7,2" || "$1" == "iPhone7,1" ]]; then
@@ -256,7 +269,7 @@ _download_boot_files() {
                 ./img4 -i jb/12A4331d_kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
                 ./img4 -i jb/12A4331d_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
             fi
-        elif [[ "$3" == *"9"* ]]; then
+        elif [[ "$3" == "9."* ]]; then
             ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
             ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
             ./seprmvr64lite $1/$3/kcache.raw $1/$3/kcache.patched
@@ -268,7 +281,7 @@ _download_boot_files() {
             pyimg4 im4p create -i $1/$3/kcache2.patched -o $1/$3/kernelcache.im4p --extra $1/$3/kpp.bin -f krnl --lzss
             pyimg4 img4 create -p $1/$3/kernelcache.im4p.img4 -o $1/$3/kernelcache.img4 -m IM4M
             pyimg4 img4 create -p $1/$3/kernelcache.im4p -o $1/$3/kernelcache -m IM4M
-        elif [[ "$3" == *"7"* ]]; then
+        elif [[ "$3" == "7."* ]]; then
             ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
             ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
             ./seprmvr64lite $1/$3/kcache.raw $1/$3/kcache.patched
@@ -443,6 +456,10 @@ fi
 ../irecovery -c ramdisk
 ../irecovery -f devicetree.img4
 ../irecovery -c devicetree
+        if [[ "$2" == "12."* ]]; then
+    ../irecovery -f trustcache.img4
+    ../irecovery -c firmware  
+fi
 ../irecovery -f kernelcache.img4
 ../irecovery -c bootx &
 cd ..
@@ -452,7 +469,7 @@ sleep 2
 read -p "would you like to wipe this phone and install ios $1? " r
 if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     if [[ ! -e ./$deviceid/apticket.der || ! -e ./$deviceid/sep-firmware.img4 || ! -e ./$deviceid/Baseband || ! -e ./$deviceid/keybags ]]; then
-        if [[ "$2" == *"7"* || "$2" == *"8"* || "$2" == *"9"* || "$2" == "10.0" || "$2" == "10.1" || "$2" == "10.2" ]]; then
+        if [[ "$2" == "7."* || "$2" == "8."* || "$2" == "9."* || "$2" == "10.0" || "$2" == "10.1" || "$2" == "10.2" ]]; then
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_hfs /dev/disk0s1s1 /mnt1"
             ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -t hfs /dev/disk0s1s2 /mnt2"
         else
@@ -511,6 +528,10 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     ../irecovery -c ramdisk
     ../irecovery -f devicetree.img4
     ../irecovery -c devicetree
+        if [[ "$2" == "12."* ]]; then
+    ../irecovery -f trustcache.img4
+    ../irecovery -c firmware
+fi
     ../irecovery -f kernelcache.img4
     ../irecovery -c bootx &
     cd ..
