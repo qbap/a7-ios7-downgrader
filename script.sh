@@ -267,6 +267,7 @@ _download_boot_files() {
                 ./img4 -i jb/12A4331d_kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
                 ./img4 -i jb/12A4331d_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
             fi
+            ./dtree_patcher $1/$3/DeviceTree.dec $1/$3/DeviceTree.patched -n
         elif [[ "$3" == "9."* ]]; then
             ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
             ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
@@ -279,6 +280,7 @@ _download_boot_files() {
             pyimg4 im4p create -i $1/$3/kcache2.patched -o $1/$3/kernelcache.im4p --extra $1/$3/kpp.bin -f krnl --lzss
             pyimg4 img4 create -p $1/$3/kernelcache.im4p.img4 -o $1/$3/kernelcache.img4 -m IM4M
             pyimg4 img4 create -p $1/$3/kernelcache.im4p -o $1/$3/kernelcache -m IM4M
+            ./dtree_patcher $1/$3/DeviceTree.dec $1/$3/DeviceTree.patched -n
         elif [[ "$3" == "7."* ]]; then
             ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
             ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
@@ -289,8 +291,8 @@ _download_boot_files() {
             ./kerneldiff $1/$3/kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
             ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
             ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
+            cp $1/$3/DeviceTree.dec $1/$3/DeviceTree.patched
         fi
-        ./dtree_patcher $1/$3/DeviceTree.dec $1/$3/DeviceTree.patched -n
         ./img4 -i $1/$3/DeviceTree.patched -o $1/$3/devicetree.img4 -A -M IM4M -T rdtr
     
     fi
