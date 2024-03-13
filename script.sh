@@ -108,13 +108,11 @@ _download_ramdisk_boot_files() {
         fi
 
         if [[ "$3" == "12."* ]]; then
-
-        if [ ! -e ramdisk/trustcache.img4 ]; then
-            # Download TrustCache
-            ./pzb -g Firmware/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)".trustcache "$ipswurl"
-             mv "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)".trustcache ramdisk/trustcache.im4p
-        fi
-
+            if [ ! -e ramdisk/trustcache.img4 ]; then
+                # Download TrustCache
+                ./pzb -g Firmware/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)".trustcache "$ipswurl"
+                 mv "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)".trustcache ramdisk/trustcache.im4p
+            fi
         fi
         
         rm -rf BuildManifest.plist
@@ -127,7 +125,7 @@ _download_ramdisk_boot_files() {
             hdiutil detach /tmp/ramdisk
             ./img4tool -c ramdisk/ramdisk.im4p -t rdsk ramdisk/RestoreRamDisk.dmg
             ./img4tool -c ramdisk/ramdisk.img4 -p ramdisk/ramdisk.im4p -m IM4M
-            if [[ "$3" == *"9."* ]]; then
+            if [[ "$3" == "9."* ]]; then
                 ./iBoot64Patcher ramdisk/iBSS.dec ramdisk/iBSS.patched
                 ./iBoot64Patcher ramdisk/iBEC.dec ramdisk/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 -progress"
             else
@@ -153,9 +151,9 @@ _download_ramdisk_boot_files() {
             ./kerneldiff ramdisk/kcache.raw ramdisk/kcache2.patched ramdisk/kc.bpatch
             ./img4 -i ramdisk/kernelcache.dec -o ramdisk/kernelcache.img4 -M IM4M -T rkrn -P ramdisk/kc.bpatch
             ./img4 -i ramdisk/kernelcache.dec -o ramdisk/kernelcache -M IM4M -T krnl -P ramdisk/kc.bpatch
-        if [[ "$3" == "12."* ]]; then
-            ./img4 -i ramdisk/trustcache.im4p -o ramdisk/trustcache.img4 -M IM4M -T rtsc
-fi
+            if [[ "$3" == "12."* ]]; then
+                ./img4 -i ramdisk/trustcache.im4p -o ramdisk/trustcache.img4 -M IM4M -T rtsc
+            fi
             ./img4 -i ramdisk/devicetree.dec -o ramdisk/devicetree.img4 -M IM4M -T rdtr
         fi
     fi
@@ -409,7 +407,7 @@ echo $deviceid
 # we need a shsh file that we can use in order to boot the ios 8 ramdisk
 # in this case we are going to use the ones from SSHRD_Script https://github.com/verygenericname/SSHRD_Script
 ./img4tool -e -s other/shsh/"${check}".shsh -m IM4M
-if [[ "$1" == *"9"* ]]; then
+if [[ "$1" == "9."* ]]; then
     echo "ios 9 does not work right now"
     echo "see https://files.catbox.moe/wn83g9.mp4 for a video example"
     exit
@@ -450,17 +448,29 @@ else
     ../ipwnder -p
 fi
 ../irecovery -f iBSS.img4
-../irecovery -f iBSS.img4
-../irecovery -f iBEC.img4
+sleep 2
+.,/irecovery -f iBEC.img4
+if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
+    sleep 1
+    ../irecovery -c go
+fi
+sleep 1
 ../irecovery -f ramdisk.img4
+sleep 1
 ../irecovery -c ramdisk
+sleep 1
 ../irecovery -f devicetree.img4
+sleep 1
 ../irecovery -c devicetree
-        if [[ "$2" == "12."* ]]; then
+sleep 1
+if [[ "$2" == "12."* ]]; then
     ../irecovery -f trustcache.img4
-    ../irecovery -c firmware  
+    sleep 1
+    ../irecovery -c firmware
+    sleep 1
 fi
 ../irecovery -f kernelcache.img4
+sleep 1
 ../irecovery -c bootx &
 cd ..
 read -p "pls press the enter key once device is in the ramdisk " r
@@ -522,17 +532,29 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         ../ipwnder -p
     fi
     ../irecovery -f iBSS.img4
-    ../irecovery -f iBSS.img4
-    ../irecovery -f iBEC.img4
+    sleep 2
+    .,/irecovery -f iBEC.img4
+    if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
+        sleep 1
+        ../irecovery -c go
+    fi
+    sleep 1
     ../irecovery -f ramdisk.img4
+    sleep 1
     ../irecovery -c ramdisk
+    sleep 1
     ../irecovery -f devicetree.img4
+    sleep 1
     ../irecovery -c devicetree
-        if [[ "$2" == "12."* ]]; then
-    ../irecovery -f trustcache.img4
-    ../irecovery -c firmware
-fi
+    sleep 1
+    if [[ "$2" == "12."* ]]; then
+        ../irecovery -f trustcache.img4
+        sleep 1
+        ../irecovery -c firmware
+        sleep 1
+    fi
     ../irecovery -f kernelcache.img4
+    sleep 1
     ../irecovery -c bootx &
     cd ..
     read -p "pls press the enter key once device is in the ramdisk" r
@@ -542,7 +564,7 @@ fi
     echo "step 1, press the letter n on your keyboard and then press enter"
     echo "step 2, press number 1 on your keyboard and press enter"
     echo "step 3, press enter again"
-    if [[ "$1" == *"9"* || "$1" == *"8"* ]]; then
+    if [[ "$1" == "9."* || "$1" == "8."* ]]; then
         echo "step 4, type 1264563 and then press enter"
     else
         echo "step 4, type 864563 and then press enter"
@@ -585,7 +607,7 @@ fi
     if [ -e ./$deviceid/com.apple.factorydata ]; then
         ./sshpass -p "alpine" scp -r -P 2222 ./$deviceid/com.apple.factorydata root@localhost:/mnt1/System/Library/Caches
     fi
-    if [[ "$1" == *"9"* ]]; then
+    if [[ "$1" == "9."* ]]; then
         # as of right now we have not tested any rootfs rw patches for ios 9
         # we are waiting on a sandbox patch before we can do anything in that regard
         ./sshpass -p "alpine" scp -P 2222 ./fstab root@localhost:/mnt1/etc/
@@ -600,7 +622,7 @@ fi
         # yeah so this doesnt do shit on ios 7.x, it is still unactivated on ios 7.x
         # however app store works and there is no hello screen when u boot
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/data_ark.plist.tar -C /mnt2"
-        if [[ "$1" == *"8"* ]]; then
+        if [[ "$1" == "8."* ]]; then
             # this actually works reliably on ios 8 beta 4 /w full factoryactivation
             # gotta love a patched mobactivationd+ data_ark.plist
             ./sshpass -p "alpine" scp -P 2222 ./jb/data_ark.plist_2.tar root@localhost:/mnt2/
@@ -621,7 +643,7 @@ fi
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/Library/PreinstalledAssets/*"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/Library/Preferences/.GlobalPreferences.plist"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/.forward"
-    #if [[ "$1" == *"8"* ]]; then
+    #if [[ "$1" == "8."* ]]; then
         # these plists should in theory trick ios into thinking we already migrated& went thru Setup.app
         #./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.purplebuddy.plist root@localhost:/mnt2/mobile/Library/Preferences/
         #./sshpass -p "alpine" scp -P 2222 ./jb/com.apple.purplebuddy.notbackedup.plist root@localhost:/mnt2/mobile/Library/Preferences/
@@ -631,7 +653,7 @@ fi
     # also worthy to point out that the wtfis untether runs after the slide to uprade screen, not before
     # so it is not able to fix our sandbox issues on ios 8.0+
     # so we are instead using wtfis.app which has 100% success rate when patching the kernel& sandbox on ios 8 beta 4
-    if [[ "$1" == *"8"* ]]; then
+    if [[ "$1" == "8."* ]]; then
         #./sshpass -p "alpine" scp -P 2222 ./jb/untether.tar root@localhost:/mnt1/
         #./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xvf /mnt1/untether.tar -C /mnt1/'
         #./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv /mnt1/usr/libexec/CrashHousekeeping /mnt1/usr/libexec/CrashHousekeeping_o'
@@ -642,7 +664,7 @@ fi
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chown root:wheel /mnt1/.installed_wtfis"
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chmod 777 /mnt1/.installed_wtfis"
     fi
-    if [[ "$1" == *"9"* || "$1" == *"8"* ]]; then
+    if [[ "$1" == "9."* || "$1" == "8."* ]]; then
         read -p "would you like to also install Evermusic_Free.app? " r
         if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
             # so uh this is version 2.2 of evermusic which is the first version with wifi drive support
@@ -658,7 +680,7 @@ fi
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt1/.cydia_no_stash"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chown root:wheel /mnt1/.cydia_no_stash"
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chmod 777 /mnt1/.cydia_no_stash"
-    if [[ "$1" == *"8"* ]]; then
+    if [[ "$1" == "8."* ]]; then
         ./sshpass -p "alpine" scp -P 2222 ./jb/AppleInternal.tar root@localhost:/mnt1/
         ./sshpass -p "alpine" scp -P 2222 ./jb/PrototypeTools.framework_ios8.tar root@localhost:/mnt1/
         # required for ios to think that we are running an internal build
@@ -691,7 +713,7 @@ fi
         ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/usr/libexec/lockdownd ./$deviceid/$1/lockdownd.raw
         ./lockdownd64patcher ./$deviceid/$1/lockdownd.raw ./$deviceid/$1/lockdownd.patched -u -l -g -b -c -d
         ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/lockdownd.patched root@localhost:/mnt1/usr/libexec/lockdownd
-    elif [[ "$1" == *"7"* ]]; then
+    elif [[ "$1" == "7."* ]]; then
         ./sshpass -p "alpine" scp -P 2222 ./jb/AppleInternal.tar root@localhost:/mnt1/
         ./sshpass -p "alpine" scp -P 2222 ./jb/PrototypeTools.framework.tar root@localhost:/mnt1/
         ./sshpass -p "alpine" scp -P 2222 ./jb/SystemVersion.plist root@localhost:/mnt1/System/Library/CoreServices/SystemVersion.plist
@@ -712,7 +734,7 @@ fi
         ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/lockdownd.patched root@localhost:/mnt1/usr/libexec/lockdownd
     # what you are seeing here is a working arm64 NoMoreSIGABRT patch but it does not work for us because we are missing sep
     # sep is required for encrypted hfs+ partition because otherwise it just causes ios to freeze
-    #elif [[ "$1" == *"9"* ]]; then
+    #elif [[ "$1" == "9."* ]]; then
         #./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/sbin/umount /mnt2'
         #./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/bin/dd if=/dev/disk0s1s2 of=/mnt1/out.img bs=512 count=8192'
         #./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/out.img ./$deviceid/$1/NoMoreSIGABRT.img
@@ -753,7 +775,7 @@ fi
     exit
 else
     ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1"
-    if [[ "$1" == *"7"* ]]; then
+    if [[ "$1" == "7."* ]]; then
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs -o suid,dev /dev/disk0s1s2 /mnt2"
         ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/kernelcache root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mv /mnt1/System/Library/LaunchDaemons/com.apple.CommCenter.plist /mnt1/System/Library/LaunchDaemons/com.apple.CommCenter.plis_"
