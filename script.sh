@@ -5,8 +5,10 @@ version="$1"
 dir="$(pwd)/"
 
 if [ -z "$2" ]; then
-    echo "./script.sh <target os ver> <current os ver>"
-    exit
+    if [[ ! -e ./$deviceid/0.0/apticket.der || ! -e ./$deviceid/0.0/sep-firmware.img4 || ! -e ./$deviceid/0.0/Baseband || ! -e ./$deviceid/0.0/keybags ]]; then
+        echo "./script.sh <target os ver> <current os ver>"
+        exit
+    fi
 fi
 
 _wait_for_dfu() {
