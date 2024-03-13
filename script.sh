@@ -113,7 +113,11 @@ _download_ramdisk_boot_files() {
         rm -rf BuildManifest.plist
         
         if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* ]]; then
-            hdiutil resize -size 80M ramdisk/RestoreRamDisk.dmg
+            if [[ "$3" == "9."* ]]; then
+                hdiutil resize -size 80M ramdisk/RestoreRamDisk.dmg
+            else
+                hdiutil resize -size 60M ramdisk/RestoreRamDisk.dmg
+            fi
             hdiutil attach -mountpoint /tmp/ramdisk ramdisk/RestoreRamDisk.dmg
             sudo diskutil enableOwnership /tmp/ramdisk
             sudo ./gnutar -xvf iram.tar -C /tmp/ramdisk
