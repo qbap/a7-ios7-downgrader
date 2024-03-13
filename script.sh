@@ -459,27 +459,15 @@ fi
 ../irecovery -f iBSS.img4
 ../irecovery -f iBSS.img4
 ../irecovery -f iBEC.img4
-if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
-    sleep 1
-    ../irecovery -c go
-fi
-sleep 1
 ../irecovery -f ramdisk.img4
-sleep 1
 ../irecovery -c ramdisk
-sleep 1
 ../irecovery -f devicetree.img4
-sleep 1
 ../irecovery -c devicetree
-sleep 1
 if [ -e ./trustcache.img4 ]; then
     ../irecovery -f trustcache.img4
-    sleep 1
     ../irecovery -c firmware
-    sleep 1
 fi
 ../irecovery -f kernelcache.img4
-sleep 1
 ../irecovery -c bootx &
 cd ..
 read -p "pls press the enter key once device is in the ramdisk " r
@@ -568,27 +556,15 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     ../irecovery -f iBSS.img4
     ../irecovery -f iBSS.img4
     ../irecovery -f iBEC.img4
-    if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
-        sleep 1
-        ../irecovery -c go
-    fi
-    sleep 1
     ../irecovery -f ramdisk.img4
-    sleep 1
     ../irecovery -c ramdisk
-    sleep 1
     ../irecovery -f devicetree.img4
-    sleep 1
     ../irecovery -c devicetree
-    sleep 1
     if [ -e ./trustcache.img4 ]; then
         ../irecovery -f trustcache.img4
-        sleep 1
         ../irecovery -c firmware
-        sleep 1
     fi
     ../irecovery -f kernelcache.img4
-    sleep 1
     ../irecovery -c bootx &
     cd ..
     read -p "pls press the enter key once device is in the ramdisk" r
