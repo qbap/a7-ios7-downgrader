@@ -471,7 +471,7 @@ sleep 1
 sleep 1
 ../irecovery -c devicetree
 sleep 1
-if [[ "$2" == "12."* ]]; then
+if [ -e ./trustcache.img4 ]; then
     ../irecovery -f trustcache.img4
     sleep 1
     ../irecovery -c firmware
@@ -580,7 +580,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     sleep 1
     ../irecovery -c devicetree
     sleep 1
-    if [[ "$2" == "12."* ]]; then
+    if [ -e ./trustcache.img4 ]; then
         ../irecovery -f trustcache.img4
         sleep 1
         ../irecovery -c firmware
