@@ -449,7 +449,7 @@ else
 fi
 ../irecovery -f iBSS.img4
 sleep 2
-.,/irecovery -f iBEC.img4
+../irecovery -f iBEC.img4
 if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
     sleep 1
     ../irecovery -c go
@@ -533,7 +533,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     fi
     ../irecovery -f iBSS.img4
     sleep 2
-    .,/irecovery -f iBEC.img4
+    ../irecovery -f iBEC.img4
     if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
         sleep 1
         ../irecovery -c go
