@@ -626,7 +626,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     if [ -e ./$deviceid/0.0/wireless ]; then
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt2/wireless/Library/Preferences/"
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt2/wireless/Library/Databases/"
-        ./sshpass -p "alpine" scp -r -P 2222 ./$deviceid/0.0/wireless/Library/Preferences/ root@localhost:/mnt2/wireless/Library/Preferences/
+        ./sshpass -p "alpine" scp -r -P 2222 ./$deviceid/0.0/wireless/Library/Preferences/ root@localhost:/mnt2/wireless/Library
     fi
     if [[ "$1" == "9."* ]]; then
         # as of right now we have not tested any rootfs rw patches for ios 9
