@@ -238,7 +238,7 @@ _download_boot_files() {
             ./ipatcher $1/$3/iBEC.dec $1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1"
         else
             ./ipatcher $1/$3/iBSS.dec $1/$3/iBSS.patched
-            ./ipatcher $1/$3/iBEC.dec $1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1 PE_i_can_has_debugger=1 amfi_get_out_of_my_way=0x1"
+            ./ipatcher $1/$3/iBEC.dec $1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1 PE_i_can_has_debugger=1"
         fi
         if [[ "$3" == "8."* ]]; then
             ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
@@ -745,10 +745,9 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt2/mobile/Library/Caches/com.apple.MobileGestalt.plist'
         ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mv /mnt1/System/Library/LaunchDaemons/com.apple.CommCenter.plist /mnt1/System/Library/LaunchDaemons/com.apple.CommCenter.plis_"
         # fix lockdownd to enable sideloading
-        # for some reason ios 7 refuses to boot if lockdownd is modified in any way shape or form
-        #./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/usr/libexec/lockdownd ./$deviceid/$1/lockdownd.raw
-        #./lockdownd64patcher ./$deviceid/$1/lockdownd.raw ./$deviceid/$1/lockdownd.patched -u -l -g -b -c -d
-        #./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/lockdownd.patched root@localhost:/mnt1/usr/libexec/lockdownd
+        ./sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/usr/libexec/lockdownd ./$deviceid/$1/lockdownd.raw
+        ./lockdownd64patcher ./$deviceid/$1/lockdownd.raw ./$deviceid/$1/lockdownd.patched -u -l -g -b -c -d
+        ./sshpass -p "alpine" scp -P 2222 ./$deviceid/$1/lockdownd.patched root@localhost:/mnt1/usr/libexec/lockdownd
     # what you are seeing here is a working arm64 NoMoreSIGABRT patch but it does not work for us because we are missing sep
     # sep is required for encrypted hfs+ partition because otherwise it just causes ios to freeze
     #elif [[ "$1" == "9."* ]]; then
