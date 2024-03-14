@@ -261,11 +261,10 @@ _download_root_fs() {
             "$bin"/dmg build "$dir"/$1/$3/OS.dmg "$dir"/$1/$3/rw.dmg
             hdiutil attach -mountpoint /tmp/ios "$dir"/$1/$3/rw.dmg
             sudo diskutil enableOwnership /tmp/ios
-            sudo ./gnutar -cvf "$dir"/$1/$3/OS.tar -C /tmp/ios /tmp/ios2 .
+            sudo "$bin"/gnutar -cvf "$dir"/$1/$3/OS.tar -C /tmp/ios .
             hdiutil detach /tmp/ios
             rm -rf /tmp/ios
-            sudo rm -rf /tmp/ios2
-            ./irecovery -f /dev/null
+            "$bin"/irecovery -f /dev/null
         else
             "$bin"/dmg build "$dir"/$1/$3/OS.dmg "$dir"/$1/$3/rw.dmg
             hdiutil attach -mountpoint /tmp/ios "$dir"/$1/$3/rw.dmg
