@@ -4,6 +4,7 @@ oscheck=$(uname)
 version="$1"
 dir="$(pwd)/"
 bin="$(pwd)/$(uname)"
+sshtars="$(pwd)/sshtars"
 _wait_for_dfu() {
     if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
         echo "[*] Waiting for device in DFU mode"
@@ -81,7 +82,7 @@ _download_ramdisk_boot_files() {
             fi
             hdiutil attach -mountpoint /tmp/ramdisk "$dir"/ramdisk/RestoreRamDisk.dmg
             sudo diskutil enableOwnership /tmp/ramdisk
-            sudo "$bin"/gnutar -xvf iram.tar -C /tmp/ramdisk
+            sudo "$bin"/gnutar -xvf "$sshtars"/iram.tar -C /tmp/ramdisk
             hdiutil detach /tmp/ramdisk
             "$bin"/img4tool -c "$dir"/ramdisk/ramdisk.im4p -t rdsk "$dir"/ramdisk/RestoreRamDisk.dmg
             "$bin"/img4tool -c "$dir"/ramdisk/ramdisk.img4 -p "$dir"/ramdisk/ramdisk.im4p -m "$dir"/IM4M
@@ -100,7 +101,7 @@ _download_ramdisk_boot_files() {
             hdiutil resize -size 120M "$dir"/ramdisk/RestoreRamDisk.dmg
             hdiutil attach -mountpoint /tmp/ramdisk "$dir"/ramdisk/RestoreRamDisk.dmg
             sudo diskutil enableOwnership /tmp/ramdisk
-            sudo "$bin"/gnutar -xvf ssh.tar -C /tmp/ramdisk
+            sudo "$bin"/gnutar -xvf "$sshtars"/ssh.tar -C /tmp/ramdisk
             hdiutil detach /tmp/ramdisk
             "$bin"/img4 -i "$dir"/ramdisk/RestoreRamDisk.dmg -o "$dir"/ramdisk/ramdisk.img4 -M "$dir"/IM4M -A -T rdsk
             "$bin"/iBoot64Patcher "$dir"/ramdisk/iBSS.dec "$dir"/ramdisk/iBSS.patched
