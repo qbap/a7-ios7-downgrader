@@ -257,28 +257,13 @@ _download_root_fs() {
                 cd ../../work/
             fi
         fi
-        if [[ "$3" == "7."* ]]; then
-            "$bin"/dmg build "$dir"/$1/$3/OS.dmg "$dir"/$1/$3/rw.dmg
-            hdiutil attach -mountpoint /tmp/ios "$dir"/$1/$3/rw.dmg
-            sudo diskutil enableOwnership /tmp/ios
-            sudo "$bin"/gnutar -cvf "$dir"/$1/$3/OS.tar -C /tmp/ios .
-            hdiutil detach /tmp/ios
-            rm -rf /tmp/ios
-            "$bin"/irecovery -f /dev/null
-        else
-            "$bin"/dmg build "$dir"/$1/$3/OS.dmg "$dir"/$1/$3/rw.dmg
-            hdiutil attach -mountpoint /tmp/ios "$dir"/$1/$3/rw.dmg
-            sudo diskutil enableOwnership /tmp/ios
-            sudo mkdir /tmp/ios2
-            sudo rm -rf /tmp/ios2
-            sudo cp -a /tmp/ios/. /tmp/ios2/
-            sudo tar -xvf "$dir"/jb/cydia.tar -C /tmp/ios2
-            sudo "$bin"/gnutar -cvf "$dir"/$1/$3/OS.tar -C /tmp/ios2 .
-            hdiutil detach /tmp/ios
-            rm -rf /tmp/ios
-            sudo rm -rf /tmp/ios2
-            "$bin"/irecovery -f /dev/null
-        fi
+        "$bin"/dmg build "$dir"/$1/$3/OS.dmg "$dir"/$1/$3/rw.dmg
+        hdiutil attach -mountpoint /tmp/ios "$dir"/$1/$3/rw.dmg
+        sudo diskutil enableOwnership /tmp/ios
+        sudo "$bin"/gnutar -cvf "$dir"/$1/$3/OS.tar -C /tmp/ios .
+        hdiutil detach /tmp/ios
+        rm -rf /tmp/ios
+        "$bin"/irecovery -f /dev/null
     fi
     cd ..
     rm -rf work
@@ -510,7 +495,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs -o suid,dev /dev/disk0s1s2 /mnt2"
     "$bin"/sshpass -p 'alpine' scp -P 2222 "$dir"/$deviceid/$1/OS.tar root@localhost:/mnt2
     "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/OS.tar -C /mnt1"
-    if [[ "$1" == "7."* ]]; then
+    if [[ "$1" == "7."* || "$1" == "8."* ]]; then
         "$bin"/sshpass -p 'alpine' scp -P 2222 "$dir"/jb/cydia.tar root@localhost:/mnt2
         "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/cydia.tar -C /mnt1"
         "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/cydia.tar"
