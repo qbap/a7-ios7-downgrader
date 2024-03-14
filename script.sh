@@ -3,6 +3,7 @@ os=$(uname)
 oscheck=$(uname)
 version="$1"
 dir="$(pwd)/"
+bin="$(pwd)/$(uname)"
 
 _wait_for_dfu() {
     if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
@@ -14,99 +15,99 @@ _wait_for_dfu() {
     done
 }
 remote_cmd() {
-    ./sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "$@"
+    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "$@"
 }
 remote_cp() {
-    ./sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P2222 $@
+    "$bin"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P2222 $@
 }
 _download_ramdisk_boot_files() {
     # $deviceid arg 1
     # $replace arg 2
     # $version arg 3
     
-    ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | ./jq '.firmwares | .[] | select(.version=="'$3'")' | ./jq -s '.[0] | .url' --raw-output)
+    ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$bin"/jq '.firmwares | .[] | select(.version=="'$3'")' | ./jq -s '.[0] | .url' --raw-output)
 
     # Copy required library for taco to work to /usr/bin
     sudo rm -rf /usr/bin/img4
-    sudo cp ./img4 /usr/bin/img4
+    sudo cp "$bin"/img4 /usr/bin/img4
     sudo rm -rf /usr/local/bin/img4
-    sudo cp ./img4 /usr/local/bin/img4
+    sudo cp "$bin"/img4 /usr/local/bin/img4
 
     # Copy required library for taco to work to /usr/bin
     sudo rm -rf /usr/bin/dmg
-    sudo cp ./dmg /usr/bin/dmg
+    sudo cp "$bin"/dmg /usr/bin/dmg
     sudo rm -rf /usr/local/bin/dmg
-    sudo cp ./dmg /usr/local/bin/dmg
+    sudo cp "$bin"/dmg /usr/local/bin/dmg
 
     rm -rf BuildManifest.plist
 
-    mkdir -p ramdisk
+    mkdir -p "$dir"/ramdisk
     
-    if [ ! -e ramdisk/ramdisk.img4 ]; then
+    if [ ! -e "$dir"/ramdisk/ramdisk.img4 ]; then
 
-        ./pzb -g BuildManifest.plist "$ipswurl"
+        "$bin"/pzb -g BuildManifest.plist "$ipswurl"
 
-        if [ ! -e ramdisk/kernelcache.dec ]; then
+        if [ ! -e "$dir"/ramdisk/kernelcache.dec ]; then
             # Download kernelcache
-            ./pzb -g $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) "$ipswurl"
+            "$bin"/pzb -g $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) "$ipswurl"
             # Decrypt kernelcache
             # note that as per src/decrypt.rs it will not rename the file
             if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* ]]; then
                 cargo run decrypt $1 $3 $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) -l
                 # so we shall rename the file ourselves
-                mv $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1).dec ramdisk/kcache.raw
-                mv $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1).im4p ramdisk/kernelcache.dec
+                mv $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1).dec "$dir"/ramdisk/kcache.raw
+                mv $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1).im4p "$dir"/ramdisk/kernelcache.dec
             else
-                ./img4 -i $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) -o ramdisk/kcache.raw
-                ./img4 -i $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) -o ramdisk/kernelcache.dec -D
+                "$bin"/img4 -i $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) -o "$dir"/ramdisk/kcache.raw
+                "$bin"/img4 -i $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) -o "$dir"/ramdisk/kernelcache.dec -D
             fi
         fi
 
-        if [ ! -e ramdisk/iBSS.dec ]; then
+        if [ ! -e "$dir"/ramdisk/iBSS.dec ]; then
             # Download iBSS
-            ./pzb -g $(awk "/""$2""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
+            "$bin"/pzb -g $(awk "/""$2""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
             # Decrypt iBSS
             cargo run decrypt $1 $3 $(awk "/""$2""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//') -l
-            mv $(awk "/""$2""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//').dec ramdisk/iBSS.dec
+            mv $(awk "/""$2""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//').dec "$dir"/ramdisk/iBSS.dec
         fi
 
-        if [ ! -e ramdisk/iBEC.dec ]; then
+        if [ ! -e "$dir"/ramdisk/iBEC.dec ]; then
             # Download iBEC
-            ./pzb -g $(awk "/""$2""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
+            "$bin"/pzb -g $(awk "/""$2""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
             # Decrypt iBEC
             cargo run decrypt $1 $3 $(awk "/""$2""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//') -l
-            mv $(awk "/""$2""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//').dec ramdisk/iBEC.dec
+            mv $(awk "/""$2""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//').dec "$dir"/ramdisk/iBEC.dec
         fi
 
-        if [ ! -e ramdisk/DeviceTree.dec ]; then
+        if [ ! -e "$dir"/ramdisk/DeviceTree.dec ]; then
             # Download DeviceTree
-            ./pzb -g $(awk "/""$2""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
+            "$bin"/pzb -g $(awk "/""$2""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
             # Decrypt DeviceTree
             if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* ]]; then
                 cargo run decrypt $1 $3 $(awk "/""$2""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]all_flash.*production[/]//' | sed 's/Firmware[/]all_flash[/]//') -l
-                mv $(awk "/""$2""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]all_flash.*production[/]//' | sed 's/Firmware[/]all_flash[/]//').dec ramdisk/DeviceTree.dec
+                mv $(awk "/""$2""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]all_flash.*production[/]//' | sed 's/Firmware[/]all_flash[/]//').dec "$dir"/ramdisk/DeviceTree.dec
             else
-                mv $(awk "/""$2""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]all_flash.*production[/]//' | sed 's/Firmware[/]all_flash[/]//') ramdisk/DeviceTree.dec
+                mv $(awk "/""$2""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]all_flash.*production[/]//' | sed 's/Firmware[/]all_flash[/]//') "$dir"/ramdisk/DeviceTree.dec
             fi
         fi
 
-        if [ ! -e ramdisk/RestoreRamDisk.dmg ]; then
+        if [ ! -e "$dir"/ramdisk/RestoreRamDisk.dmg ]; then
             # Download RestoreRamDisk
-            ./pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
+            "$bin"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
             # Decrypt RestoreRamDisk
             if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* ]]; then
                 cargo run decrypt $1 $3 "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -l
-                mv "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)".dec ramdisk/RestoreRamDisk.dmg
+                mv "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)".dec "$dir"/ramdisk/RestoreRamDisk.dmg
             else
-                ./img4 -i "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -o ramdisk/RestoreRamDisk.dmg
+                "$bin"/img4 -i "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -o "$dir"/ramdisk/RestoreRamDisk.dmg
             fi
         fi
 
         if [[ "$3" == "12."* ]]; then
-            if [ ! -e ramdisk/trustcache.img4 ]; then
+            if [ ! -e "$dir"/ramdisk/trustcache.img4 ]; then
                 # Download TrustCache
-                ./pzb -g Firmware/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)".trustcache "$ipswurl"
-                 mv "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)".trustcache ramdisk/trustcache.im4p
+                "$bin"/pzb -g Firmware/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)".trustcache "$ipswurl"
+                 mv "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)".trustcache "$dir"/ramdisk/trustcache.im4p
             fi
         fi
         
@@ -114,185 +115,192 @@ _download_ramdisk_boot_files() {
         
         if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* ]]; then
             if [[ "$3" == "9."* ]]; then
-                hdiutil resize -size 80M ramdisk/RestoreRamDisk.dmg
+                hdiutil resize -size 80M "$dir"/ramdisk/RestoreRamDisk.dmg
             else
-                hdiutil resize -size 60M ramdisk/RestoreRamDisk.dmg
+                hdiutil resize -size 60M "$dir"/ramdisk/RestoreRamDisk.dmg
             fi
-            hdiutil attach -mountpoint /tmp/ramdisk ramdisk/RestoreRamDisk.dmg
+            hdiutil attach -mountpoint /tmp/ramdisk "$dir"/ramdisk/RestoreRamDisk.dmg
             sudo diskutil enableOwnership /tmp/ramdisk
-            sudo ./gnutar -xvf iram.tar -C /tmp/ramdisk
+            sudo "$bin"/gnutar -xvf iram.tar -C /tmp/ramdisk
             hdiutil detach /tmp/ramdisk
-            ./img4tool -c ramdisk/ramdisk.im4p -t rdsk ramdisk/RestoreRamDisk.dmg
-            ./img4tool -c ramdisk/ramdisk.img4 -p ramdisk/ramdisk.im4p -m IM4M
+            "$bin"/img4tool -c "$dir"/ramdisk/ramdisk.im4p -t rdsk "$dir"/ramdisk/RestoreRamDisk.dmg
+            "$bin"/img4tool -c "$dir"/ramdisk/ramdisk.img4 -p "$dir"/ramdisk/ramdisk.im4p -m "$dir"/IM4M
             if [[ "$3" == "9."* ]]; then
-                ./iBoot64Patcher ramdisk/iBSS.dec ramdisk/iBSS.patched
-                ./iBoot64Patcher ramdisk/iBEC.dec ramdisk/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 -progress"
+                "$bin"/iBoot64Patcher "$dir"/ramdisk/iBSS.dec "$dir"/ramdisk/iBSS.patched
+                "$bin"/iBoot64Patcher "$dir"/ramdisk/iBEC.dec "$dir"/ramdisk/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 -progress"
             else
-                ./ipatcher ramdisk/iBSS.dec ramdisk/iBSS.patched
-                ./ipatcher ramdisk/iBEC.dec ramdisk/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 -progress"
+                "$bin"/ipatcher "$dir"/ramdisk/iBSS.dec "$dir"/ramdisk/iBSS.patched
+                "$bin"/ipatcher "$dir"/ramdisk/iBEC.dec "$dir"/ramdisk/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 -progress"
             fi
-            ./img4 -i ramdisk/iBSS.patched -o ramdisk/iBSS.img4 -M IM4M -A -T ibss
-            ./img4 -i ramdisk/iBEC.patched -o ramdisk/iBEC.img4 -M IM4M -A -T ibec
-            ./img4 -i ramdisk/kernelcache.dec -o ramdisk/kernelcache.img4 -M IM4M -T rkrn
-            ./img4 -i ramdisk/devicetree.dec -o ramdisk/devicetree.img4 -A -M IM4M -T rdtr
+            "$bin"/img4 -i "$dir"/ramdisk/iBSS.patched -o "$dir"/ramdisk/iBSS.img4 -M "$dir"/IM4M -A -T ibss
+            "$bin"/img4 -i "$dir"/ramdisk/iBEC.patched -o "$dir"/ramdisk/iBEC.img4 -M "$dir"/IM4M -A -T ibec
+            "$bin"/img4 -i "$dir"/ramdisk/kernelcache.dec -o "$dir"/ramdisk/kernelcache.img4 -M "$dir"/IM4M -T rkrn
+            "$bin"/img4 -i "$dir"/ramdisk/devicetree.dec -o "$dir"/ramdisk/devicetree.img4 -A -M "$dir"/IM4M -T rdtr
         else
-            hdiutil resize -size 120M ramdisk/RestoreRamDisk.dmg
-            hdiutil attach -mountpoint /tmp/ramdisk ramdisk/RestoreRamDisk.dmg
+            hdiutil resize -size 120M "$dir"/ramdisk/RestoreRamDisk.dmg
+            hdiutil attach -mountpoint /tmp/ramdisk "$dir"/ramdisk/RestoreRamDisk.dmg
             sudo diskutil enableOwnership /tmp/ramdisk
-            sudo ./gnutar -xvf ssh.tar -C /tmp/ramdisk
+            sudo "$bin"/gnutar -xvf ssh.tar -C /tmp/ramdisk
             hdiutil detach /tmp/ramdisk
-            ./img4 -i ramdisk/RestoreRamDisk.dmg -o ramdisk/ramdisk.img4 -M IM4M -A -T rdsk
-            ./iBoot64Patcher ramdisk/iBSS.dec ramdisk/iBSS.patched
-            ./iBoot64Patcher ramdisk/iBEC.dec ramdisk/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 -restore -progress" -n
-            ./img4 -i ramdisk/iBSS.patched -o ramdisk/iBSS.img4 -M IM4M -A -T ibss
-            ./img4 -i ramdisk/iBEC.patched -o ramdisk/iBEC.img4 -M IM4M -A -T ibec
-            ./Kernel64Patcher2 ramdisk/kcache.raw ramdisk/kcache2.patched -a
-            ./kerneldiff ramdisk/kcache.raw ramdisk/kcache2.patched ramdisk/kc.bpatch
-            ./img4 -i ramdisk/kernelcache.dec -o ramdisk/kernelcache.img4 -M IM4M -T rkrn -P ramdisk/kc.bpatch
-            ./img4 -i ramdisk/kernelcache.dec -o ramdisk/kernelcache -M IM4M -T krnl -P ramdisk/kc.bpatch
+            "$bin"/img4 -i "$dir"/ramdisk/RestoreRamDisk.dmg -o "$dir"/ramdisk/ramdisk.img4 -M "$dir"/IM4M -A -T rdsk
+            "$bin"/iBoot64Patcher "$dir"/ramdisk/iBSS.dec "$dir"/ramdisk/iBSS.patched
+            "$bin"/iBoot64Patcher "$dir"/ramdisk/iBEC.dec "$dir"/ramdisk/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 -restore -progress" -n
+            "$bin"/img4 -i "$dir"/ramdisk/iBSS.patched -o "$dir"/ramdisk/iBSS.img4 -M "$dir"/IM4M -A -T ibss
+            "$bin"/img4 -i "$dir"/ramdisk/iBEC.patched -o "$dir"/ramdisk/iBEC.img4 -M "$dir"/IM4M -A -T ibec
+            "$bin"/Kernel64Patcher2 "$dir"/ramdisk/kcache.raw "$dir"/ramdisk/kcache2.patched -a
+            "$bin"/kerneldiff "$dir"/ramdisk/kcache.raw "$dir"/ramdisk/kcache2.patched "$dir"/ramdisk/kc.bpatch
+            "$bin"/img4 -i "$dir"/ramdisk/kernelcache.dec -o "$dir"/ramdisk/kernelcache.img4 -M "$dir"/IM4M -T rkrn -P "$dir"/ramdisk/kc.bpatch
+            "$bin"/img4 -i "$dir"/ramdisk/kernelcache.dec -o "$dir"/ramdisk/kernelcache -M "$dir"/IM4M -T krnl -P "$dir"/ramdisk/kc.bpatch
             if [[ "$3" == "12."* ]]; then
-                ./img4 -i ramdisk/trustcache.im4p -o ramdisk/trustcache.img4 -M IM4M -T rtsc
+                "$bin"/img4 -i "$dir"/ramdisk/trustcache.im4p -o "$dir"/ramdisk/trustcache.img4 -M "$dir"/IM4M -T rtsc
             fi
-            ./img4 -i ramdisk/devicetree.dec -o ramdisk/devicetree.img4 -M IM4M -T rdtr
+            "$bin"/img4 -i "$dir"/ramdisk/devicetree.dec -o "$dir"/ramdisk/devicetree.img4 -M "$dir"/IM4M -T rdtr
         fi
     fi
+    
+    rm -rf *.dmg
+    rm -rf devicetree*
+    rm -rf devicetree*
+    rm -rf kernelcache*
+    rm -rf iBSS*
+    rm -rf iBEC*
 }
 _download_boot_files() {
     # $deviceid arg 1
     # $replace arg 2
     # $version arg 3
 
-    ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | ./jq '.firmwares | .[] | select(.version=="'$3'")' | ./jq -s '.[0] | .url' --raw-output)
+    ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$bin"/jq '.firmwares | .[] | select(.version=="'$3'")' | ./jq -s '.[0] | .url' --raw-output)
 
     # Copy required library for taco to work to /usr/bin
     sudo rm -rf /usr/bin/img4
-    sudo cp ./img4 /usr/bin/img4
+    sudo cp "$bin"/img4 /usr/bin/img4
     sudo rm -rf /usr/local/bin/img4
-    sudo cp ./img4 /usr/local/bin/img4
+    sudo cp "$bin"/img4 /usr/local/bin/img4
 
     # Copy required library for taco to work to /usr/bin
     sudo rm -rf /usr/bin/dmg
-    sudo cp ./dmg /usr/bin/dmg
+    sudo cp "$bin"/dmg /usr/bin/dmg
     sudo rm -rf /usr/local/bin/dmg
-    sudo cp ./dmg /usr/local/bin/dmg
+    sudo cp "$bin"/dmg /usr/local/bin/dmg
 
     rm -rf BuildManifest.plist
 
-    mkdir -p $1/$3
+    mkdir -p "$dir"/$1/$3
     
-    if [ ! -e $1/$3/kernelcache ]; then
+    if [ ! -e "$dir"/$1/$3/kernelcache ]; then
 
-        ./pzb -g BuildManifest.plist "$ipswurl"
+        "$bin"/pzb -g BuildManifest.plist "$ipswurl"
 
-        if [ ! -e $1/$3/kernelcache.dec ]; then
+        if [ ! -e "$dir"/$1/$3/kernelcache.dec ]; then
             # Download kernelcache
-            ./pzb -g $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) "$ipswurl"
+            "$bin"/pzb -g $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) "$ipswurl"
             # Decrypt kernelcache
             # note that as per src/decrypt.rs it will not rename the file
             cargo run decrypt $1 $3 $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) -l
             # so we shall rename the file ourselves
-            mv $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1).dec $1/$3/kcache.raw
-            mv $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1).im4p $1/$3/kernelcache.dec
-            mv $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1).kpp $1/$3/kpp.bin
+            mv $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1).dec "$dir"/$1/$3/kcache.raw
+            mv $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1).im4p "$dir"/$1/$3/kernelcache.dec
+            mv $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1).kpp "$dir"/$1/$3/kpp.bin
         fi
 
-        if [ ! -e $1/$3/iBSS.dec ]; then
+        if [ ! -e "$dir"/$1/$3/iBSS.dec ]; then
             # Download iBSS
-            ./pzb -g $(awk "/""$2""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
+            "$bin"/pzb -g $(awk "/""$2""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
             # Decrypt iBSS
             cargo run decrypt $1 $3 $(awk "/""$2""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//') -l
-            mv $(awk "/""$2""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//').dec $1/$3/iBSS.dec
+            mv $(awk "/""$2""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//').dec "$dir"/$1/$3/iBSS.dec
         fi
 
-        if [ ! -e $1/$3/iBEC.dec ]; then
+        if [ ! -e "$dir"/$1/$3/iBEC.dec ]; then
             # Download iBEC
-            ./pzb -g $(awk "/""$2""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
+            "$bin"/pzb -g $(awk "/""$2""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
             # Decrypt iBEC
             cargo run decrypt $1 $3 $(awk "/""$2""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//') -l
-            mv $(awk "/""$2""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//').dec $1/$3/iBEC.dec
+            mv $(awk "/""$2""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//').dec "$dir"/$1/$3/iBEC.dec
         fi
 
-        if [ ! -e $1/$3/DeviceTree.dec ]; then
+        if [ ! -e "$dir"/$1/$3/DeviceTree.dec ]; then
             # Download DeviceTree
-            ./pzb -g $(awk "/""$2""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
+            "$bin"/pzb -g $(awk "/""$2""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
             # Decrypt DeviceTree
             cargo run decrypt $1 $3 $(awk "/""$2""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]all_flash.*production[/]//') -l
-            mv $(awk "/""$2""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]all_flash.*production[/]//').dec $1/$3/DeviceTree.dec
+            mv $(awk "/""$2""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]all_flash.*production[/]//').dec "$dir"/$1/$3/DeviceTree.dec
         fi
 
-        if [ ! -e $1/$3/RestoreRamDisk.dmg ]; then
+        if [ ! -e "$dir"/$1/$3/RestoreRamDisk.dmg ]; then
             # Download RestoreRamDisk
-            ./pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
+            "$bin"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
             # Decrypt RestoreRamDisk
             cargo run decrypt $1 $3 "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -l
-            mv "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)".dec $1/$3/RestoreRamDisk.dmg
+            mv "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)".dec "$dir"/$1/$3/RestoreRamDisk.dmg
         fi
         
         rm -rf BuildManifest.plist
         
         if [[ "$3" == "9."* ]]; then
-            ./iBoot64Patcher $1/$3/iBSS.dec $1/$3/iBSS.patched
-            ./iBoot64Patcher $1/$3/iBEC.dec $1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1 PE_i_can_has_debugger=1  amfi_unrestrict_task_for_pid=0x0 amfi_allow_any_signature=0x1 amfi_get_out_of_my_way=0x1"
+            "$bin"/iBoot64Patcher "$dir"/$1/$3/iBSS.dec "$dir"/$1/$3/iBSS.patched
+            "$bin"/iBoot64Patcher "$dir"/$1/$3/iBEC.dec "$dir"/$1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1 PE_i_can_has_debugger=1  amfi_unrestrict_task_for_pid=0x0 amfi_allow_any_signature=0x1 amfi_get_out_of_my_way=0x1"
         elif [[ "$3" == "8."* ]]; then
-            ./ipatcher $1/$3/iBSS.dec $1/$3/iBSS.patched
-            ./ipatcher $1/$3/iBEC.dec $1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1"
+            "$bin"/ipatcher "$dir"/$1/$3/iBSS.dec "$dir"/$1/$3/iBSS.patched
+            "$bin"/ipatcher "$dir"/$1/$3/iBEC.dec "$dir"/$1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1"
         else
-            ./ipatcher $1/$3/iBSS.dec $1/$3/iBSS.patched
-            ./ipatcher $1/$3/iBEC.dec $1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1 PE_i_can_has_debugger=1"
+            "$bin"/ipatcher "$dir"/$1/$3/iBSS.dec "$dir"/$1/$3/iBSS.patched
+            "$bin"/ipatcher "$dir"/$1/$3/iBEC.dec "$dir"/$1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1 PE_i_can_has_debugger=1"
         fi
         if [[ "$3" == "8."* ]]; then
-            ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
-            ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
+            "$bin"/img4 -i "$dir"/$1/$3/iBSS.patched -o "$dir"/$1/$3/iBSS.img4 -M "$dir"/IM4M -A -T ibss
+            "$bin"/img4 -i "$dir"/$1/$3/iBEC.patched -o "$dir"/$1/$3/iBEC.img4 -M "$dir"/IM4M -A -T ibec
             if [[ "$1" == "iPhone7,2" || "$1" == "iPhone7,1" ]]; then
-                ./seprmvr64lite $1/$3/kcache.raw $1/$3/kcache.patched
+                "$bin"/seprmvr64lite "$dir"/$1/$3/kcache.raw "$dir"/$1/$3/kcache.patched
                 # -t -p -f -a -m
                 # vm_fault_enter patch is required for ios 8 to boot with seprmvr64
                 # otherwise stuck on apple logo during bootk
                 #./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -f
                 # it seems the phone reboots randomly if u dont have the rest of the patches
-                ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -t -p -f -a -m
-                ./kerneldiff $1/$3/kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
-                ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
-                ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
+                "$bin"/Kernel64Patcher "$dir"/$1/$3/kcache.patched "$dir"/$1/$3/kcache2.patched -t -p -f -a -m
+                "$bin"/kerneldiff "$dir"/$1/$3/kcache.raw "$dir"/$1/$3/kcache2.patched "$dir"/$1/$3/kc.bpatch
+                "$bin"/img4 -i "$dir"/$1/$3/kernelcache.dec -o "$dir"/$1/$3/kernelcache.img4 -M "$dir"/IM4M -T rkrn -P "$dir"/$1/$3/kc.bpatch
+                "$bin"/img4 -i "$dir"/$1/$3/kernelcache.dec -o "$dir"/$1/$3/kernelcache -M "$dir"/IM4M -T krnl -P "$dir"/$1/$3/kc.bpatch
             else
-                ./seprmvr64lite jb/12A4331d_kcache.raw $1/$3/kcache.patched
+                "$bin"/seprmvr64lite "$dir"/jb/12A4331d_kcache.raw "$dir"/$1/$3/kcache.patched
                 # ios 8.0 GM - 8.4.1 gets slide to upgrade screen when trying to boot without a sandbox patch
                 # see https://files.catbox.moe/wn83g9.mp4 for a video example of why we need sandbox patch
                 # here we are patching tfp0, sbtrace, vm_fault_enter, mount_common, and map_IO
                 # when u boot u need to run wtfis app or use the wtfis untether which patches sandbox
-                ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -t -p -f -a -m
+                "$bin"/Kernel64Patcher "$dir"/$1/$3/kcache.patched "$dir"/$1/$3/kcache2.patched -t -p -f -a -m
                 # 12A4331d is ios 8 beta 4 release kernel
-                ./kerneldiff jb/12A4331d_kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
-                ./img4 -i jb/12A4331d_kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
-                ./img4 -i jb/12A4331d_kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
+                "$bin"/kerneldiff "$dir"/jb/12A4331d_kcache.raw "$dir"/$1/$3/kcache2.patched "$dir"/$1/$3/kc.bpatch
+                "$bin"/img4 -i "$dir"/jb/12A4331d_kernelcache.dec -o "$dir"/$1/$3/kernelcache.img4 -M "$dir"/IM4M -T rkrn -P "$dir"/$1/$3/kc.bpatch
+                "$bin"/img4 -i "$dir"/jb/12A4331d_kernelcache.dec -o "$dir"/$1/$3/kernelcache -M "$dir"/IM4M -T krnl -P "$dir"/$1/$3/kc.bpatch
             fi
-            ./dtree_patcher $1/$3/DeviceTree.dec $1/$3/DeviceTree.patched -n
+            "$bin"/dtree_patcher "$dir"/$1/$3/DeviceTree.dec "$dir"/$1/$3/DeviceTree.patched -n
         elif [[ "$3" == "9."* ]]; then
-            ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
-            ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
-            ./seprmvr64lite $1/$3/kcache.raw $1/$3/kcache.patched
+            "$bin"/img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M "$dir"/IM4M -A -T ibss
+            "$bin"/img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M "$dir"/IM4M -A -T ibec
+            "$bin"/seprmvr64lite $1/$3/kcache.raw $1/$3/kcache.patched
             # for ios 9 to boot we need a sandbox patch that can be done with Kernel64Patcher
             # -s patches PE_i_can_has_debugger, which is NOT a sandbox patch
             # see https://files.catbox.moe/wn83g9.mp4 for a video example
-            ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -s
-            pyimg4 im4p create -i $1/$3/kcache2.patched -o $1/$3/kernelcache.im4p.img4 --extra $1/$3/kpp.bin -f rkrn --lzss
-            pyimg4 im4p create -i $1/$3/kcache2.patched -o $1/$3/kernelcache.im4p --extra $1/$3/kpp.bin -f krnl --lzss
-            pyimg4 img4 create -p $1/$3/kernelcache.im4p.img4 -o $1/$3/kernelcache.img4 -m IM4M
-            pyimg4 img4 create -p $1/$3/kernelcache.im4p -o $1/$3/kernelcache -m IM4M
-            ./dtree_patcher $1/$3/DeviceTree.dec $1/$3/DeviceTree.patched -n
+            "$bin"/Kernel64Patcher "$dir"/$1/$3/kcache.patched "$dir"/$1/$3/kcache2.patched -s
+            pyimg4 im4p create -i "$dir"/$1/$3/kcache2.patched -o "$dir"/$1/$3/kernelcache.im4p.img4 --extra "$dir"/$1/$3/kpp.bin -f rkrn --lzss
+            pyimg4 im4p create -i "$dir"/$1/$3/kcache2.patched -o "$dir"/$1/$3/kernelcache.im4p --extra "$dir"/$1/$3/kpp.bin -f krnl --lzss
+            pyimg4 img4 create -p "$dir"/$1/$3/kernelcache.im4p.img4 -o "$dir"/$1/$3/kernelcache.img4 -m "$dir"/IM4M
+            pyimg4 img4 create -p "$dir"/$1/$3/kernelcache.im4p -o "$dir"/$1/$3/kernelcache -m "$dir"/IM4M
+            "$bin"/dtree_patcher "$dir"/$1/$3/DeviceTree.dec "$dir"/$1/$3/DeviceTree.patched -n
         elif [[ "$3" == "7."* ]]; then
-            ./img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M IM4M -A -T ibss
-            ./img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M IM4M -A -T ibec
-            ./seprmvr64lite $1/$3/kcache.raw $1/$3/kcache.patched
+            "$bin"/img4 -i "$dir"/$1/$3/iBSS.patched -o "$dir"/$1/$3/iBSS.img4 -M "$dir"/IM4M -A -T ibss
+            "$bin"/img4 -i "$dir"/$1/$3/iBEC.patched -o "$dir"/$1/$3/iBEC.img4 -M "$dir"/IM4M -A -T ibec
+            "$bin"/seprmvr64lite "$dir"/$1/$3/kcache.raw "$dir"/$1/$3/kcache.patched
             # we need to apply mount_common patch for rootfs rw and vm_map_enter patch for tweak injection
             # app store works perfectly, and so does tweaks
-            ./Kernel64Patcher $1/$3/kcache.patched $1/$3/kcache2.patched -m -e -f
-            ./kerneldiff $1/$3/kcache.raw $1/$3/kcache2.patched $1/$3/kc.bpatch
-            ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache.img4 -M IM4M -T rkrn -P $1/$3/kc.bpatch
-            ./img4 -i $1/$3/kernelcache.dec -o $1/$3/kernelcache -M IM4M -T krnl -P $1/$3/kc.bpatch
-            cp $1/$3/DeviceTree.dec $1/$3/DeviceTree.patched
+            "$bin"/Kernel64Patcher "$dir"/$1/$3/kcache.patched "$dir"/$1/$3/kcache2.patched -m -e -f
+            "$bin"/kerneldiff "$dir"/$1/$3/kcache.raw "$dir"/$1/$3/kcache2.patched "$dir"/$1/$3/kc.bpatch
+            "$bin"/img4 -i "$dir"/$1/$3/kernelcache.dec -o "$dir"/$1/$3/kernelcache.img4 -M "$dir"/IM4M -T rkrn -P "$dir"/$1/$3/kc.bpatch
+            "$bin"/img4 -i "$dir"/$1/$3/kernelcache.dec -o "$dir"/$1/$3/kernelcache -M "$dir"/IM4M -T krnl -P "$dir"/$1/$3/kc.bpatch
+            cp "$dir"/$1/$3/DeviceTree.dec "$dir"/$1/$3/DeviceTree.patched
         fi
-        ./img4 -i $1/$3/DeviceTree.patched -o $1/$3/devicetree.img4 -A -M IM4M -T rdtr
+        "$bin"/img4 -i "$dir"/$1/$3/DeviceTree.patched -o "$dir"/$1/$3/devicetree.img4 -A -M "$dir"/IM4M -T rdtr
     
     fi
 }
@@ -301,68 +309,68 @@ _download_root_fs() {
     # $replace arg 2
     # $version arg 3
 
-    ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | ./jq '.firmwares | .[] | select(.version=="'$3'")' | ./jq -s '.[0] | .url' --raw-output)
+    ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$bin"/jq '.firmwares | .[] | select(.version=="'$3'")' | ./jq -s '.[0] | .url' --raw-output)
 
     # Copy required library for taco to work to /usr/bin
     sudo rm -rf /usr/bin/img4
-    sudo cp ./img4 /usr/bin/img4
+    sudo cp "$bin"/img4 /usr/bin/img4
     sudo rm -rf /usr/local/bin/img4
-    sudo cp ./img4 /usr/local/bin/img4
+    sudo cp "$bin"/img4 /usr/local/bin/img4
 
     # Copy required library for taco to work to /usr/bin
     sudo rm -rf /usr/bin/dmg
-    sudo cp ./dmg /usr/bin/dmg
+    sudo cp "$bin"/dmg /usr/bin/dmg
     sudo rm -rf /usr/local/bin/dmg
-    sudo cp ./dmg /usr/local/bin/dmg
+    sudo cp "$bin"/dmg /usr/local/bin/dmg
 
     rm -rf BuildManifest.plist
 
-    mkdir -p $1/$3
+    mkdir -p "$dir"/$1/$3
     
-    if [ ! -e $1/$3/OS.tar ]; then
-        if [ ! -e $1/$3/OS.dmg ]; then
+    if [ ! -e "$dir"/$1/$3/OS.tar ]; then
+        if [ ! -e "$dir"/$1/$3/OS.dmg ]; then
             if [[ "$3" == "8.0" ]]; then
                 if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" ]]; then
-                    ./pzb -g BuildManifest.plist "$ipswurl"
+                    "$bin"/pzb -g BuildManifest.plist "$ipswurl"
                     # Download root fs
-                    ./pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
+                    "$bin"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
                     # Decrypt root fs
                     # note that as per src/decrypt.rs it will rename the file to OS.dmg by default
                     cargo run decrypt $1 $3 "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -l
                     osfn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
-                    mv $(echo $osfn | sed "s/dmg/bin/g") $1/$3/OS.dmg
+                    mv $(echo $osfn | sed "s/dmg/bin/g") "$dir"/$1/$3/OS.dmg
                 else
                     # https://archive.org/download/Apple_iPhone_Firmware/Apple%20iPhone%206.1%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/
-                    cd ./$1/$3
-                    ../../aria2c https://ia903400.us.archive.org/4/items/Apple_iPhone_Firmware/Apple%20iPhone%206.1%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
-                    ../../7z x media_ipsw.rar
-                    ../../7z x $(find . -name '*.ipsw*')
-                    ../../dmg extract 058-01244-053.dmg OS.dmg -k 5c8b481822b91861c1d19590e790b306daaab2230f89dd275c18356d28fdcd47436a0737
+                    cd "$dir"/$1/$3
+                    "$bin"/aria2c https://ia903400.us.archive.org/4/items/Apple_iPhone_Firmware/Apple%20iPhone%206.1%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
+                    "$bin"/7z x media_ipsw.rar
+                    "$bin"/7z x $(find . -name '*.ipsw*')
+                    "$bin"/dmg extract 058-01244-053.dmg OS.dmg -k 5c8b481822b91861c1d19590e790b306daaab2230f89dd275c18356d28fdcd47436a0737
                     cd ../../
                 fi
             else
-                ./pzb -g BuildManifest.plist "$ipswurl"
+                "$bin"/pzb -g BuildManifest.plist "$ipswurl"
                 # Download root fs
-                ./pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
+                "$bin"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
                 # Decrypt root fs
                 # note that as per src/decrypt.rs it will rename the file to OS.dmg by default
                 cargo run decrypt $1 $3 "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -l
                 osfn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
-                mv $(echo $osfn | sed "s/dmg/bin/g") $1/$3/OS.dmg
+                mv $(echo $osfn | sed "s/dmg/bin/g") "$dir"/$1/$3/OS.dmg
             fi
         fi
-        ./dmg build $1/$3/OS.dmg $1/$3/rw.dmg
-        hdiutil attach -mountpoint /tmp/ios $1/$3/rw.dmg
+        "$bin"/dmg build "$dir"/$1/$3/OS.dmg "$dir"/$1/$3/rw.dmg
+        hdiutil attach -mountpoint /tmp/ios "$dir"/$1/$3/rw.dmg
         sudo diskutil enableOwnership /tmp/ios
         sudo mkdir /tmp/ios2
         sudo rm -rf /tmp/ios2
         sudo cp -a /tmp/ios/. /tmp/ios2/
-        sudo tar -xvf ./jb/cydia.tar -C /tmp/ios2
-        sudo ./gnutar -cvf $1/$3/OS.tar -C /tmp/ios2 .
+        sudo tar -xvf "$dir"/jb/cydia.tar -C /tmp/ios2
+        sudo "$bin"/gnutar -cvf $1/$3/OS.tar -C /tmp/ios2 .
         hdiutil detach /tmp/ios
         rm -rf /tmp/ios
         sudo rm -rf /tmp/ios2
-        ./irecovery -f /dev/null
+        "$bin"/irecovery -f /dev/null
     fi
 
     rm -rf BuildManifest.plist
