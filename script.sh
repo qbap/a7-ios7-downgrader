@@ -82,7 +82,7 @@ _download_ramdisk_boot_files() {
             fi
             hdiutil attach -mountpoint /tmp/ramdisk "$dir"/ramdisk/RestoreRamDisk.dmg
             sudo diskutil enableOwnership /tmp/ramdisk
-            sudo "$bin"/gnutar -xvf "$sshtars"/ssh.tar -C /tmp/ramdisk
+            sudo "$bin"/gnutar -xvf "$sshtars"/ssh_hfsplus.tar -C /tmp/ramdisk
             hdiutil detach /tmp/ramdisk
             "$bin"/img4tool -c "$dir"/ramdisk/ramdisk.im4p -t rdsk "$dir"/ramdisk/RestoreRamDisk.dmg
             "$bin"/img4tool -c "$dir"/ramdisk/ramdisk.img4 -p "$dir"/ramdisk/ramdisk.im4p -m "$dir"/IM4M
@@ -101,7 +101,7 @@ _download_ramdisk_boot_files() {
             hdiutil resize -size 120M "$dir"/ramdisk/RestoreRamDisk.dmg
             hdiutil attach -mountpoint /tmp/ramdisk "$dir"/ramdisk/RestoreRamDisk.dmg
             sudo diskutil enableOwnership /tmp/ramdisk
-            sudo "$bin"/gnutar -xvf "$sshtars"/ssh.tar -C /tmp/ramdisk
+            sudo "$bin"/gnutar -xvf "$sshtars"/ssh_apfs.tar -C /tmp/ramdisk
             hdiutil detach /tmp/ramdisk
             "$bin"/img4 -i "$dir"/ramdisk/RestoreRamDisk.dmg -o "$dir"/ramdisk/ramdisk.img4 -M "$dir"/IM4M -A -T rdsk
             "$bin"/iBoot64Patcher "$dir"/ramdisk/iBSS.dec "$dir"/ramdisk/iBSS.patched
