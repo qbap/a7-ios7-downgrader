@@ -39,7 +39,7 @@ or
 
 `sudo ./script.sh 8.0 <your ios version>` **ios 8.0 does not have working app store
 
-replace <your ios version> with the version of ios you are running rn
+replace `<your ios version>` with the version of ios you are running rn
 
 so if u r on ios 11.4.1 type 11.4.1
 
