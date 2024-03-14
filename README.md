@@ -19,7 +19,7 @@
 | 7.1.2    | &#9745;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9745;* | &#9745;  | &#9745;    | &#9745;|
 | 8.0b4    | &#9744;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9745;  | &#9745;  | &#9745;    | &#9745;|
 
-** ios 7 has issues with sandbox when you have cydia substrate installed. many apps crash and app store refuses to install apps when you have cydia substrate installed. it is recommended for the time being that you use ios 8.0 beta 4 if your device supports it because it has working tweaks thx to @TheRealClarity with the sandbox patch included in the ios 8 wtfis jailbreak. simply launch the wtfis app on the home screen after you boot and hit "go" and it will patch the sandbox so that tweaks work as normal.
+** ios 7 has issues with sandbox when you have cydia substrate installed. many apps crash and app store refuses to install apps when you have cydia substrate installed. it is recommended for the time being that you use ios 8.0 beta 4 if your device supports it because it has working tweaks thx to @TheRealClarity with the sandbox patch included in the ios 8 wtfis jailbreak. simply launch the wtfis app on the home screen after you boot and hit "go" and it will patch the sandbox so that tweaks work as normal
 
 ## How do I use this?
 
