@@ -257,18 +257,29 @@ _download_root_fs() {
                 cd ../../work/
             fi
         fi
-        "$bin"/dmg build "$dir"/$1/$3/OS.dmg "$dir"/$1/$3/rw.dmg
-        hdiutil attach -mountpoint /tmp/ios "$dir"/$1/$3/rw.dmg
-        sudo diskutil enableOwnership /tmp/ios
-        sudo mkdir /tmp/ios2
-        sudo rm -rf /tmp/ios2
-        sudo cp -a /tmp/ios/. /tmp/ios2/
-        sudo tar -xvf "$dir"/jb/cydia.tar -C /tmp/ios2
-        sudo "$bin"/gnutar -cvf "$dir"/$1/$3/OS.tar -C /tmp/ios2 .
-        hdiutil detach /tmp/ios
-        rm -rf /tmp/ios
-        sudo rm -rf /tmp/ios2
-        "$bin"/irecovery -f /dev/null
+        if [[ "$3" == "7."* ]]; then
+            "$bin"/dmg build "$dir"/$1/$3/OS.dmg "$dir"/$1/$3/rw.dmg
+            hdiutil attach -mountpoint /tmp/ios "$dir"/$1/$3/rw.dmg
+            sudo diskutil enableOwnership /tmp/ios
+            sudo ./gnutar -cvf "$dir"/$1/$3/OS.tar -C /tmp/ios /tmp/ios2 .
+            hdiutil detach /tmp/ios
+            rm -rf /tmp/ios
+            sudo rm -rf /tmp/ios2
+            ./irecovery -f /dev/null
+        else
+            "$bin"/dmg build "$dir"/$1/$3/OS.dmg "$dir"/$1/$3/rw.dmg
+            hdiutil attach -mountpoint /tmp/ios "$dir"/$1/$3/rw.dmg
+            sudo diskutil enableOwnership /tmp/ios
+            sudo mkdir /tmp/ios2
+            sudo rm -rf /tmp/ios2
+            sudo cp -a /tmp/ios/. /tmp/ios2/
+            sudo tar -xvf "$dir"/jb/cydia.tar -C /tmp/ios2
+            sudo "$bin"/gnutar -cvf "$dir"/$1/$3/OS.tar -C /tmp/ios2 .
+            hdiutil detach /tmp/ios
+            rm -rf /tmp/ios
+            sudo rm -rf /tmp/ios2
+            "$bin"/irecovery -f /dev/null
+        fi
     fi
     cd ..
     rm -rf work
