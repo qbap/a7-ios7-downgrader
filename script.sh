@@ -121,7 +121,7 @@ _download_ramdisk_boot_files() {
     rm -rf BuildManifest.plist
     rm -rf *.dmg
     rm -rf devicetree*
-    rm -rf devicetree*
+    rm -rf DeviceTree*
     rm -rf kernelcache*
     rm -rf iBSS*
     rm -rf iBEC*
@@ -220,7 +220,7 @@ _download_boot_files() {
     rm -rf BuildManifest.plist
     rm -rf *.dmg
     rm -rf devicetree*
-    rm -rf devicetree*
+    rm -rf DeviceTree*
     rm -rf kernelcache*
     rm -rf iBSS*
     rm -rf iBEC*
@@ -271,7 +271,7 @@ _download_root_fs() {
     rm -rf BuildManifest.plist
     rm -rf *.dmg
     rm -rf devicetree*
-    rm -rf devicetree*
+    rm -rf DeviceTree*
     rm -rf kernelcache*
     rm -rf iBSS*
     rm -rf iBEC*
