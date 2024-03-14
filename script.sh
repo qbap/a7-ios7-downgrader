@@ -26,6 +26,10 @@ _download_ramdisk_boot_files() {
     sudo cp "$bin"/dmg /usr/local/bin/dmg
     rm -rf BuildManifest.plist
     mkdir -p "$dir"/ramdisk
+    rm -rf work
+    mkdir work
+    cd work
+    "$bin"/img4tool -e -s "$dir"/other/shsh/"${check}".shsh -m IM4M
     if [ ! -e "$dir"/ramdisk/ramdisk.img4 ]; then
         "$bin"/pzb -g BuildManifest.plist "$ipswurl"
         if [ ! -e "$dir"/ramdisk/kernelcache.dec ]; then
@@ -85,7 +89,7 @@ _download_ramdisk_boot_files() {
             sudo "$bin"/gnutar -xvf "$sshtars"/ssh_hfsplus.tar -C /tmp/ramdisk
             hdiutil detach /tmp/ramdisk
             "$bin"/img4tool -c "$dir"/ramdisk/ramdisk.im4p -t rdsk "$dir"/ramdisk/RestoreRamDisk.dmg
-            "$bin"/img4tool -c "$dir"/ramdisk/ramdisk.img4 -p "$dir"/ramdisk/ramdisk.im4p -m "$dir"/IM4M
+            "$bin"/img4tool -c "$dir"/ramdisk/ramdisk.img4 -p "$dir"/ramdisk/ramdisk.im4p -m IM4M
             if [[ "$3" == "9."* ]]; then
                 "$bin"/iBoot64Patcher "$dir"/ramdisk/iBSS.dec "$dir"/ramdisk/iBSS.patched
                 "$bin"/iBoot64Patcher "$dir"/ramdisk/iBEC.dec "$dir"/ramdisk/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 -progress"
@@ -93,38 +97,33 @@ _download_ramdisk_boot_files() {
                 "$bin"/ipatcher "$dir"/ramdisk/iBSS.dec "$dir"/ramdisk/iBSS.patched
                 "$bin"/ipatcher "$dir"/ramdisk/iBEC.dec "$dir"/ramdisk/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 -progress"
             fi
-            "$bin"/img4 -i "$dir"/ramdisk/iBSS.patched -o "$dir"/ramdisk/iBSS.img4 -M "$dir"/IM4M -A -T ibss
-            "$bin"/img4 -i "$dir"/ramdisk/iBEC.patched -o "$dir"/ramdisk/iBEC.img4 -M "$dir"/IM4M -A -T ibec
-            "$bin"/img4 -i "$dir"/ramdisk/kernelcache.dec -o "$dir"/ramdisk/kernelcache.img4 -M "$dir"/IM4M -T rkrn
-            "$bin"/img4 -i "$dir"/ramdisk/devicetree.dec -o "$dir"/ramdisk/devicetree.img4 -A -M "$dir"/IM4M -T rdtr
+            "$bin"/img4 -i "$dir"/ramdisk/iBSS.patched -o "$dir"/ramdisk/iBSS.img4 -M IM4M -A -T ibss
+            "$bin"/img4 -i "$dir"/ramdisk/iBEC.patched -o "$dir"/ramdisk/iBEC.img4 -M IM4M -A -T ibec
+            "$bin"/img4 -i "$dir"/ramdisk/kernelcache.dec -o "$dir"/ramdisk/kernelcache.img4 -M IM4M -T rkrn
+            "$bin"/img4 -i "$dir"/ramdisk/devicetree.dec -o "$dir"/ramdisk/devicetree.img4 -A -M IM4M -T rdtr
         else
             hdiutil resize -size 120M "$dir"/ramdisk/RestoreRamDisk.dmg
             hdiutil attach -mountpoint /tmp/ramdisk "$dir"/ramdisk/RestoreRamDisk.dmg
             sudo diskutil enableOwnership /tmp/ramdisk
             sudo "$bin"/gnutar -xvf "$sshtars"/ssh_apfs.tar -C /tmp/ramdisk
             hdiutil detach /tmp/ramdisk
-            "$bin"/img4 -i "$dir"/ramdisk/RestoreRamDisk.dmg -o "$dir"/ramdisk/ramdisk.img4 -M "$dir"/IM4M -A -T rdsk
+            "$bin"/img4 -i "$dir"/ramdisk/RestoreRamDisk.dmg -o "$dir"/ramdisk/ramdisk.img4 -M IM4M -A -T rdsk
             "$bin"/iBoot64Patcher "$dir"/ramdisk/iBSS.dec "$dir"/ramdisk/iBSS.patched
             "$bin"/iBoot64Patcher "$dir"/ramdisk/iBEC.dec "$dir"/ramdisk/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 -restore -progress" -n
-            "$bin"/img4 -i "$dir"/ramdisk/iBSS.patched -o "$dir"/ramdisk/iBSS.img4 -M "$dir"/IM4M -A -T ibss
-            "$bin"/img4 -i "$dir"/ramdisk/iBEC.patched -o "$dir"/ramdisk/iBEC.img4 -M "$dir"/IM4M -A -T ibec
+            "$bin"/img4 -i "$dir"/ramdisk/iBSS.patched -o "$dir"/ramdisk/iBSS.img4 -M IM4M -A -T ibss
+            "$bin"/img4 -i "$dir"/ramdisk/iBEC.patched -o "$dir"/ramdisk/iBEC.img4 -M IM4M -A -T ibec
             "$bin"/Kernel64Patcher2 "$dir"/ramdisk/kcache.raw "$dir"/ramdisk/kcache2.patched -a
             "$bin"/kerneldiff "$dir"/ramdisk/kcache.raw "$dir"/ramdisk/kcache2.patched "$dir"/ramdisk/kc.bpatch
-            "$bin"/img4 -i "$dir"/ramdisk/kernelcache.dec -o "$dir"/ramdisk/kernelcache.img4 -M "$dir"/IM4M -T rkrn -P "$dir"/ramdisk/kc.bpatch
-            "$bin"/img4 -i "$dir"/ramdisk/kernelcache.dec -o "$dir"/ramdisk/kernelcache -M "$dir"/IM4M -T krnl -P "$dir"/ramdisk/kc.bpatch
+            "$bin"/img4 -i "$dir"/ramdisk/kernelcache.dec -o "$dir"/ramdisk/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/ramdisk/kc.bpatch
+            "$bin"/img4 -i "$dir"/ramdisk/kernelcache.dec -o "$dir"/ramdisk/kernelcache -M IM4M -T krnl -P "$dir"/ramdisk/kc.bpatch
             if [[ "$3" == "12."* ]]; then
-                "$bin"/img4 -i "$dir"/ramdisk/trustcache.im4p -o "$dir"/ramdisk/trustcache.img4 -M "$dir"/IM4M -T rtsc
+                "$bin"/img4 -i "$dir"/ramdisk/trustcache.im4p -o "$dir"/ramdisk/trustcache.img4 -M IM4M -T rtsc
             fi
-            "$bin"/img4 -i "$dir"/ramdisk/devicetree.dec -o "$dir"/ramdisk/devicetree.img4 -M "$dir"/IM4M -T rdtr
+            "$bin"/img4 -i "$dir"/ramdisk/devicetree.dec -o "$dir"/ramdisk/devicetree.img4 -M IM4M -T rdtr
         fi
     fi
-    rm -rf BuildManifest.plist
-    rm -rf *.dmg
-    rm -rf devicetree*
-    rm -rf DeviceTree*
-    rm -rf kernelcache*
-    rm -rf iBSS*
-    rm -rf iBEC*
+    cd ..
+    rm -rf work
 }
 _download_boot_files() {
     ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$bin"/jq '.firmwares | .[] | select(.version=="'$3'")' | "$bin"/jq -s '.[0] | .url' --raw-output)
@@ -138,6 +137,10 @@ _download_boot_files() {
     sudo cp "$bin"/dmg /usr/local/bin/dmg
     rm -rf BuildManifest.plist
     mkdir -p "$dir"/$1/$3
+    rm -rf work
+    mkdir work
+    cd work
+    "$bin"/img4tool -e -s "$dir"/other/shsh/"${check}".shsh -m IM4M
     if [ ! -e "$dir"/$1/$3/kernelcache ]; then
         "$bin"/pzb -g BuildManifest.plist "$ipswurl"
         if [ ! -e "$dir"/$1/$3/kernelcache.dec ]; then
@@ -179,51 +182,46 @@ _download_boot_files() {
             "$bin"/ipatcher "$dir"/$1/$3/iBEC.dec "$dir"/$1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1 PE_i_can_has_debugger=1"
         fi
         if [[ "$3" == "8."* ]]; then
-            "$bin"/img4 -i "$dir"/$1/$3/iBSS.patched -o "$dir"/$1/$3/iBSS.img4 -M "$dir"/IM4M -A -T ibss
-            "$bin"/img4 -i "$dir"/$1/$3/iBEC.patched -o "$dir"/$1/$3/iBEC.img4 -M "$dir"/IM4M -A -T ibec
+            "$bin"/img4 -i "$dir"/$1/$3/iBSS.patched -o "$dir"/$1/$3/iBSS.img4 -M IM4M -A -T ibss
+            "$bin"/img4 -i "$dir"/$1/$3/iBEC.patched -o "$dir"/$1/$3/iBEC.img4 -M IM4M -A -T ibec
             if [[ "$1" == "iPhone6,2" || "$1" == "iPhone6,1" ]]; then
                 "$bin"/seprmvr64lite "$dir"/jb/12A4331d_kcache.raw "$dir"/$1/$3/kcache.patched
                 "$bin"/Kernel64Patcher "$dir"/$1/$3/kcache.patched "$dir"/$1/$3/kcache2.patched -t -p -f -a -m
                 "$bin"/kerneldiff "$dir"/jb/12A4331d_kcache.raw "$dir"/$1/$3/kcache2.patched "$dir"/$1/$3/kc.bpatch
-                "$bin"/img4 -i "$dir"/jb/12A4331d_kernelcache.dec -o "$dir"/$1/$3/kernelcache.img4 -M "$dir"/IM4M -T rkrn -P "$dir"/$1/$3/kc.bpatch
-                "$bin"/img4 -i "$dir"/jb/12A4331d_kernelcache.dec -o "$dir"/$1/$3/kernelcache -M "$dir"/IM4M -T krnl -P "$dir"/$1/$3/kc.bpatch
+                "$bin"/img4 -i "$dir"/jb/12A4331d_kernelcache.dec -o "$dir"/$1/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$3/kc.bpatch
+                "$bin"/img4 -i "$dir"/jb/12A4331d_kernelcache.dec -o "$dir"/$1/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$3/kc.bpatch
             else
                 "$bin"/seprmvr64lite "$dir"/$1/$3/kcache.raw "$dir"/$1/$3/kcache.patched
                 "$bin"/Kernel64Patcher "$dir"/$1/$3/kcache.patched "$dir"/$1/$3/kcache2.patched -t -p -f -a -m
                 "$bin"/kerneldiff "$dir"/$1/$3/kcache.raw "$dir"/$1/$3/kcache2.patched "$dir"/$1/$3/kc.bpatch
-                "$bin"/img4 -i "$dir"/$1/$3/kernelcache.dec -o "$dir"/$1/$3/kernelcache.img4 -M "$dir"/IM4M -T rkrn -P "$dir"/$1/$3/kc.bpatch
-                "$bin"/img4 -i "$dir"/$1/$3/kernelcache.dec -o "$dir"/$1/$3/kernelcache -M "$dir"/IM4M -T krnl -P "$dir"/$1/$3/kc.bpatch
+                "$bin"/img4 -i "$dir"/$1/$3/kernelcache.dec -o "$dir"/$1/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$3/kc.bpatch
+                "$bin"/img4 -i "$dir"/$1/$3/kernelcache.dec -o "$dir"/$1/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$3/kc.bpatch
             fi
             "$bin"/dtree_patcher "$dir"/$1/$3/DeviceTree.dec "$dir"/$1/$3/DeviceTree.patched -n
         elif [[ "$3" == "9."* ]]; then
-            "$bin"/img4 -i $1/$3/iBSS.patched -o $1/$3/iBSS.img4 -M "$dir"/IM4M -A -T ibss
-            "$bin"/img4 -i $1/$3/iBEC.patched -o $1/$3/iBEC.img4 -M "$dir"/IM4M -A -T ibec
-            "$bin"/seprmvr64lite $1/$3/kcache.raw $1/$3/kcache.patched
+            "$bin"/img4 -i "$dir"/$1/$3/iBSS.patched -o "$dir"/$1/$3/iBSS.img4 -M IM4M -A -T ibss
+            "$bin"/img4 -i "$dir"/$1/$3/iBEC.patched -o "$dir"/$1/$3/iBEC.img4 -M IM4M -A -T ibec
+            "$bin"/seprmvr64lite "$dir"/$1/$3/kcache.raw "$dir"/$1/$3/kcache.patched
             "$bin"/Kernel64Patcher "$dir"/$1/$3/kcache.patched "$dir"/$1/$3/kcache2.patched -s
             pyimg4 im4p create -i "$dir"/$1/$3/kcache2.patched -o "$dir"/$1/$3/kernelcache.im4p.img4 --extra "$dir"/$1/$3/kpp.bin -f rkrn --lzss
             pyimg4 im4p create -i "$dir"/$1/$3/kcache2.patched -o "$dir"/$1/$3/kernelcache.im4p --extra "$dir"/$1/$3/kpp.bin -f krnl --lzss
-            pyimg4 img4 create -p "$dir"/$1/$3/kernelcache.im4p.img4 -o "$dir"/$1/$3/kernelcache.img4 -m "$dir"/IM4M
-            pyimg4 img4 create -p "$dir"/$1/$3/kernelcache.im4p -o "$dir"/$1/$3/kernelcache -m "$dir"/IM4M
+            pyimg4 img4 create -p "$dir"/$1/$3/kernelcache.im4p.img4 -o "$dir"/$1/$3/kernelcache.img4 -m IM4M
+            pyimg4 img4 create -p "$dir"/$1/$3/kernelcache.im4p -o "$dir"/$1/$3/kernelcache -m IM4M
             "$bin"/dtree_patcher "$dir"/$1/$3/DeviceTree.dec "$dir"/$1/$3/DeviceTree.patched -n
         elif [[ "$3" == "7."* ]]; then
-            "$bin"/img4 -i "$dir"/$1/$3/iBSS.patched -o "$dir"/$1/$3/iBSS.img4 -M "$dir"/IM4M -A -T ibss
-            "$bin"/img4 -i "$dir"/$1/$3/iBEC.patched -o "$dir"/$1/$3/iBEC.img4 -M "$dir"/IM4M -A -T ibec
+            "$bin"/img4 -i "$dir"/$1/$3/iBSS.patched -o "$dir"/$1/$3/iBSS.img4 -M IM4M -A -T ibss
+            "$bin"/img4 -i "$dir"/$1/$3/iBEC.patched -o "$dir"/$1/$3/iBEC.img4 -M IM4M -A -T ibec
             "$bin"/seprmvr64lite "$dir"/$1/$3/kcache.raw "$dir"/$1/$3/kcache.patched
             "$bin"/Kernel64Patcher "$dir"/$1/$3/kcache.patched "$dir"/$1/$3/kcache2.patched -m -e -f
             "$bin"/kerneldiff "$dir"/$1/$3/kcache.raw "$dir"/$1/$3/kcache2.patched "$dir"/$1/$3/kc.bpatch
-            "$bin"/img4 -i "$dir"/$1/$3/kernelcache.dec -o "$dir"/$1/$3/kernelcache.img4 -M "$dir"/IM4M -T rkrn -P "$dir"/$1/$3/kc.bpatch
-            "$bin"/img4 -i "$dir"/$1/$3/kernelcache.dec -o "$dir"/$1/$3/kernelcache -M "$dir"/IM4M -T krnl -P "$dir"/$1/$3/kc.bpatch
+            "$bin"/img4 -i "$dir"/$1/$3/kernelcache.dec -o "$dir"/$1/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$3/kc.bpatch
+            "$bin"/img4 -i "$dir"/$1/$3/kernelcache.dec -o "$dir"/$1/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$3/kc.bpatch
             cp "$dir"/$1/$3/DeviceTree.dec "$dir"/$1/$3/DeviceTree.patched
         fi
-        "$bin"/img4 -i "$dir"/$1/$3/DeviceTree.patched -o "$dir"/$1/$3/devicetree.img4 -A -M "$dir"/IM4M -T rdtr
+        "$bin"/img4 -i "$dir"/$1/$3/DeviceTree.patched -o "$dir"/$1/$3/devicetree.img4 -A -M IM4M -T rdtr
     fi
-    rm -rf BuildManifest.plist
-    rm -rf *.dmg
-    rm -rf devicetree*
-    rm -rf DeviceTree*
-    rm -rf kernelcache*
-    rm -rf iBSS*
-    rm -rf iBEC*
+    cd ..
+    rm -rf work
 }
 _download_root_fs() {
     ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$bin"/jq '.firmwares | .[] | select(.version=="'$3'")' | "$bin"/jq -s '.[0] | .url' --raw-output)
@@ -237,6 +235,10 @@ _download_root_fs() {
     sudo cp "$bin"/dmg /usr/local/bin/dmg
     rm -rf BuildManifest.plist
     mkdir -p "$dir"/$1/$3
+    rm -rf work
+    mkdir work
+    cd work
+    "$bin"/img4tool -e -s "$dir"/other/shsh/"${check}".shsh -m IM4M
     if [ ! -e "$dir"/$1/$3/OS.tar ]; then
         if [ ! -e "$dir"/$1/$3/OS.dmg ]; then
             if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" || ! "$3" == "8.0" ]]; then
@@ -252,7 +254,7 @@ _download_root_fs() {
                 "$bin"/7z x media_ipsw.rar
                 "$bin"/7z x $(find . -name '*.ipsw*')
                 "$bin"/dmg extract 058-01244-053.dmg OS.dmg -k 5c8b481822b91861c1d19590e790b306daaab2230f89dd275c18356d28fdcd47436a0737
-                cd ../../
+                cd ../../work/
             fi
         fi
         "$bin"/dmg build "$dir"/$1/$3/OS.dmg "$dir"/$1/$3/rw.dmg
@@ -262,19 +264,14 @@ _download_root_fs() {
         sudo rm -rf /tmp/ios2
         sudo cp -a /tmp/ios/. /tmp/ios2/
         sudo tar -xvf "$dir"/jb/cydia.tar -C /tmp/ios2
-        sudo "$bin"/gnutar -cvf $1/$3/OS.tar -C /tmp/ios2 .
+        sudo "$bin"/gnutar -cvf "$dir"/$1/$3/OS.tar -C /tmp/ios2 .
         hdiutil detach /tmp/ios
         rm -rf /tmp/ios
         sudo rm -rf /tmp/ios2
         "$bin"/irecovery -f /dev/null
     fi
-    rm -rf BuildManifest.plist
-    rm -rf *.dmg
-    rm -rf devicetree*
-    rm -rf DeviceTree*
-    rm -rf kernelcache*
-    rm -rf iBSS*
-    rm -rf iBEC*
+    cd ..
+    rm -rf work
 }
 _kill_if_running() {
     if (pgrep -u root -xf "$1" &> /dev/null > /dev/null); then
@@ -312,7 +309,6 @@ check=$("$bin"/irecovery -q | grep CPID | sed 's/CPID: //')
 replace=$("$bin"/irecovery -q | grep MODEL | sed 's/MODEL: //')
 deviceid=$("$bin"/irecovery -q | grep PRODUCT | sed 's/PRODUCT: //')
 echo $deviceid
-"$bin"/img4tool -e -s other/shsh/"${check}".shsh -m "$dir"/IM4M
 if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/Baseband || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
     if [ -z "$2" ]; then
         echo "./script.sh <target os ver> <current os ver>"
