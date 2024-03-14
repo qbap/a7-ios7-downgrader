@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 os=$(uname)
-dir="$(pwd)/"
+dir="$(pwd)/$(uname)"
 
 step() {
     for i in $(seq "$1" -1 1); do
