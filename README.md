@@ -9,17 +9,15 @@
 
 # Chart of compatibility
 
-| Firmware | App Store | Home btn  | Vol keys | CommCenter | Root fs r/w | Jailbreak | Tweaks   | Respring | Sideloadly | iTunes |
-|----------|-----------|-----------|----------|------------|-------------|-----------|----------|----------|------------|--------|
-| 7.0.1    | &#9745;   | &#9744;   | &#9744;  | &#9745;    | &#9745;     | &#9745;   | &#9745;* | &#9744;  | &#9745;    | &#9745;|
-| 7.0.2    | &#9745;   | &#9744;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9745;* | &#9744;  | &#9745;    | &#9745;|
-| 7.0.3    | &#9745;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9745;* | &#9744;  | &#9745;    | &#9745;|
-| 7.0.4    | &#9745;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9745;* | &#9744;  | &#9745;    | &#9745;|
-| 7.0.6    | &#9745;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9745;* | &#9744;  | &#9745;    | &#9745;|
-| 7.1.2    | &#9745;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9745;* | &#9745;  | &#9745;    | &#9745;|
-| 8.0b4    | &#9744;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9745;  | &#9745;  | &#9745;    | &#9745;|
-
-** ios 7 has issues with sandbox when you have cydia substrate installed. many apps crash and app store refuses to install apps when you have cydia substrate installed. it is recommended for the time being that you use ios 8.0 beta 4 if your device supports it because it has working tweaks thx to @TheRealClarity with the sandbox patch included in the ios 8 wtfis jailbreak. simply launch the wtfis app on the home screen after you boot and hit "go" and it will patch the sandbox so that tweaks work as normal
+| Firmware | App Store | Home btn  | Vol keys | CommCenter | Root fs r/w | Jailbreak | Tweaks  | Respring | Sideloadly | iTunes |
+|----------|-----------|-----------|----------|------------|-------------|-----------|---------|----------|------------|--------|
+| 7.0.1    | &#9745;   | &#9744;   | &#9744;  | &#9745;    | &#9745;     | &#9745;   | &#9744; | &#9744;  | &#9745;    | &#9745;|
+| 7.0.2    | &#9745;   | &#9744;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9744; | &#9744;  | &#9745;    | &#9745;|
+| 7.0.3    | &#9745;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9744; | &#9744;  | &#9745;    | &#9745;|
+| 7.0.4    | &#9745;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9744; | &#9744;  | &#9745;    | &#9745;|
+| 7.0.6    | &#9745;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9744; | &#9744;  | &#9745;    | &#9745;|
+| 7.1.2    | &#9745;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9744; | &#9745;  | &#9745;    | &#9745;|
+| 8.0b4    | &#9744;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9745;    | &#9745;|
 
 ## How do I use this?
 
@@ -35,13 +33,13 @@ to use this app, you need to be on a supported version, and have an a7 device
 
 connect iphone in dfu mode
 
-`sudo ./script.sh 7.1.2 <original ios version>`
+`sudo ./script.sh 7.1.2 <your ios version>`
 
 or
 
-`sudo ./script.sh 8.0 <original ios version>` **ios 8 does not have working app store
+`sudo ./script.sh 8.0 <your ios version>` **ios 8.0 does not have working app store
 
-replace <original ios version> with the version of ios you are running rn
+replace <your ios version> with the version of ios you are running rn
 
 so if u r on ios 11.4.1 type 11.4.1
 
@@ -80,49 +78,21 @@ cydia will be installed and work as normal
  - Add a boot splash screen
  - Test iPad mini 2 compatibility
  
- ## iOS 8 and iOS 9 Support
+ ## iOS 8+ Support
 
 as of right now the script supports up to ios 8 beta 4
 
+the keybags dont unlock on newer versions of ios 8 and thus results in a slide to upgrade screen
+
+this means iphone 6 support on ios 8 is out of the question
+
+but ios 9 support may be more feasible in the near future
+
 to support newer versions of ios, and subsequently iphone 6 and later we must first
 
-get a static sandbox patch working with `Kernel64Patcher` as it is required for newer ios to boot with seprmvr64 patches
+get a static sandbox patch working with `Kernel64Patcher` as it is required for ios 9 to boot with seprmvr64
 
-see https://files.catbox.moe/wn83g9.mp4 for a video example of why we need sandbox patches
-
-once we statically patch out sandbox in the kernel, we should theoretically be able to boot ios 9 just fine
-
-ios 8 is more tricky because of the slide to upgrade screen situation
-
-ios 9 boots past the slide to upgrade screen, but is met with endless sandbox errors during boot
-
-the slide to upgrade screen is caused by "keybag never unlocked, ask after first unlock"
-
-in `dyld_shared_cache_arm64` there is `/System/Library/PrivateFrameworks/MobileKeyBag.framework`
-
-inside that framework are two notable functions
-
-`_MKBDeviceUnlockedSinceBoot`
-which should be patched to return 0x1
-
-`_MKBGetDeviceLockState`
-which should be patched to return 0x3
-
-however because it is inside of `dyld_shared_cache_arm64` i am unsure of how to patch it
-
-i was able to fix sideloading by patching the stubs for those external func calls inside `lockdownd` to make it think its unlocked
-
-but in order to fix not being able to access files and folders marked with `NSFileProtectionCompleteUntilFirstUserAuthentication` flag
-
-those two functions have to be patched in `MobileKeyBag.framework`
-
-this is important for data migration which is part of the first boot when u restore ios to a new ios version
-
-i hope all this makes sense& if someone can make that patch for me it would be greatly appreciated
-
-app store does not work on ios 8 beta 4, the version we use in the script, bcz of the aforementioned `MobileKeyBag.framework` mess
-
-it tries to install the app to /var but it cant bcz it is met with issues bcz of `NSFileProtectionCompleteUntilFirstUserAuthentication`
+see https://files.catbox.moe/wn83g9.mp4 for a video example of why we need sandbox patches for ios 9
 
 ## Quirks
 
