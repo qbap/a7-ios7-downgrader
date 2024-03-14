@@ -372,7 +372,7 @@ fi
 "$bin"/irecovery -c bootx &
 cd ..
 read -p "pls press the enter key once device is in the ramdisk " r
-./iproxy 2222 22 &
+"$bin"/iproxy 2222 22 &
 sleep 2
 read -p "would you like to wipe this phone and install ios $1? " r
 if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
