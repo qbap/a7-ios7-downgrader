@@ -11,11 +11,11 @@
 
 | Firmware | App Store | Home btn  | Vol keys | CommCenter | Root fs r/w | Jailbreak | Tweaks  | Respring | Sideloadly | iTunes |
 |----------|-----------|-----------|----------|------------|-------------|-----------|---------|----------|------------|--------|
-| 7.0.1    | &#9745;   | &#9744;   | &#9744;  | &#9745;    | &#9745;     | &#9745;   | &#9744; | &#9744;  | &#9745;    | &#9745;|
-| 7.0.2    | &#9745;   | &#9744;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9744; | &#9744;  | &#9745;    | &#9745;|
-| 7.0.3    | &#9745;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9744; | &#9744;  | &#9745;    | &#9745;|
-| 7.0.4    | &#9745;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9744; | &#9744;  | &#9745;    | &#9745;|
-| 7.0.6    | &#9745;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9744; | &#9744;  | &#9745;    | &#9745;|
+| 7.0.1    | &#9745;   | &#9744;   | &#9744;  | &#9745;    | &#9745;     | &#9745;   | &#9745; | &#9744;  | &#9745;    | &#9745;|
+| 7.0.2    | &#9745;   | &#9744;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9745; | &#9744;  | &#9745;    | &#9745;|
+| 7.0.3    | &#9745;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9745; | &#9744;  | &#9745;    | &#9745;|
+| 7.0.4    | &#9745;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9745; | &#9744;  | &#9745;    | &#9745;|
+| 7.0.6    | &#9745;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9745; | &#9744;  | &#9745;    | &#9745;|
 | 7.1.2    | &#9745;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9744; | &#9745;  | &#9745;    | &#9745;|
 | 8.0b4    | &#9744;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9745;    | &#9745;|
 
@@ -103,6 +103,8 @@ if you lock the screen while the phone is on, it will cause a deep sleep bug whi
 app store does not work on ios 8*
 
 wifi does not work unless you connect to an open wifi network, in other words the wifi network must not have a password
+
+respring does not work on ios 7.0.x properly, so in order to respring on those versions you should open the wtfis app on the home screen and hit "go"
 
 when booting ios 8 you will find that you wont see any app icons on the home screen when you first slide to unlock. to fix this, slide up from the bottom of the screen and tap on calculator. once in the calculator app, press the home button and then you will be at the home screen and all your app icons will appear as normal
 
