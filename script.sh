@@ -173,7 +173,7 @@ _download_boot_files() {
         rm -rf BuildManifest.plist
         if [[ "$3" == "9."* ]]; then
             "$bin"/iBoot64Patcher "$dir"/$1/$3/iBSS.dec "$dir"/$1/$3/iBSS.patched
-            "$bin"/iBoot64Patcher "$dir"/$1/$3/iBEC.dec "$dir"/$1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e wdt=-1 PE_i_can_has_debugger=1 amfi_get_out_of_my_way=0x1"
+            "$bin"/iBoot64Patcher "$dir"/$1/$3/iBEC.dec "$dir"/$1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1 amfi_get_out_of_my_way=1 amfi_allow_any_signature=1"
         elif [[ "$3" == "8."* ]]; then
             "$bin"/ipatcher "$dir"/$1/$3/iBSS.dec "$dir"/$1/$3/iBSS.patched
             "$bin"/ipatcher "$dir"/$1/$3/iBEC.dec "$dir"/$1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1"
@@ -202,7 +202,7 @@ _download_boot_files() {
             "$bin"/img4 -i "$dir"/$1/$3/iBSS.patched -o "$dir"/$1/$3/iBSS.img4 -M IM4M -A -T ibss
             "$bin"/img4 -i "$dir"/$1/$3/iBEC.patched -o "$dir"/$1/$3/iBEC.img4 -M IM4M -A -T ibec
             "$bin"/seprmvr64lite "$dir"/$1/$3/kcache.raw "$dir"/$1/$3/kcache.patched
-            "$bin"/Kernel64Patcher "$dir"/$1/$3/kcache.patched "$dir"/$1/$3/kcache2.patched -s
+            "$bin"/Kernel64Patcher "$dir"/$1/$3/kcache.patched "$dir"/$1/$3/kcache2.patched -s -f
             pyimg4 im4p create -i "$dir"/$1/$3/kcache2.patched -o "$dir"/$1/$3/kernelcache.im4p.img4 --extra "$dir"/$1/$3/kpp.bin -f rkrn --lzss
             pyimg4 im4p create -i "$dir"/$1/$3/kcache2.patched -o "$dir"/$1/$3/kernelcache.im4p --extra "$dir"/$1/$3/kpp.bin -f krnl --lzss
             pyimg4 img4 create -p "$dir"/$1/$3/kernelcache.im4p.img4 -o "$dir"/$1/$3/kernelcache.img4 -m IM4M
@@ -496,7 +496,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs -o suid,dev /dev/disk0s1s2 /mnt2"
     "$bin"/sshpass -p 'alpine' scp -P 2222 "$dir"/$deviceid/$1/OS.tar root@localhost:/mnt2
     "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/OS.tar -C /mnt1"
-    if [[ "$1" == "7."* || "$1" == "8."* || "$1" == "9."* ]]; then
+    if [[ "$1" == "7."* || "$1" == "8."* ]]; then
         "$bin"/sshpass -p 'alpine' scp -P 2222 "$dir"/jb/cydia.tar root@localhost:/mnt2
         "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/cydia.tar -C /mnt1"
         "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/cydia.tar"
@@ -569,7 +569,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/untether_ios9.tar root@localhost:/mnt1/
         "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xvf /mnt1/untether_ios9.tar -C /mnt1/'
         "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'cp /mnt1/usr/libexec/keybagd /mnt1/usr/libexec/keybagd_o'
-        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/keybagd root@localhost:/mnt1/usr/libexec/keybagd
+        #"$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/keybagd root@localhost:/mnt1/usr/libexec/keybagd
         "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt1/.pginstalled"
         "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chmod 777 /mnt1/.pginstalled"
         "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt1/.pg_inst"

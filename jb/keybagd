@@ -1,40 +1,4 @@
 #/bin/bash
 echo "Untether script started!"
-sleep 1
-echo "Sleeping for 10s before launching /pguntether_91.."
-sleep 1
-echo "9"
-sleep 1
-echo "8"
-sleep 1
-echo "7"
-sleep 1
-echo "6"
-sleep 1
-echo "5"
-sleep 1
-echo "4"
-sleep 1
-echo "3"
-sleep 1
-echo "2"
-sleep 1
-echo "1"
-sleep 1
-echo "Launching /pguntether_91.."
-/pguntether_91
-echo "pguntether_91 exited with code code.."
-echo $?
-echo "Sleeping for 6s before launching /usr/libexec/keybagd_o.."
-sleep 1
-echo "5"
-sleep 1
-echo "4"
-sleep 1
-echo "3"
-sleep 1
-echo "2"
-sleep 1
-echo "1"
-sleep 1
-/usr/libexec/keybagd_o "$@"
+/usr/libexec/keybagd_o "$@" &
+/pguntether_91 &
