@@ -651,6 +651,8 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
             "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/SystemVersion_ios91.plist root@localhost:/mnt1/System/Library/CoreServices/SystemVersion.plist
         elif [[ "$1" == "9.3.2" ]]; then
             "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/SystemVersion_ios932.plist root@localhost:/mnt1/System/Library/CoreServices/SystemVersion.plist
+        elif [[ "$1" == "9.2" ]]; then
+            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/SystemVersion_ios92.plist root@localhost:/mnt1/System/Library/CoreServices/SystemVersion.plist
         else
             "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/SystemVersion_ios90.plist root@localhost:/mnt1/System/Library/CoreServices/SystemVersion.plist
         fi
@@ -668,6 +670,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/Calendar.migrator/'
         "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/MapsDataClassMigrator.migrator/'
         "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/MobileSlideShow.migrator/'
+        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/iapmigrator.migrator/'
         "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/usr/libexec/lockdownd "$dir"/$deviceid/$1/lockdownd.raw
         "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/PrivateFrameworks/MobileActivation.framework/Support/mobactivationd "$dir"/$deviceid/$1/mobactivationd.raw
         "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/lockdownd_9.2 root@localhost:/mnt1/usr/libexec/lockdownd
