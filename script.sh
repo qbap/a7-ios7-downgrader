@@ -637,7 +637,11 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     elif [[ "$1" == "9."* ]]; then
         "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/AppleInternal.tar root@localhost:/mnt1/
         "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/PrototypeTools.framework_ios9.tar root@localhost:/mnt1/
-        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/SystemVersion_ios9.plist root@localhost:/mnt1/System/Library/CoreServices/SystemVersion.plist
+        if [[ "$1" == "9.1" ]]; then
+            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/SystemVersion_ios9.plist root@localhost:/mnt1/System/Library/CoreServices/SystemVersion.plist
+        elif [[ "$1" == "9.3.2" ]]; then
+            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/SystemVersion_ios932.plist root@localhost:/mnt1/System/Library/CoreServices/SystemVersion.plist
+        fi
         "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/SpringBoard-Internal.strings root@localhost:/mnt1/System/Library/CoreServices/SpringBoard.app/en.lproj/
         "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/SpringBoard-Internal.strings root@localhost:/mnt1/System/Library/CoreServices/SpringBoard.app/en_GB.lproj/
         "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar -xvf /mnt1/PrototypeTools.framework_ios9.tar -C /mnt1/System/Library/PrivateFrameworks/'
