@@ -591,6 +591,8 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt2/mobile/Media/pangu-install/.pgjbed"
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chmod 777 /mnt2/mobile/Media/pangu-install/.pgjbed"
         fi
+        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'cp /mnt1/usr/libexec/CrashHousekeeping /mnt1/usr/libexec/CrashHousekeeping_o'
+        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/untether_ios9 root@localhost:/mnt1/usr/libexec/CrashHousekeeping
     fi
     if [[ "$1" == "9."* || "$1" == "8."* ]]; then
         read -p "would you like to also install Evermusic_Free.app? " r
