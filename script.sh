@@ -609,7 +609,9 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     if [[ "$1" == "8."* ]]; then
         "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/AppleInternal.tar root@localhost:/mnt1/
         "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/PrototypeTools.framework_ios8.tar root@localhost:/mnt1/
-        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/SystemVersion_ios8.plist root@localhost:/mnt1/System/Library/CoreServices/SystemVersion.plist
+        "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/CoreServices/SystemVersion.plist "$dir"/$deviceid/$1/SystemVersion.plist
+        sed -i -e 's/<\/dict>/<key>ReleaseType<\/key><string>Internal<\/string><key>ProductType<\/key><string>Internal<\/string><\/dict>/g' "$dir"/$deviceid/$1/SystemVersion.plist
+        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/$1/SystemVersion.plist root@localhost:/mnt1/System/Library/CoreServices/SystemVersion.plist
         "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/SpringBoard-Internal.strings root@localhost:/mnt1/System/Library/CoreServices/SpringBoard.app/en.lproj/
         "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/SpringBoard-Internal.strings root@localhost:/mnt1/System/Library/CoreServices/SpringBoard.app/en_GB.lproj/
         "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/com.apple.springboard_ios8.plist root@localhost:/mnt2/mobile/Library/Preferences/com.apple.springboard.plist
@@ -636,7 +638,9 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     elif [[ "$1" == "7."* ]]; then
         "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/AppleInternal.tar root@localhost:/mnt1/
         "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/PrototypeTools.framework.tar root@localhost:/mnt1/
-        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/SystemVersion.plist root@localhost:/mnt1/System/Library/CoreServices/SystemVersion.plist
+        "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/CoreServices/SystemVersion.plist "$dir"/$deviceid/$1/SystemVersion.plist
+        sed -i -e 's/<\/dict>/<key>ReleaseType<\/key><string>Internal<\/string><key>ProductType<\/key><string>Internal<\/string><\/dict>/g' "$dir"/$deviceid/$1/SystemVersion.plist
+        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/$1/SystemVersion.plist root@localhost:/mnt1/System/Library/CoreServices/SystemVersion.plist
         "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/SpringBoard-Internal.strings root@localhost:/mnt1/System/Library/CoreServices/SpringBoard.app/en.lproj/
         "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/SpringBoard-Internal.strings root@localhost:/mnt1/System/Library/CoreServices/SpringBoard.app/en_GB.lproj/
         "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/com.apple.springboard.plist root@localhost:/mnt2/mobile/Library/Preferences/com.apple.springboard.plist
@@ -653,15 +657,9 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     elif [[ "$1" == "9."* ]]; then
         "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/AppleInternal.tar root@localhost:/mnt1/
         "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/PrototypeTools.framework_ios9.tar root@localhost:/mnt1/
-        if [[ "$1" == "9.1" ]]; then
-            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/SystemVersion_ios91.plist root@localhost:/mnt1/System/Library/CoreServices/SystemVersion.plist
-        elif [[ "$1" == "9.3.2" ]]; then
-            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/SystemVersion_ios932.plist root@localhost:/mnt1/System/Library/CoreServices/SystemVersion.plist
-        elif [[ "$1" == "9.2" ]]; then
-            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/SystemVersion_ios92.plist root@localhost:/mnt1/System/Library/CoreServices/SystemVersion.plist
-        else
-            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/SystemVersion_ios90.plist root@localhost:/mnt1/System/Library/CoreServices/SystemVersion.plist
-        fi
+        "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/CoreServices/SystemVersion.plist "$dir"/$deviceid/$1/SystemVersion.plist
+        sed -i -e 's/<\/dict>/<key>ReleaseType<\/key><string>Internal<\/string><key>ProductType<\/key><string>Internal<\/string><\/dict>/g' "$dir"/$deviceid/$1/SystemVersion.plist
+        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/$1/SystemVersion.plist root@localhost:/mnt1/System/Library/CoreServices/SystemVersion.plist
         "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/SpringBoard-Internal.strings root@localhost:/mnt1/System/Library/CoreServices/SpringBoard.app/en.lproj/
         "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/SpringBoard-Internal.strings root@localhost:/mnt1/System/Library/CoreServices/SpringBoard.app/en_GB.lproj/
         "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/com.apple.springboard_ios9.plist root@localhost:/mnt2/mobile/Library/Preferences/com.apple.springboard.plist
@@ -680,7 +678,9 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/usr/libexec/lockdownd "$dir"/$deviceid/$1/lockdownd.raw
         "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/PrivateFrameworks/MobileActivation.framework/Support/mobactivationd "$dir"/$deviceid/$1/mobactivationd.raw
         #"$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/lockdownd_9.2 root@localhost:/mnt1/usr/libexec/lockdownd
-        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/launchctl-25_iphoneos-arm.deb root@localhost:/mnt2/root/Media/Cydia/AutoInstall/
+        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/launchctl_fix.tar root@localhost:/mnt1/
+        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar -xvf /mnt1/launchctl_fix.tar -C /mnt1/'
+        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/launchctl_fix.tar'
     fi
     "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/usr/lib/libmis.dylib"
     if [[ "$1" == "9."* ]]; then
