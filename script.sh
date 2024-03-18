@@ -680,6 +680,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/usr/libexec/lockdownd "$dir"/$deviceid/$1/lockdownd.raw
         "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/PrivateFrameworks/MobileActivation.framework/Support/mobactivationd "$dir"/$deviceid/$1/mobactivationd.raw
         #"$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/lockdownd_9.2 root@localhost:/mnt1/usr/libexec/lockdownd
+        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/launchctl-25_iphoneos-arm.deb root@localhost:/mnt2/root/Media/Cydia/AutoInstall/
     fi
     "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/usr/lib/libmis.dylib"
     if [[ "$1" == "9."* ]]; then
