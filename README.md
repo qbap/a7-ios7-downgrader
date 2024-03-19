@@ -156,6 +156,7 @@ tested working on my iphone 5s on ios 7.0.2 while jailbroken with cydia installe
 
 ## Credits
 
+- [johndoe123](https://twitter.com/iarchiveml) for the a7 ios 7 [downgrade guide](https://ios7.iarchive.app/downgrade/) which made this entire project possible
 - [TheRealClarity](https://github.com/TheRealClarity) for ios 7& 8 semi untethered sandbox patches to enable tweaks to work
 - [Nathan](https://github.com/verygenericname) for the ssh ramdisk and [iBoot64Patcher fork](https://github.com/verygenericname/iBoot64Patcher)
 - [Mineek](https://github.com/mineek) for [seprmvr64](https://github.com/mineek/seprmvr64) and other patches** i want to give a very special thanks to [Mineek](https://github.com/mineek), if it werent for them this entire project would have not been possible. you are amazing and i appreciate all that you do, thank you so much
