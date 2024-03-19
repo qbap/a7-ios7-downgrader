@@ -576,6 +576,9 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         # adds wtfis.app to /Applications
         "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/wtfis.app_ios9.tar root@localhost:/mnt1/
         "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xvf /mnt1/wtfis.app_ios9.tar -C /mnt1/Applications'
+        # adds NvwaStone.app to /Applications
+        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/NvwaStone.app.tar root@localhost:/mnt1/
+        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xvf /mnt1/NvwaStone.app.tar -C /mnt1/Applications'
         # make wtfis not try to bootstrap cydia
         "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt1/.installed_wtfis"
         "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chown root:wheel /mnt1/.installed_wtfis"
