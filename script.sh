@@ -465,7 +465,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     cd ..
     read -p "pls press the enter key once device is in the ramdisk" r
     "$bin"/iproxy 2222 22 &
-    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'bash -s' < "$dir"/jb/gpt.sh
+    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/gpt.sh"
     "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync"
     sleep 1
     "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync"
