@@ -17,14 +17,6 @@ _wait_for_dfu() {
 }
 _download_ramdisk_boot_files() {
     ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$bin"/jq '.firmwares | .[] | select(.version=="'$3'")' | "$bin"/jq -s '.[0] | .url' --raw-output)
-    sudo rm -rf /usr/bin/img4
-    sudo cp "$bin"/img4 /usr/bin/img4
-    sudo rm -rf /usr/local/bin/img4
-    sudo cp "$bin"/img4 /usr/local/bin/img4
-    sudo rm -rf /usr/bin/dmg
-    sudo cp "$bin"/dmg /usr/bin/dmg
-    sudo rm -rf /usr/local/bin/dmg
-    sudo cp "$bin"/dmg /usr/local/bin/dmg
     rm -rf BuildManifest.plist
     mkdir -p "$dir"/ramdisk
     rm -rf work
@@ -134,14 +126,6 @@ _download_ramdisk_boot_files() {
 }
 _download_boot_files() {
     ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$bin"/jq '.firmwares | .[] | select(.version=="'$3'")' | "$bin"/jq -s '.[0] | .url' --raw-output)
-    sudo rm -rf /usr/bin/img4
-    sudo cp "$bin"/img4 /usr/bin/img4
-    sudo rm -rf /usr/local/bin/img4
-    sudo cp "$bin"/img4 /usr/local/bin/img4
-    sudo rm -rf /usr/bin/dmg
-    sudo cp "$bin"/dmg /usr/bin/dmg
-    sudo rm -rf /usr/local/bin/dmg
-    sudo cp "$bin"/dmg /usr/local/bin/dmg
     rm -rf BuildManifest.plist
     mkdir -p "$dir"/$1/$3
     rm -rf work
@@ -237,14 +221,6 @@ _download_boot_files() {
 }
 _download_root_fs() {
     ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$bin"/jq '.firmwares | .[] | select(.version=="'$3'")' | "$bin"/jq -s '.[0] | .url' --raw-output)
-    sudo rm -rf /usr/bin/img4
-    sudo cp "$bin"/img4 /usr/bin/img4
-    sudo rm -rf /usr/local/bin/img4
-    sudo cp "$bin"/img4 /usr/local/bin/img4
-    sudo rm -rf /usr/bin/dmg
-    sudo cp "$bin"/dmg /usr/bin/dmg
-    sudo rm -rf /usr/local/bin/dmg
-    sudo cp "$bin"/dmg /usr/local/bin/dmg
     rm -rf BuildManifest.plist
     mkdir -p "$dir"/$1/$3
     rm -rf work
