@@ -146,10 +146,10 @@ _download_boot_files() {
         "$bin"/pzb -g BuildManifest.plist "$ipswurl"
         if [ ! -e "$dir"/$1/$3/kernelcache.dec ]; then
             "$bin"/pzb -g $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) "$ipswurl"
-            cargo run decrypt $1 $3 $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) -l
-            mv $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1).dec "$dir"/$1/$3/kcache.raw
-            mv $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1).im4p "$dir"/$1/$3/kernelcache.dec
-            mv $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1).kpp "$dir"/$1/$3/kpp.bin
+            fn="$(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)"
+            "$bin"/img4 -i $fn -o "$dir"/$1/$3/kcache.raw -k $(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)
+            "$bin"/img4 -i $fn -o "$dir"/$1/$3/kernelcache.dec -k $(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1) -D
+            pyimg4 im4p extract -i $fn -o "$dir"/$1/$3/kernelcache_pyimg4.dec --iv $(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -iv $fn $3 $1) --key $(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -key $fn $3 $1) --extra "$dir"/$1/$3/kpp.bin
         fi
         if [ ! -e "$dir"/$1/$3/iBSS.dec ]; then
             "$bin"/pzb -g $(awk "/""$2""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
@@ -203,7 +203,6 @@ _download_boot_files() {
             "$bin"/img4 -i "$dir"/$1/$3/iBSS.patched -o "$dir"/$1/$3/iBSS.img4 -M IM4M -A -T ibss
             "$bin"/img4 -i "$dir"/$1/$3/iBEC.patched -o "$dir"/$1/$3/iBEC.img4 -M IM4M -A -T ibec
             "$bin"/seprmvr64lite "$dir"/$1/$3/kcache.raw "$dir"/$1/$3/kcache.patched
-            # mount_common, PE_i_can_has_debugger, mapIO, vm_fault_enter, vm_map_enter, vm_map_protect, and tfp0
             "$bin"/Kernel64Patcher "$dir"/$1/$3/kcache.patched "$dir"/$1/$3/kcache2.patched -e -l -f -t -m -a -s -p -v -g
             pyimg4 im4p create -i "$dir"/$1/$3/kcache2.patched -o "$dir"/$1/$3/kernelcache.im4p.img4 --extra "$dir"/$1/$3/kpp.bin -f rkrn --lzss
             pyimg4 im4p create -i "$dir"/$1/$3/kcache2.patched -o "$dir"/$1/$3/kernelcache.im4p --extra "$dir"/$1/$3/kpp.bin -f krnl --lzss
