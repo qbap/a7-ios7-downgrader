@@ -38,7 +38,7 @@ to use this app, you need to be on a supported version, and have an a7 device
 
 connect iphone in dfu mode
 
-`sudo ./script.sh 8.0 <your ios version>` **ios 8.0 does not have working app store
+`sudo ./script.sh 7.1.2 <your ios version>` **ios 8.0+ does not have working app store
 
 replace `<your ios version>` with the version of ios you are running rn
 
@@ -46,7 +46,7 @@ this is used to be able to mount filesystems on ramdisk and backup the necessary
 
 alternatively you can type
 
-`sudo ./script.sh 7.1.2 <your ios version>`
+`sudo ./script.sh 7.1.2`
 
 if you already downgraded previously using this script
 
