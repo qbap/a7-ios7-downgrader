@@ -42,6 +42,8 @@ connect iphone in dfu mode
 
 replace `<your ios version>` with the version of ios you are running rn
 
+**if u are on 10.3.3, make sure you type 11.0 instead. this is bcz our amfi patch for the ramdisk does not work on ios 10.3.3 and the ramdisk will not boot properly
+
 this is used to be able to mount filesystems on ramdisk and backup the necessary files we need to downgrade
 
 alternatively you can type
