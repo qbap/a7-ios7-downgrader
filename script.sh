@@ -289,12 +289,23 @@ _kill_if_running() {
         fi
     fi
 }
-for cmd in curl cargo ssh scp killall sudo grep; do
+# Check for required commands
+if [ "$os" = 'Linux' ]; then
+    linux_cmds='lsusb'
+fi
+for cmd in curl unzip python3 git ssh scp killall sudo grep pgrep ${linux_cmds}; do
     if ! command -v "${cmd}" > /dev/null; then
-        if [ "$cmd" = "cargo" ]; then
+        if [ "$cmd" = "python3" ]; then
             echo "[-] Command '${cmd}' not installed, please install it!";
-            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-            exit
+            if [ "$os" = 'Darwin' ]; then
+                if [ ! -e python-3.7.6-macosx10.6.pkg ]; then
+                    curl -k https://www.python.org/ftp/python/3.7.6/python-3.7.6-macosx10.6.pkg -o python-3.7.6-macosx10.6.pkg
+                fi
+                open -W python-3.7.6-macosx10.6.pkg
+            fi
+            if ! command -v "${cmd}" > /dev/null; then
+                cmd_not_found=1
+            fi
         else
             if ! command -v "${cmd}" > /dev/null; then
                 echo "[-] Command '${cmd}' not installed, please install it!";
@@ -306,8 +317,10 @@ done
 if [ "$cmd_not_found" = "1" ]; then
     exit 1
 fi
-cargo install taco
-cargo run
+# Check for pyimg4
+if ! python3 -c 'import pkgutil; exit(not pkgutil.find_loader("pyimg4"))'; then
+    python3 -m pip install pyimg4
+fi
 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
     "$bin"/dfuhelper.sh
 fi
