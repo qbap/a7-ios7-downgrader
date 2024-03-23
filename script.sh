@@ -316,17 +316,18 @@ check=$("$bin"/irecovery -q | grep CPID | sed 's/CPID: //')
 replace=$("$bin"/irecovery -q | grep MODEL | sed 's/MODEL: //')
 deviceid=$("$bin"/irecovery -q | grep PRODUCT | sed 's/PRODUCT: //')
 echo $deviceid
-if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/Baseband || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
-    if [ -z "$2" ]; then
-        echo "./script.sh <target os ver> <current os ver>"
-        exit
-    fi
-    _download_ramdisk_boot_files $deviceid $replace $2
-elif [[ "$1" == "7."* || "$1" == "8."* || "$1" == "9."* ]]; then
-    _download_ramdisk_boot_files $deviceid $replace 8.4.1
-else
-    _download_ramdisk_boot_files $deviceid $replace 11.4.1
-fi
+#if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/Baseband || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
+#    if [ -z "$2" ]; then
+#        echo "./script.sh <target os ver> <current os ver>"
+#        exit
+#    fi
+#    _download_ramdisk_boot_files $deviceid $replace $2
+#elif [[ "$1" == "7."* || "$1" == "8."* || "$1" == "9."* ]]; then
+#    _download_ramdisk_boot_files $deviceid $replace 8.4.1
+#else
+#    _download_ramdisk_boot_files $deviceid $replace 11.4.1
+#fi
+_download_ramdisk_boot_files $deviceid $replace $2
 _download_boot_files $deviceid $replace $1
 _download_root_fs $deviceid $replace $1
 if [ -e "$dir"/$deviceid/$1/iBSS.img4 ]; then
