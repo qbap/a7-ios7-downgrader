@@ -5,7 +5,7 @@
    </h1>
 </div>
 
-<h6 align="center"> Should Support iOS/iPadOS 7.0.1 - 8.0b4  </h6>
+<h6 align="center"> Should Support iOS/iPadOS 7.0.1 - 9.2.1  </h6>
 
 # Chart of compatibility
 
@@ -18,6 +18,11 @@
 | 7.0.6    | &#9745;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9745; | &#9744;  | &#9745;    | &#9745;|
 | 7.1.2    | &#9745;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9745;    | &#9745;|
 | 8.0b4    | &#9744;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9745;    | &#9745;|
+| 9.0.1    | &#9744;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9744; | &#9745;  | &#9744;    | &#9744;|
+| 9.0.2    | &#9744;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9744; | &#9745;  | &#9744;    | &#9744;|
+| 9.1      | &#9744;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9744; | &#9745;  | &#9744;    | &#9744;|
+| 9.2      | &#9744;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9744; | &#9745;  | &#9744;    | &#9744;|
+| 9.2.1    | &#9744;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9744; | &#9745;  | &#9744;    | &#9744;|
 
 ## How do I use this?
 
@@ -121,6 +126,12 @@ do not abuse this option of being able to contact me, or i will take it away
 ## Requirements
 
 mac os high sierra 10.13** newer versions might work but are not tested
+
+java 8** https://builds.openlogic.com/downloadJDK/openlogic-openjdk/8u262-b10/openlogic-openjdk-8u262-b10-mac-x64.pkg
+
+python3** you can download it for macos high sierra from https://www.python.org/ftp/python/3.7.6/python-3.7.6-macosx10.6.pkg
+
+pyimg4** just run `pip3 install pyimg4` before running the script
 
 intel mac** amd is NOT supported
 
