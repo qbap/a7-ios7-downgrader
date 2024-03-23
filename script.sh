@@ -465,25 +465,8 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     cd ..
     read -p "pls press the enter key once device is in the ramdisk" r
     "$bin"/iproxy 2222 22 &
-    echo "https://ios7.iarchive.app/downgrade/installing-filesystem.html"
-    echo "partition 1"
-    echo "step 1, press the letter n on your keyboard and then press enter"
-    echo "step 2, press number 1 on your keyboard and press enter"
-    echo "step 3, press enter again"
-    if [[ "$1" == "7."* ]]; then
-        echo "step 4, type 864563 and then press enter"
-    else
-        echo "step 4, type 1264563 and then press enter"
-    fi
-    echo "step 5, press enter one last time"
-    echo "partition 2"
-    echo "step 1, press the letter n on your keyboard and then press enter"
-    echo "step 2, press number 2 on your keyboard and press enter"
-    echo "step 3, press enter 3 more times"
-    echo "last steps"
-    echo "step 1, press the letter w on your keyboard and then press enter"
-    echo "step 2, press y on your keyboard and press enter"
-    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "gptfdisk /dev/rdisk0s1"
+    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat /gpt.txt | gptfdisk /dev/rdisk0s1"
+    sleep 2
     "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync"
     sleep 1
     "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync"
