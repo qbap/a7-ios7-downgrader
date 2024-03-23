@@ -256,9 +256,9 @@ _download_root_fs() {
             if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" || ! "$3" == "8.0" ]]; then
                 "$bin"/pzb -g BuildManifest.plist "$ipswurl"
                 "$bin"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
-                cargo run decrypt $1 $3 "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -l
-                osfn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
-                mv $(echo $osfn | sed "s/dmg/bin/g") "$dir"/$1/$3/OS.dmg
+                fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
+                ivkey="$(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
+                "$bin"/dmg extract $fn "$dir"/$1/$3/OS.dmg -k $ivkey
             else
                 # https://archive.org/download/Apple_iPhone_Firmware/Apple%20iPhone%206.1%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/
                 cd "$dir"/$1/$3
@@ -316,18 +316,17 @@ check=$("$bin"/irecovery -q | grep CPID | sed 's/CPID: //')
 replace=$("$bin"/irecovery -q | grep MODEL | sed 's/MODEL: //')
 deviceid=$("$bin"/irecovery -q | grep PRODUCT | sed 's/PRODUCT: //')
 echo $deviceid
-#if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/Baseband || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
-#    if [ -z "$2" ]; then
-#        echo "./script.sh <target os ver> <current os ver>"
-#        exit
-#    fi
-#    _download_ramdisk_boot_files $deviceid $replace $2
-#elif [[ "$1" == "7."* || "$1" == "8."* || "$1" == "9."* ]]; then
-#    _download_ramdisk_boot_files $deviceid $replace 8.4.1
-#else
-#    _download_ramdisk_boot_files $deviceid $replace 11.4.1
-#fi
-_download_ramdisk_boot_files $deviceid $replace $2
+if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/Baseband || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
+    if [ -z "$2" ]; then
+        echo "./script.sh <target os ver> <current os ver>"
+        exit
+    fi
+    _download_ramdisk_boot_files $deviceid $replace $2
+elif [[ "$1" == "7."* || "$1" == "8."* || "$1" == "9."* ]]; then
+    _download_ramdisk_boot_files $deviceid $replace 8.4.1
+else
+    _download_ramdisk_boot_files $deviceid $replace 11.4.1
+fi
 _download_boot_files $deviceid $replace $1
 _download_root_fs $deviceid $replace $1
 if [ -e "$dir"/$deviceid/$1/iBSS.img4 ]; then
