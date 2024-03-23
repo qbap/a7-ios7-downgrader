@@ -58,10 +58,6 @@ whenever the script asks for a password it is either your mac password or `alpin
 
 when the script says "waiting for device in dfu mode" it means u gotta put it back into dfu
 
-when it gets to the partitioning step, make terminal full screen, it has easy to read instructions on top
-
-all you gotta do at that step is press the keys on your keyboard it tells you to
-
 cydia will be installed and work as normal
 
 ## How was this done? 
