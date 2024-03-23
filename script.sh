@@ -147,9 +147,10 @@ _download_boot_files() {
         if [ ! -e "$dir"/$1/$3/kernelcache.dec ]; then
             "$bin"/pzb -g $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) "$ipswurl"
             fn="$(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)"
-            "$bin"/img4 -i $fn -o "$dir"/$1/$3/kcache.raw -k $(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)
-            "$bin"/img4 -i $fn -o "$dir"/$1/$3/kernelcache.dec -k $(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1) -D
-            pyimg4 im4p extract -i $fn -o "$dir"/$1/$3/kernelcache_pyimg4.dec --iv $(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -iv $fn $3 $1) --key $(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -key $fn $3 $1) --extra "$dir"/$1/$3/kpp.bin
+            ivkey="$(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
+            "$bin"/img4 -i $fn -o "$dir"/$1/$3/kcache.raw -k $ivkey
+            "$bin"/img4 -i $fn -o "$dir"/$1/$3/kernelcache.dec -k $ivkey -D
+            pyimg4 im4p extract -i $fn -o "$dir"/$1/$3/kernelcache_pyimg4.dec --iv ${ivkey:0:32} --key ${ivkey:32} --extra "$dir"/$1/$3/kpp.bin
         fi
         if [ ! -e "$dir"/$1/$3/iBSS.dec ]; then
             "$bin"/pzb -g $(awk "/""$2""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
