@@ -44,7 +44,7 @@ replace `<your ios version>` with the version of ios you are running rn
 
 this is used to be able to mount filesystems on ramdisk and backup the necessary files we need to downgrade
 
-or
+alternatively you can type
 
 `sudo ./script.sh 7.1.2 <your ios version>`
 
