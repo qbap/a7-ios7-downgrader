@@ -311,7 +311,7 @@ if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-fi
         exit
     fi
     _download_ramdisk_boot_files $deviceid $replace $2
-elif [[ "$1" == "7."* || "$1" == "8."* || "$1" == "9."* ]]; then
+elif [[ "$1" == "7."* || "$1" == "8."* ]]; then
     _download_ramdisk_boot_files $deviceid $replace 8.4.1
 else
     _download_ramdisk_boot_files $deviceid $replace 11.4.1
