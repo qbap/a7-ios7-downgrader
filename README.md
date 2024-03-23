@@ -5,7 +5,7 @@
    </h1>
 </div>
 
-<h6 align="center"> Should Support iOS/iPadOS 7.0.1 - 8.0b4  </h6>
+<h6 align="center"> Should Support iOS/iPadOS 7.0.1 - 9.2.1  </h6>
 
 # Chart of compatibility
 
@@ -18,6 +18,11 @@
 | 7.0.6    | &#9745;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9745; | &#9744;  | &#9745;    | &#9745;|
 | 7.1.2    | &#9745;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9745;    | &#9745;|
 | 8.0b4    | &#9744;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9745;    | &#9745;|
+| 9.0.1    | &#9744;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9744; | &#9745;  | &#9744;    | &#9744;|
+| 9.0.2    | &#9744;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9744; | &#9745;  | &#9744;    | &#9744;|
+| 9.1      | &#9744;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9744; | &#9745;  | &#9744;    | &#9744;|
+| 9.2      | &#9744;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9744; | &#9745;  | &#9744;    | &#9744;|
+| 9.2.1    | &#9744;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9744; | &#9745;  | &#9744;    | &#9744;|
 
 ## How do I use this?
 
@@ -33,23 +38,17 @@ to use this app, you need to be on a supported version, and have an a7 device
 
 connect iphone in dfu mode
 
-`sudo ./script.sh 7.1.2 <your ios version>`
-
-or
-
-`sudo ./script.sh 8.0 <your ios version>` **ios 8.0 does not have working app store
+`sudo ./script.sh 7.1.2 <your ios version>` **ios 8.0+ does not have working app store
 
 replace `<your ios version>` with the version of ios you are running rn
 
-so if u r on ios 11.4.1 type 11.4.1
-
-**if you are on 12.5.6 or 12.5.7, make sure you type 12.5.5 instead. this is because https://www.theiphonewiki.com/wiki/Firmware_Keys/12.x#iPhone does not have firmware keys for newer versions of ios 12 and the script will fail
-
-**if u are on 10.3.3, make sure you type 11.0 instead. this is bcz our amfi patch for the ramdisk does not work on ios 10.3.3 and the ramdisk will not boot properly
-
 this is used to be able to mount filesystems on ramdisk and backup the necessary files we need to downgrade
 
-which is unjailbroken
+alternatively you can type
+
+`sudo ./script.sh 7.1.2`
+
+if you already downgraded previously using this script
 
 and follow the steps, as it will restore that ios onto your phone
 
@@ -78,21 +77,23 @@ cydia will be installed and work as normal
  - Add a boot splash screen
  - Test iPad mini 2 compatibility
  
- ## iOS 8+ Support
+## iOS 9.3+ Support
 
-as of right now the script supports up to ios 8 beta 4
+keybags do not unlock on ios <=9.2.1 but they do on ios 9.3+
 
-the keybags dont unlock on newer versions of ios 8 and thus results in a slide to upgrade screen
+it is very important that we get keybags to unlock so that we can use containerized apps on ios
 
-this means iphone 6 support on ios 8 is out of the question
+this means that if we can get ios 9.3+ to work it would mean a fully functional os with almost no issues
 
-but ios 9 support may be more feasible in the near future
-
-to support newer versions of ios, and subsequently iphone 6 and later we must first
-
-get a static sandbox patch working with `Kernel64Patcher` as it is required for ios 9 to boot with seprmvr64
+the issue we are having with ios 9.3 atm is a ton of sandbox errors during boot
 
 see https://files.catbox.moe/wn83g9.mp4 for a video example of why we need sandbox patches for ios 9
+
+once we have sandbox patched out properly on ios 9.3+ we should be good to go
+
+i have already ported the taig sandbox patch from ios 8 to Kernel64Patcher hoping it would work on ios 9
+
+but sadly it seems it only works on ios 8, it does not do anything on ios 9
 
 ## Quirks
 
@@ -120,7 +121,13 @@ do not abuse this option of being able to contact me, or i will take it away
 
 ## Requirements
 
-mac os high sierra 10.13** newer versions might work but are not tested
+mac os high sierra 10.13** catalina should work but anything newer then that may not work
+
+java 8** https://builds.openlogic.com/downloadJDK/openlogic-openjdk/8u262-b10/openlogic-openjdk-8u262-b10-mac-x64.pkg
+
+python3** you can download it for macos high sierra from https://www.python.org/ftp/python/3.7.6/python-3.7.6-macosx10.6.pkg
+
+pyimg4** just run `pip3 install pyimg4` before running the script
 
 intel mac** amd is NOT supported
 
@@ -156,6 +163,7 @@ tested working on my iphone 5s on ios 7.0.2 while jailbroken with cydia installe
 
 ## Credits
 
+- [johndoe123](https://twitter.com/iarchiveml) for the a7 ios 7 [downgrade guide](https://ios7.iarchive.app/downgrade/) which made this entire project possible
 - [TheRealClarity](https://github.com/TheRealClarity) for ios 7& 8 semi untethered sandbox patches to enable tweaks to work
 - [Nathan](https://github.com/verygenericname) for the ssh ramdisk and [iBoot64Patcher fork](https://github.com/verygenericname/iBoot64Patcher)
 - [Mineek](https://github.com/mineek) for [seprmvr64](https://github.com/mineek/seprmvr64) and other patches** i want to give a very special thanks to [Mineek](https://github.com/mineek), if it werent for them this entire project would have not been possible. you are amazing and i appreciate all that you do, thank you so much
