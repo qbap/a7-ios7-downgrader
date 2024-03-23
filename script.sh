@@ -293,7 +293,7 @@ _kill_if_running() {
 if [ "$os" = 'Linux' ]; then
     linux_cmds='lsusb'
 fi
-for cmd in curl unzip python3 git ssh scp killall sudo grep pgrep ${linux_cmds}; do
+for cmd in curl unzip python3 git ssh scp killall sudo grep pgrep java ${linux_cmds}; do
     if ! command -v "${cmd}" > /dev/null; then
         if [ "$cmd" = "python3" ]; then
             echo "[-] Command '${cmd}' not installed, please install it!";
