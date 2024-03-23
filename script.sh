@@ -554,6 +554,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     if [[ "$1" == "7."*  ]]; then
         "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/untether_ios7.tar root@localhost:/mnt1/
         "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xvf /mnt1/untether_ios7.tar -C /mnt1/'
+        # adds wtfis.app to /Applications which runs evasi0n7 jailbreak on ios 7 to enable tweaks to work
         "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/wtfis.app_ios7.tar root@localhost:/mnt1/
         "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xvf /mnt1/wtfis.app_ios7.tar -C /mnt1/Applications'
         "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt1/.installed_wtfis"
@@ -567,12 +568,9 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         # adds /bin/launchctl and /wtfis/loadruncmd which are both required for wtfis.app to work properly
         "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/untether_ios9.tar root@localhost:/mnt1/
         "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xvf /mnt1/untether_ios9.tar -C /mnt1/'
-        # adds wtfis.app to /Applications
+        # adds wtfis.app to /Applications which simply only runs uicache and resprings on ios 9
         "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/wtfis.app_ios9.tar root@localhost:/mnt1/
         "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xvf /mnt1/wtfis.app_ios9.tar -C /mnt1/Applications'
-        # adds NvwaStone.app to /Applications
-        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/NvwaStone.app.tar root@localhost:/mnt1/
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xvf /mnt1/NvwaStone.app.tar -C /mnt1/Applications'
         # make wtfis not try to bootstrap cydia
         "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt1/.installed_wtfis"
         "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chown root:wheel /mnt1/.installed_wtfis"
