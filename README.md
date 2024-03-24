@@ -1,113 +1,80 @@
 <div align="center">
-<img src="https://apt.netsirkl64.com/CydiaIcon.png" height="128" width="128" style="border-radius:25%">
-   <h1> a7-ios7-downgrader 
-      <br/> seprmvr64, downgrade&jailbreak utility
+<img src="https://files.catbox.moe/nj23rm.png" height="128" width="128" style="border-radius:25%">
+   <h1> Semaphorin 
+      <br/> seprmvr64, downgrade& jailbreak utility
    </h1>
 </div>
 
 <h6 align="center"> Should Support iOS/iPadOS 7.0.1 - 9.2.1  </h6>
 
+# IF YOUR DEVICE SUPPORTS [LEGACY-IOS-KIT](https://github.com/LukeZGD/Legacy-iOS-Kit), YOU SHOULD REALLY USE THAT OVER THIS.
+
 # Chart of compatibility
 
-| Firmware | App Store | Home btn  | Vol keys | CommCenter | Root fs r/w | Jailbreak | Tweaks  | Respring | Sideloadly | iTunes |
-|----------|-----------|-----------|----------|------------|-------------|-----------|---------|----------|------------|--------|
-| 7.0.1    | &#9745;   | &#9744;   | &#9744;  | &#9745;    | &#9745;     | &#9745;   | &#9745; | &#9744;  | &#9745;    | &#9745;|
-| 7.0.2    | &#9745;   | &#9744;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9745; | &#9744;  | &#9745;    | &#9745;|
-| 7.0.3    | &#9745;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9745; | &#9744;  | &#9745;    | &#9745;|
-| 7.0.4    | &#9745;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9745; | &#9744;  | &#9745;    | &#9745;|
-| 7.0.6    | &#9745;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9745; | &#9744;  | &#9745;    | &#9745;|
-| 7.1.2    | &#9745;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9745;    | &#9745;|
-| 8.0b4    | &#9744;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9745;    | &#9745;|
-| 9.0.1    | &#9744;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9744; | &#9745;  | &#9744;    | &#9744;|
-| 9.0.2    | &#9744;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9744; | &#9745;  | &#9744;    | &#9744;|
-| 9.1      | &#9744;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9744; | &#9745;  | &#9744;    | &#9744;|
-| 9.2      | &#9744;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9744; | &#9745;  | &#9744;    | &#9744;|
-| 9.2.1    | &#9744;   | &#9745;   | &#9745;  | &#9745;    | &#9745;     | &#9745;   | &#9744; | &#9745;  | &#9744;    | &#9744;|
+| iOS      | iPhone 5s | iPhone 6/ 6+ | iPhone 6s/ 6s+ | App Store | Home btn  | Vol keys | Root fs r/w | Cydia     | Tweaks  | Respring | Sideloadly | iTunes |
+|----------|-----------|--------------|----------------|-----------|-----------|----------|-------------|-----------|---------|----------|------------|--------|
+| 7.0.1    | &#9745;   | &#9744;      | &#9744;        | &#9745;   | &#9744;   | &#9744;  | &#9745;     | &#9745;   | &#9745; | &#9744;  | &#9745;    | &#9745;|
+| 7.0.2    | &#9745;   | &#9744;      | &#9744;        | &#9745;   | &#9744;   | &#9745;  | &#9745;     | &#9745;   | &#9745; | &#9744;  | &#9745;    | &#9745;|
+| 7.0.3    | &#9745;   | &#9744;      | &#9744;        | &#9745;   | &#9745;   | &#9745;  | &#9745;     | &#9745;   | &#9745; | &#9744;  | &#9745;    | &#9745;|
+| 7.0.4    | &#9745;   | &#9744;      | &#9744;        | &#9745;   | &#9745;   | &#9745;  | &#9745;     | &#9745;   | &#9745; | &#9744;  | &#9745;    | &#9745;|
+| 7.0.6    | &#9745;   | &#9744;      | &#9744;        | &#9745;   | &#9745;   | &#9745;  | &#9745;     | &#9745;   | &#9745; | &#9744;  | &#9745;    | &#9745;|
+| 7.1.2    | &#9745;   | &#9744;      | &#9744;        | &#9745;   | &#9745;   | &#9745;  | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9745;    | &#9745;|
+| 8.0b4    | &#9745;   | &#9744;      | &#9744;        | &#9744;   | &#9745;   | &#9745;  | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9745;    | &#9745;|
+| 9.0.1    | &#9745;   | &#9745;      | &#9745;        | &#9744;   | &#9745;   | &#9745;  | &#9745;     | &#9745;   | &#9744; | &#9745;  | &#9744;    | &#9744;|
+| 9.0.2    | &#9745;   | &#9745;      | &#9745;        | &#9744;   | &#9745;   | &#9745;  | &#9745;     | &#9745;   | &#9744; | &#9745;  | &#9744;    | &#9744;|
+| 9.1      | &#9745;   | &#9745;      | &#9745;        | &#9744;   | &#9745;   | &#9745;  | &#9745;     | &#9745;   | &#9744; | &#9745;  | &#9744;    | &#9744;|
+| 9.2      | &#9745;   | &#9745;      | &#9745;        | &#9744;   | &#9745;   | &#9745;  | &#9745;     | &#9745;   | &#9744; | &#9745;  | &#9744;    | &#9744;|
+| 9.2.1    | &#9745;   | &#9745;      | &#9745;        | &#9744;   | &#9745;   | &#9745;  | &#9745;     | &#9745;   | &#9744; | &#9745;  | &#9744;    | &#9744;|
 
 ## How do I use this?
 
-this script deletes everything on your phone, including the main os. pls backup all your data before using this script, as it will be unrecoverable after. use this script at your own risk, i am not responsible for any damages caused by you using this script
+this script deletes everything on your phone, including the main os. pls backup all your data before using this script, as it will be unrecoverable after. use this script at your own risk, we are not responsible for any damages caused by you using this script
 
-to use this app, you need to be on a supported version, and have an a7 device
+to use this app, you need to downgrade to a supported version, and have a supported device
 
-`xcode-select install`
+`xcode-select install` to install `git` on macos
 
-`git clone --recursive https://github.com/y08wilm/a7-ios7-downgrader && cd a7-ios7-downgrader`
+`git clone --recursive https://github.com/y08wilm/Semaphorin && cd Semaphorin`
 
-`chmod +x script.sh`
+## First run
 
 connect iphone in dfu mode
 
-`sudo ./script.sh 7.1.2 <your ios version>` **ios 8.0+ does not have working app store
+`sudo ./script.sh <the version you are downgrading to> <your current ios version>`
 
-replace `<your ios version>` with the version of ios you are running rn
+for example you may write `sudo ./script.sh 7.1.2 12.5.7` if you are on ios 12.5.7 right now
 
 **if u are on 10.3.3, make sure you type 11.0 instead. this is bcz our amfi patch for the ramdisk does not work on ios 10.3.3 and the ramdisk will not boot properly
 
-this is used to be able to mount filesystems on ramdisk and backup the necessary files we need to downgrade
+the script has to backup important files from your current ios version before you can downgrade
 
-alternatively you can type
+when the script asks `would you like to skip the ramdisk and boot ios $1?` type `no` and hit enter
 
-`sudo ./script.sh 7.1.2`
+then follow the on screen steps until it asks you `would you like to wipe this phone and install ios $1?` type `yes` and hit enter
 
-if you already downgraded previously using this script
+it should then reboot your iphone and give you instructions to begin the process of downgrading your device
 
-and follow the steps, as it will restore that ios onto your phone
+## Subsequent runs after downgrade is finished
 
-whenever the script asks for a password it is either your mac password or `alpine`
+connect iphone in dfu mode
 
-when the script says "waiting for device in dfu mode" it means u gotta put it back into dfu
+`sudo ./script.sh <the version you downgraded to previously>`
 
-cydia will be installed and work as normal
+for example you may write `sudo ./script.sh 7.1.2` if you downgraded to ios 7.1.2 earlier
 
-## How was this done? 
- - It removes `/System/Library/LaunchDaemons/com.apple.CommCenter.plist`
- - [INTERNAL_INSTALL_LEGAL](https://www.theiphonewiki.com/wiki/INTERNAL_INSTALL_LEGAL)
- - https://vk.com/wall-43001537_167085
- - [11A24580o](https://iarchive.app/Download/11A24580o.zip)
- - [/.cydia_no_stash](https://github.com/sbingner/cydia/blob/master/MobileCydia.mm#L8981)
- - [cydia.tar.lzma](https://drive.google.com/open?id=17aHoLEXsHKwf39JCxC5R9MIhO4iARtqI)
- - [Kernel64Patcher](https://github.com/y08wilm/Kernel64Patcher)
- - [seprmvr64](https://github.com/mineek/seprmvr64)
+when the script asks `would you like to skip the ramdisk and boot ios $1?` type `yes` and hit enter
 
-## TODO
- - Try getting launch daemons to start automatically on boot, such as ssh
- - Add a boot splash screen
- - Test iPad mini 2 compatibility
- 
-## iOS 9.3+ Support
+## Setup.app bypass
 
-keybags do not unlock on ios <=9.2.1 but they do on ios 9.3+
+we will not be providing any support for any method of deleting `/Applications/Setup.app` with our script
 
-it is very important that we get keybags to unlock so that we can use containerized apps on ios
+this is only to comply with r/jailbreak and r/LegacyJailbreak rules and guidelines
 
-this means that if we can get ios 9.3+ to work it would mean a fully functional os with almost no issues
+the script will downgrade your ios version and jailbreak the downgraded os very easily
 
-the issue we are having with ios 9.3 atm is a ton of sandbox errors during boot
+but in order to get to the home screen you must first delete `/Applications/Setup.app` on ios
 
-see https://files.catbox.moe/wn83g9.mp4 for a video example of why we need sandbox patches for ios 9
-
-once we have sandbox patched out properly on ios 9.3+ we should be good to go
-
-i have already ported the taig sandbox patch from ios 8 to Kernel64Patcher hoping it would work on ios 9
-
-but sadly it seems it only works on ios 8, it does not do anything on ios 9
-
-## Quirks
-
-passcode& touch id does not work, if the device ever asks you for a passcode it will accept anything as the passcode
-
-if you lock the screen while the phone is on, it will cause a deep sleep bug which causes the phone to be frozen at a black screen until you force reboot the device
-
-app store does not work on ios 8*
-
-wifi does not work unless you connect to an open wifi network, in other words the wifi network must not have a password
-
-respring does not work on ios 7.0.x properly, so in order to respring on those versions you should open the wtfis app on the home screen and hit "go"
-
-in order for tweaks to work on ios 7.1.x, open the wtfis app on the home screen and hit "go" and it will patch the sandbox to allow tweaks to work
-
-when booting ios 8 you will find that you wont see any app icons on the home screen when you first slide to unlock. to fix this, slide up from the bottom of the screen and tap on calculator. once in the calculator app, press the home button and then you will be at the home screen and all your app icons will appear as normal
+which we will not be providing any support for at this time
 
 ## Contact
 
@@ -116,6 +83,32 @@ if you need to reach me for any reason, you can msg me on telegram at [wilm271](
 use this option if you need to contact me for issues with this script
 
 do not abuse this option of being able to contact me, or i will take it away
+ 
+## iOS 9.3 Support
+
+keybags do not unlock on ios <=9.2.1 but they do on ios 9.3
+
+the issue we are having with ios 9.3 atm is a ton of sandbox errors during boot
+
+see https://files.catbox.moe/wn83g9.mp4 for a video example of why we need sandbox patches for ios 9
+
+once we have sandbox patched out properly on ios 9.3 we should be good to go
+
+## Quirks
+
+passcode& touch id does not work, if the device ever asks you for a passcode it will accept anything as the passcode
+
+if you lock the screen while the phone is on, it will cause a deep sleep bug which causes the phone to be frozen at a black screen until you force reboot the device
+
+app store does not work on ios 8 or 9
+
+wifi does not work unless you connect to an open wifi network, in other words the wifi network must not have a password
+
+respring does not work on ios 7.0.x properly, so in order to respring on those versions you should open the wtfis app on the home screen and hit "go"
+
+in order for tweaks to work on ios 7.1.x, open the wtfis app on the home screen and hit "go" and it will patch the sandbox to allow tweaks to work
+
+when booting ios 8 you will find that you wont see any app icons on the home screen when you first slide to unlock. to fix this, slide up from the bottom of the screen and tap on calculator. once in the calculator app, press the home button and then you will be at the home screen and all your app icons will appear as normal
 
 ## Requirements
 
@@ -137,31 +130,10 @@ usb type A port** usb-c is NOT supported
 
 working iphone** cause the script has to backup `apticket.der`, `sep-firmware.img4`, `Baseband`, and `keybags` from your device before you can downgrade to older ios
 
-## Setup.app bypass
-
-this script deletes Setup.app during the process of tether downgrading your device
-
-it also installs a modified `data_ark.plist` to the device to enable the app store to work as well
-
-when u try to sign in it may say incorrect password and send 2fa code to your other devices
-
-if it doesnt say incorrect password but it sent a 2fa code to your other devices, sign out
-
-retype ur password on the iphone but this time put the 2fa code at the end
-
-for example if your password is `ilikenekos13` and the 2fa code is 275 831
-
-you would type `ilikenekos13275831` as the password to sign into the app store
-
-and it will log in with no issues
-
-when downloading apps you have to go to purchased apps tab and download the last compatible version
-
-tested working on my iphone 5s on ios 7.0.2 while jailbroken with cydia installed
-
 ## Credits
 
 - [johndoe123](https://twitter.com/iarchiveml) for the a7 ios 7 [downgrade guide](https://ios7.iarchive.app/downgrade/) which made this entire project possible
+- [LukeZGD](https://github.com/LukeZGD/) for the updated [cydia.tar](https://github.com/LukeZGD/Legacy-iOS-Kit/raw/main/resources/jailbreak/freeze.tar) for jailbreaking older ios versions
 - [TheRealClarity](https://github.com/TheRealClarity) for ios 7& 8 semi untethered sandbox patches to enable tweaks to work
 - [Nathan](https://github.com/verygenericname) for the ssh ramdisk and [iBoot64Patcher fork](https://github.com/verygenericname/iBoot64Patcher)
 - [Mineek](https://github.com/mineek) for [seprmvr64](https://github.com/mineek/seprmvr64) and other patches** i want to give a very special thanks to [Mineek](https://github.com/mineek), if it werent for them this entire project would have not been possible. you are amazing and i appreciate all that you do, thank you so much
