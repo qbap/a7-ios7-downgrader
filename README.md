@@ -68,7 +68,7 @@ when the script asks `would you like to skip the ramdisk and boot ios $1?` type 
 
 we will not be providing any support for any method of deleting `/Applications/Setup.app` with our script
 
-this is only to comply with r/jailbreak and r/LegacyJailbreak rules and guidelines
+this is only to comply with [r/jailbreak](https://www.reddit.com/r/jailbreak/) and [r/LegacyJailbreak](https://www.reddit.com/r/LegacyJailbreak/) rules and guidelines
 
 the script will downgrade your ios version and jailbreak the downgraded os very easily
 
