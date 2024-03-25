@@ -5,7 +5,7 @@ verbose=1
 echo "[*] Command ran:`if [ $EUID = 0 ]; then echo " sudo"; fi` ./semaphorin.sh $@"
 os=$(uname)
 oscheck=$(uname)
-dir="$(pwd)/"
+dir="$(pwd)"
 bin="$(pwd)/$(uname)"
 sshtars="$(pwd)/sshtars"
 echo "semaphorin | Version 1.0"
@@ -19,7 +19,6 @@ print_help() {
 Usage: $0 [OPTION]... [VERSION]...
 iOS 7.0.1-9.2.1 seprmvr64, downgrade& jailbreak tool for checkm8 devices
 Examples:
-    $0 --dfuhelper 7.1.2
     $0 --restore 7.1.2
     $0 --boot 7.1.2
 
@@ -290,12 +289,12 @@ _download_boot_files() {
         if [[ "$3" == "8."* ]]; then
             "$bin"/img4 -i "$dir"/$1/$3/iBSS.patched -o "$dir"/$1/$3/iBSS.img4 -M IM4M -A -T ibss
             "$bin"/img4 -i "$dir"/$1/$3/iBEC.patched -o "$dir"/$1/$3/iBEC.img4 -M IM4M -A -T ibec
-            if [[ "$1" == "iPhone6,2" || "$1" == "iPhone6,1" ]]; then
-                "$bin"/seprmvr64lite "$dir"/jb/12A4331d_kcache.raw "$dir"/$1/$3/kcache.patched
+            if [[ "$1" == "iPhone6,2" || "$1" == "iPhone6,1" || "$1" == "iPad4,4" || "$1" == "iPad4,5" ]]; then
+                "$bin"/seprmvr64lite "$dir"/jb/kcache_12A4331d.raw "$dir"/$1/$3/kcache.patched
                 "$bin"/Kernel64Patcher "$dir"/$1/$3/kcache.patched "$dir"/$1/$3/kcache2.patched -t -p -f -a -m -g -s
-                "$bin"/kerneldiff "$dir"/jb/12A4331d_kcache.raw "$dir"/$1/$3/kcache2.patched "$dir"/$1/$3/kc.bpatch
-                "$bin"/img4 -i "$dir"/jb/12A4331d_kernelcache.dec -o "$dir"/$1/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$3/kc.bpatch
-                "$bin"/img4 -i "$dir"/jb/12A4331d_kernelcache.dec -o "$dir"/$1/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$3/kc.bpatch
+                "$bin"/kerneldiff "$dir"/jb/kcache_12A4331d.raw "$dir"/$1/$3/kcache2.patched "$dir"/$1/$3/kc.bpatch
+                "$bin"/img4 -i "$dir"/jb/kernelcache_12A4331d.dec -o "$dir"/$1/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$3/kc.bpatch
+                "$bin"/img4 -i "$dir"/jb/kernelcache_12A4331d.dec -o "$dir"/$1/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$3/kc.bpatch
             else
                 "$bin"/seprmvr64lite "$dir"/$1/$3/kcache.raw "$dir"/$1/$3/kcache.patched
                 "$bin"/Kernel64Patcher "$dir"/$1/$3/kcache.patched "$dir"/$1/$3/kcache2.patched -t -p -f -a -m -g -s
@@ -345,13 +344,35 @@ _download_root_fs() {
                 fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
                 ivkey="$(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
                 "$bin"/dmg extract $fn "$dir"/$1/$3/OS.dmg -k $ivkey
-            else
+            elif [[ "$deviceid" == "iPhone6,1" || "$deviceid" == "iPhone6,2" ]]; then
                 # https://archive.org/download/Apple_iPhone_Firmware/Apple%20iPhone%206.1%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/
                 cd "$dir"/$1/$3
                 "$bin"/aria2c https://ia903400.us.archive.org/4/items/Apple_iPhone_Firmware/Apple%20iPhone%206.1%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
                 "$bin"/7z x media_ipsw.rar
                 "$bin"/7z x $(find . -name '*.ipsw*')
                 "$bin"/dmg extract 058-01244-053.dmg OS.dmg -k 5c8b481822b91861c1d19590e790b306daaab2230f89dd275c18356d28fdcd47436a0737
+                "$bin"/img4 -i kernelcache.release.n51 -o "$dir"/jb/kcache_12A4331d.raw -k fdee9545abf38072bb54d6cc46aeb44cc0ab44308fdccce0a0adc4f2c02c531339c2acd2d7c1e099abb298a63730967a
+                "$bin"/img4 -i kernelcache.release.n51 -o "$dir"/jb/kernelcache_12A4331d.dec -k fdee9545abf38072bb54d6cc46aeb44cc0ab44308fdccce0a0adc4f2c02c531339c2acd2d7c1e099abb298a63730967a -D
+                cd ../../work/
+            elif [[ "$deviceid" == "iPad4,4" ]]; then
+                # https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.4%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
+                cd "$dir"/$1/$3
+                "$bin"/aria2c https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.4%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
+                "$bin"/7z x media_ipsw.rar
+                "$bin"/7z x $(find . -name '*.ipsw*')
+                "$bin"/dmg extract 058-01149-054.dmg OS.dmg -k b62a823a1b5355e1e8211db6441e4384f92e8b47407837afadf24facab5c7b0320f61a4f
+                "$bin"/img4 -i kernelcache.release.n51 -o "$dir"/jb/kcache_12A4331d.raw -k e64f85ed518a3747d5b04c9d703dd96b92df85410ace43dbed85b7fa66c186e002d59fd2812910e7326ef173cb1c5a8f
+                "$bin"/img4 -i kernelcache.release.n51 -o "$dir"/jb/kernelcache_12A4331d.dec -k e64f85ed518a3747d5b04c9d703dd96b92df85410ace43dbed85b7fa66c186e002d59fd2812910e7326ef173cb1c5a8f -D
+                cd ../../work/
+            elif [[ "$deviceid" == "iPad4,5" ]]; then
+                # https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.5%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
+                cd "$dir"/$1/$3
+                "$bin"/aria2c https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.5%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
+                "$bin"/7z x media_ipsw.rar
+                "$bin"/7z x $(find . -name '*.ipsw*')
+                "$bin"/dmg extract 058-01282-053.dmg OS.dmg -k 67a958bddcc762e21702583b20b87caad97ed96433e9e7e8a57ef4ea53d71549f030c125
+                "$bin"/img4 -i kernelcache.release.n51 -o "$dir"/jb/kcache_12A4331d.raw -k 4c70597be8d32ab7c7177e1b1e3f1ba00065ed0b2222d0c9c8484a7dada36f2165037fa3324ee5e8aa2bd198a56fd2d9
+                "$bin"/img4 -i kernelcache.release.n51 -o "$dir"/jb/kernelcache_12A4331d.dec -k 4c70597be8d32ab7c7177e1b1e3f1ba00065ed0b2222d0c9c8484a7dada36f2165037fa3324ee5e8aa2bd198a56fd2d9 -D
                 cd ../../work/
             fi
         fi
@@ -460,8 +481,8 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
         read -p "what ios version are you running right now? " r
         _download_ramdisk_boot_files $deviceid $replace $r
     fi
-    _download_boot_files $deviceid $replace $version
     _download_root_fs $deviceid $replace $version
+    _download_boot_files $deviceid $replace $version
     sleep 1
     if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
         "$bin"/dfuhelper.sh
