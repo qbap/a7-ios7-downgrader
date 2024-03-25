@@ -574,8 +574,10 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
             exit
         fi
         if [ ! -e "$dir"/$deviceid/0.0/Baseband ]; then
-            echo "missing ./Baseband, which is required in order to proceed. exiting.."
-            exit
+            if [[ ! "$deviceid" == "iPad"* ]]; then
+                echo "missing ./Baseband, which is required in order to proceed. exiting.."
+                exit
+            fi
         fi
         if [ ! -e "$dir"/$deviceid/0.0/keybags ]; then
             echo "missing ./keybags, which is required in order to proceed. exiting.."
