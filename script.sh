@@ -58,33 +58,7 @@ parse_opt() {
             restore=1
             ;;
         --boot)
-            if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                "$bin"/dfuhelper.sh
-            fi
-            _wait_for_dfu
-            _download_boot_files $deviceid $replace $1
-            if [ -e "$dir"/$deviceid/$1/iBSS.img4 ]; then
-                cd "$dir"/$deviceid/$1
-                if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" ]]; then
-                    "$bin"/gaster pwn
-                else
-                    "$bin"/ipwnder -p
-                fi
-                "$bin"/irecovery -f iBSS.img4
-                "$bin"/irecovery -f iBSS.img4
-                "$bin"/irecovery -f iBEC.img4
-                "$bin"/irecovery -f devicetree.img4
-                "$bin"/irecovery -c devicetree
-                if [ -e ./trustcache.img4 ]; then
-                    "$bin"/irecovery -f trustcache.img4
-                    "$bin"/irecovery -c firmware
-                fi
-                "$bin"/irecovery -f kernelcache.img4
-                "$bin"/irecovery -c bootx &
-                cd ../../
-                exit
-            fi
-            exit 0
+            boot=1
             ;;
         --clean)
             rm -rf "$dir"/$deviceid/$1/
@@ -442,6 +416,31 @@ if ! python3 -c 'import pkgutil; exit(not pkgutil.find_loader("pyimg4"))'; then
     python3 -m pip install pyimg4
 fi
 _wait_for_dfu
+if [[ "$boot" == 1 ]]; then
+    _download_boot_files $deviceid $replace $1
+    if [ -e "$dir"/$deviceid/$1/iBSS.img4 ]; then
+        cd "$dir"/$deviceid/$1
+        if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" ]]; then
+            "$bin"/gaster pwn
+        else
+            "$bin"/ipwnder -p
+        fi
+        "$bin"/irecovery -f iBSS.img4
+        "$bin"/irecovery -f iBSS.img4
+        "$bin"/irecovery -f iBEC.img4
+        "$bin"/irecovery -f devicetree.img4
+        "$bin"/irecovery -c devicetree
+        if [ -e ./trustcache.img4 ]; then
+            "$bin"/irecovery -f trustcache.img4
+            "$bin"/irecovery -c firmware
+        fi
+        "$bin"/irecovery -f kernelcache.img4
+        "$bin"/irecovery -c bootx &
+        cd ../../
+        exit
+    fi
+    exit 0
+fi
 if [[ "$ramdisk" == 1 || "$restore" == 1 ]]; then
     if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/Baseband || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
         read -p "what ios version are you running right now? " r
