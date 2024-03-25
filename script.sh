@@ -17,8 +17,12 @@ max_args=1
 arg_count=0
 print_help() {
     cat << EOF
-Usage: $0 [Options] [ iOS version ]
+Usage: $0 [VERSION]... [OPTION]...
 iOS 7.0.1-9.2.1 seprmvr64, downgrade& jailbreak tool for checkm8 devices
+Examples:
+  $0 7.1.2 --dfuhelper
+  $0 7.1.2 --restore
+  $0 7.1.2 --boot
 
 Options:
     --help              Print this help
