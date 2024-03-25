@@ -361,8 +361,8 @@ _download_root_fs() {
                 "$bin"/7z x media_ipsw.rar
                 "$bin"/7z x $(find . -name '*.ipsw*')
                 "$bin"/dmg extract 058-01149-054.dmg OS.dmg -k b62a823a1b5355e1e8211db6441e4384f92e8b47407837afadf24facab5c7b0320f61a4f
-                "$bin"/img4 -i kernelcache.release.n51 -o "$dir"/jb/kcache_12A4331d.raw -k e64f85ed518a3747d5b04c9d703dd96b92df85410ace43dbed85b7fa66c186e002d59fd2812910e7326ef173cb1c5a8f
-                "$bin"/img4 -i kernelcache.release.n51 -o "$dir"/jb/kernelcache_12A4331d.dec -k e64f85ed518a3747d5b04c9d703dd96b92df85410ace43dbed85b7fa66c186e002d59fd2812910e7326ef173cb1c5a8f -D
+                "$bin"/img4 -i kernelcache.release.j85 -o "$dir"/jb/kcache_12A4331d.raw -k e64f85ed518a3747d5b04c9d703dd96b92df85410ace43dbed85b7fa66c186e002d59fd2812910e7326ef173cb1c5a8f
+                "$bin"/img4 -i kernelcache.release.j85 -o "$dir"/jb/kernelcache_12A4331d.dec -k e64f85ed518a3747d5b04c9d703dd96b92df85410ace43dbed85b7fa66c186e002d59fd2812910e7326ef173cb1c5a8f -D
                 cd ../../work/
             elif [[ "$deviceid" == "iPad4,5" ]]; then
                 # https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.5%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
@@ -371,8 +371,8 @@ _download_root_fs() {
                 "$bin"/7z x media_ipsw.rar
                 "$bin"/7z x $(find . -name '*.ipsw*')
                 "$bin"/dmg extract 058-01282-053.dmg OS.dmg -k 67a958bddcc762e21702583b20b87caad97ed96433e9e7e8a57ef4ea53d71549f030c125
-                "$bin"/img4 -i kernelcache.release.n51 -o "$dir"/jb/kcache_12A4331d.raw -k 4c70597be8d32ab7c7177e1b1e3f1ba00065ed0b2222d0c9c8484a7dada36f2165037fa3324ee5e8aa2bd198a56fd2d9
-                "$bin"/img4 -i kernelcache.release.n51 -o "$dir"/jb/kernelcache_12A4331d.dec -k 4c70597be8d32ab7c7177e1b1e3f1ba00065ed0b2222d0c9c8484a7dada36f2165037fa3324ee5e8aa2bd198a56fd2d9 -D
+                "$bin"/img4 -i kernelcache.release.j86 -o "$dir"/jb/kcache_12A4331d.raw -k 4c70597be8d32ab7c7177e1b1e3f1ba00065ed0b2222d0c9c8484a7dada36f2165037fa3324ee5e8aa2bd198a56fd2d9
+                "$bin"/img4 -i kernelcache.release.j86 -o "$dir"/jb/kernelcache_12A4331d.dec -k 4c70597be8d32ab7c7177e1b1e3f1ba00065ed0b2222d0c9c8484a7dada36f2165037fa3324ee5e8aa2bd198a56fd2d9 -D
                 cd ../../work/
             fi
         fi
