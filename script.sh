@@ -15,7 +15,6 @@ echo ""
 sudo mount -uw /
 max_args=1
 arg_count=0
-parse_cmdline "$@"
 print_help() {
     cat << EOF
 Usage: $0 [Options] [ iOS version ]
@@ -136,6 +135,7 @@ parse_cmdline() {
         fi
     done
 }
+parse_cmdline "$@"
 _wait_for_dfu() {
     if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
         echo "[*] Waiting for device in DFU mode"
