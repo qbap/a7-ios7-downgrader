@@ -119,6 +119,7 @@ parse_arg() {
             exit 0
             ;;
         *)
+            version="$1"
             ;;
     esac
 }
