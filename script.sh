@@ -409,7 +409,11 @@ if ! python3 -c 'import pkgutil; exit(not pkgutil.find_loader("pyimg4"))'; then
 fi
 _wait_for_dfu
 if [[ "$clean" == 1 ]]; then
-    rm -rf "$dir"/$deviceid/$1/
+    rm -rf "$dir"/$deviceid/$1/iBSS*
+    rm -rf "$dir"/$deviceid/$1/iBEC*
+    rm -rf "$dir"/$deviceid/$1/k*
+    rm -rf "$dir"/$deviceid/$1/DeviceTree*
+    rm -rf "$dir"/$deviceid/$1/devicetree*
     rm -rf "$dir"/$deviceid/ramdisk/
     echo "[*] Removed the created boot files"
     exit 0
