@@ -1,11 +1,141 @@
 #/bin/bash
+mkdir -p logs
+verbose=1
+{
+echo "[*] Command ran:`if [ $EUID = 0 ]; then echo " sudo"; fi` ./semaphorin.sh $@"
 os=$(uname)
 oscheck=$(uname)
 version="$1"
 dir="$(pwd)/"
 bin="$(pwd)/$(uname)"
 sshtars="$(pwd)/sshtars"
+echo "semaphorin | Version 1.0"
+echo "Written by y08wilm and Mineek | Some code and ramdisk from Nathan"
+echo ""
 sudo mount -uw /
+max_args=1
+arg_count=0
+parse_cmdline "$@"
+print_help() {
+    cat << EOF
+Usage: $0 [Options] [ iOS version ]
+iOS 7.0.1-9.2.1 seprmvr64, downgrade& jailbreak tool for checkm8 devices
+
+Options:
+    --help              Print this help
+    --ramdisk           Download& enter ramdisk
+    --dump-blobs        Self explanatory
+    --ssh               Tries to connect to ssh over usb interface to the connected device
+    --restore           Wipe device and downgrade ios
+    --boot              Don't enter ramdisk or wipe device, just boot
+    --clean             Delete all the created boot files for your device
+    --dfuhelper         A helper to help get A11 devices into DFU mode from recovery mode
+
+The iOS version argument should be the iOS version of your device.
+It is required when starting from DFU mode.
+EOF
+}
+
+parse_opt() {
+    case "$1" in
+        --)
+            no_more_opts=1
+            ;;
+        --ramdisk)
+            ramdisk=1
+            ;;
+        --dump-blobs)
+            dump_blobs=1
+            ;;
+        --dfuhelper)
+            "$bin"/dfuhelper.sh
+            exit 0
+            ;;
+        --ssh)
+            _kill_if_running iproxy
+            "$bin"/iproxy 2222 22 &
+            ssh -p2222 root@localhost
+            exit 0
+            ;;
+        --restore)
+            restore=1
+            ;;
+        --boot)
+            _download_boot_files $deviceid $replace $1
+            if [ -e "$dir"/$deviceid/$1/iBSS.img4 ]; then
+                _wait_for_dfu
+                cd "$dir"/$deviceid/$1
+                if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" ]]; then
+                    "$bin"/gaster pwn
+                else
+                    "$bin"/ipwnder -p
+                fi
+                "$bin"/irecovery -f iBSS.img4
+                "$bin"/irecovery -f iBSS.img4
+                "$bin"/irecovery -f iBEC.img4
+                "$bin"/irecovery -f devicetree.img4
+                "$bin"/irecovery -c devicetree
+                if [ -e ./trustcache.img4 ]; then
+                    "$bin"/irecovery -f trustcache.img4
+                    "$bin"/irecovery -c firmware
+                fi
+                "$bin"/irecovery -f kernelcache.img4
+                "$bin"/irecovery -c bootx &
+                cd ../../
+                exit
+            fi
+            exit 0
+            ;;
+        --clean)
+            rm -rf "$dir"/$deviceid/$1/
+            rm -rf "$dir"/ramdisk/
+            exit 0
+            ;;
+        --help)
+            print_help
+            exit 0
+            ;;
+        *)
+            echo "[-] Unknown option $1. Use $0 --help for help."
+            exit 1;
+    esac
+}
+
+parse_arg() {
+    arg_count=$((arg_count + 1))
+    case "$1" in
+        dfuhelper)
+            "$bin"/dfuhelper.sh
+            exit 0
+            ;;
+        clean)
+            rm -rf "$dir"/$deviceid/$1/
+            rm -rf "$dir"/ramdisk/
+            exit 0
+            ;;
+        ssh)
+            _kill_if_running iproxy
+            "$bin"/iproxy 2222 22 &
+            ssh -p2222 root@localhost
+            exit 0
+            ;;
+        *)
+            version="$1"
+            ;;
+    esac
+}
+parse_cmdline() {
+    for arg in $@; do
+        if [[ "$arg" == --* ]] && [ -z "$no_more_opts" ]; then
+            parse_opt "$arg";
+        elif [ "$arg_count" -lt "$max_args" ]; then
+            parse_arg "$arg";
+        else
+            echo "[-] Too many arguments. Use $0 --help for help.";
+            exit 1;
+        fi
+    done
+}
 _wait_for_dfu() {
     if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
         echo "[*] Waiting for device in DFU mode"
@@ -718,3 +848,4 @@ if [ -e "$dir"/$deviceid/$1/iBSS.img4 ]; then
     cd ../../
     exit
 fi
+} | tee logs/"$(date +%T)"-"$(date +%F)"-"$(uname)"-"$(uname -r)".log
