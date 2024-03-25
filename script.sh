@@ -452,6 +452,11 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
     fi
     _download_boot_files $deviceid $replace $1
     _download_root_fs $deviceid $replace $1
+    sleep 1
+    if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+        "$bin"/dfuhelper.sh
+    fi
+    _wait_for_dfu
     cd "$dir"/$deviceid/ramdisk
     if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" ]]; then
         "$bin"/gaster pwn
@@ -663,12 +668,15 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'cp /mnt1/usr/libexec/CrashHousekeeping /mnt1/usr/libexec/CrashHousekeeping_o' 2> /dev/null
             "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/startup_ios9.sh root@localhost:/mnt1/usr/libexec/CrashHousekeeping 2> /dev/null
         fi
-        if [[ "$1" == "9."* || "$1" == "8."* ]]; then
-            read -p "would you like to also install Evermusic_Free.app? " r
-            if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
-                "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/Evermusic_Free.app.tar root@localhost:/mnt1/
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt1/Evermusic_Free.app.tar -C /mnt1/Applications/"
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt1/Applications/Evermusic_Free.app'
+        if [ -e "$dir"/jb/Evermusic_Free.app.tar ]; then
+            # this app is not going to be distributed with the project for the sake of complying with r/jailbreak rules and guidelines on piracy
+            if [[ "$1" == "9."* || "$1" == "8."* ]]; then
+                read -p "would you like to also install Evermusic_Free.app? " r
+                if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
+                    "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/Evermusic_Free.app.tar root@localhost:/mnt1/
+                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt1/Evermusic_Free.app.tar -C /mnt1/Applications/"
+                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt1/Applications/Evermusic_Free.app'
+                fi
             fi
         fi
         "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/$1/kernelcache root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches 2> /dev/null
