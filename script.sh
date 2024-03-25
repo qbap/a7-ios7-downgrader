@@ -86,6 +86,9 @@ parse_arg() {
             ;;
         *)
             version="$1"
+            if [[ "$version" == "8.0b4" ]]; then
+                version="8.0"
+            fi
             ;;
     esac
 }
