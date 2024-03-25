@@ -40,27 +40,25 @@ to use this app, you need to downgrade to a supported version, and have a suppor
 
 connect iphone in dfu mode
 
-`sudo ./script.sh <the version you are downgrading to> <your current ios version>`
+`sudo ./semaphorin.sh <the version you are downgrading to> --restore`
 
-for example you may write `sudo ./script.sh 7.1.2 12.5.7` if you are on ios 12.5.7 right now
-
-**if u are on 10.3.3, make sure you type 11.0 instead. this is bcz our amfi patch for the ramdisk does not work on ios 10.3.3 and the ramdisk will not boot properly
+for example you may write `sudo ./semaphorin.sh 7.1.2 --restore`
 
 the script has to backup important files from your current ios version before you can downgrade
 
-when the script asks `would you like to skip the ramdisk and boot ios $1?` type `no` and hit enter
+when the script asks `what ios version are you running right now?` type your current ios version and hit enter
 
-then follow the on screen steps until it asks you `would you like to wipe this phone and install ios $1?` type `yes` and hit enter
+**if u are on 10.3.3, make sure you type 11.0 instead. this is bcz our amfi patch for the ramdisk does not work on ios 10.3.3 and the ramdisk will not boot properly
 
-it should then reboot your iphone and give you instructions to begin the process of downgrading your device
+it should then begin the process of downgrading your device, please follow the on screen instructions
 
 ## Subsequent runs after downgrade is finished
 
 connect iphone in dfu mode
 
-`sudo ./script.sh <the version you downgraded to previously>`
+`sudo ./semaphorin.sh <the version you downgraded to previously> --boot`
 
-for example you may write `sudo ./script.sh 7.1.2` if you downgraded to ios 7.1.2 earlier
+for example you may write `sudo ./semaphorin.sh 7.1.2 --boot` if you downgraded to ios 7.1.2 earlier
 
 when the script asks `would you like to skip the ramdisk and boot ios $1?` type `yes` and hit enter
 
