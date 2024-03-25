@@ -147,7 +147,6 @@ parse_cmdline() {
         exit 0
     fi
 }
-parse_cmdline "$@"
 _wait_for_dfu() {
     if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
         echo "[*] Waiting for device in DFU mode"
@@ -435,6 +434,7 @@ done
 if [ "$cmd_not_found" = "1" ]; then
     exit 1
 fi
+parse_cmdline "$@"
 # Check for pyimg4
 if ! python3 -c 'import pkgutil; exit(not pkgutil.find_loader("pyimg4"))'; then
     python3 -m pip install pyimg4
@@ -447,144 +447,21 @@ check=$("$bin"/irecovery -q | grep CPID | sed 's/CPID: //')
 replace=$("$bin"/irecovery -q | grep MODEL | sed 's/MODEL: //')
 deviceid=$("$bin"/irecovery -q | grep PRODUCT | sed 's/PRODUCT: //')
 echo $deviceid
-if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/Baseband || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
-    if [ -z "$2" ]; then
-        echo "./script.sh <target os ver> <current os ver>"
-        exit
-    fi
-    _download_ramdisk_boot_files $deviceid $replace $2
-elif [[ "$1" == "7."* || "$1" == "8."* ]]; then
-    _download_ramdisk_boot_files $deviceid $replace 8.4.1
-else
-    _download_ramdisk_boot_files $deviceid $replace 11.4.1
-fi
-_download_boot_files $deviceid $replace $1
-_download_root_fs $deviceid $replace $1
-if [ -e "$dir"/$deviceid/$1/iBSS.img4 ]; then
-    read -p "would you like to skip the ramdisk and boot ios $1? " r
-    if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
-        _wait_for_dfu
-        cd "$dir"/$deviceid/$1
-        if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" ]]; then
-            "$bin"/gaster pwn
-        else
-            "$bin"/ipwnder -p
-        fi
-        "$bin"/irecovery -f iBSS.img4
-        "$bin"/irecovery -f iBSS.img4
-        "$bin"/irecovery -f iBEC.img4
-        "$bin"/irecovery -f devicetree.img4
-        "$bin"/irecovery -c devicetree
-        if [ -e ./trustcache.img4 ]; then
-            "$bin"/irecovery -f trustcache.img4
-            "$bin"/irecovery -c firmware
-        fi
-        "$bin"/irecovery -f kernelcache.img4
-        "$bin"/irecovery -c bootx &
-        cd ../../
-        exit
-    fi
-fi
 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
     "$bin"/dfuhelper.sh
 fi
 _wait_for_dfu
-cd "$dir"/ramdisk
-if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" ]]; then
-    "$bin"/gaster pwn
-else
-    "$bin"/ipwnder -p
-fi
-"$bin"/irecovery -f iBSS.img4
-"$bin"/irecovery -f iBSS.img4
-"$bin"/irecovery -f iBEC.img4
-"$bin"/irecovery -f ramdisk.img4
-"$bin"/irecovery -c ramdisk
-"$bin"/irecovery -f devicetree.img4
-"$bin"/irecovery -c devicetree
-if [ -e ./trustcache.img4 ]; then
-    "$bin"/irecovery -f trustcache.img4
-    "$bin"/irecovery -c firmware
-fi
-"$bin"/irecovery -f kernelcache.img4
-"$bin"/irecovery -c bootx &
-cd ..
-read -p "pls press the enter key once device is in the ramdisk " r
-"$bin"/iproxy 2222 22 &
-sleep 2
-read -p "would you like to wipe this phone and install ios $1? " r
-if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
-    mkdir -p "$dir"/$deviceid/0.0/
+if [[ "$ramdisk" == 1 || "$restore" == 1 ]]; then
     if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/Baseband || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
-        if [[ "$2" == "7."* || "$2" == "8."* || "$2" == "9."* || "$2" == "10.0" || "$2" == "10.1" || "$2" == "10.2" ]]; then
-            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_hfs /dev/disk0s1s1 /mnt1"
-            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -t hfs /dev/disk0s1s2 /mnt2"
-        else
-            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "bash -c mount_filesystems"
-        fi
-        if [ ! -e "$dir"/$deviceid/0.0/apticket.der ]; then
-            "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/Caches/apticket.der "$dir"/$deviceid/0.0/apticket.der
-        fi
-        if [ ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 ]; then
-            "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/usr/standalone/firmware/sep-firmware.img4 "$dir"/$deviceid/0.0/sep-firmware.img4
-        fi
-        if [ ! -e "$dir"/$deviceid/0.0/FUD ]; then
-            "$bin"/sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/usr/standalone/firmware/FUD "$dir"/$deviceid/0.0/FUD
-        fi
-        if [ ! -e "$dir"/$deviceid/0.0/Baseband ]; then
-            "$bin"/sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/usr/local/standalone/firmware/Baseband "$dir"/$deviceid/0.0/Baseband
-        fi
-        if [ ! -e "$dir"/$deviceid/0.0/firmware ]; then
-            "$bin"/sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/usr/standalone/firmware "$dir"/$deviceid/0.0/firmware
-        fi
-        if [ ! -e "$dir"/$deviceid/0.0/local ]; then
-            "$bin"/sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/usr/local "$dir"/$deviceid/0.0/local
-        fi
-        if [ ! -e "$dir"/$deviceid/0.0/keybags ]; then
-            "$bin"/sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt2/keybags "$dir"/$deviceid/0.0/keybags
-        fi
-        if [ ! -e "$dir"/$deviceid/0.0/wireless ]; then
-            "$bin"/sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt2/wireless "$dir"/$deviceid/0.0/wireless
-        fi
-        if [ ! -e "$dir"/$deviceid/0.0/com.apple.factorydata ]; then
-            "$bin"/sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/System/Library/Caches/com.apple.factorydata "$dir"/$deviceid/0.0/com.apple.factorydata
-        fi
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt1"
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt2"
-        if [[ "$1" == "7."* || "$1" == "8."* ]]; then
-            rm -rf ramdisk
-            _download_ramdisk_boot_files $deviceid $replace 8.4.1
-        else
-            rm -rf ramdisk
-            _download_ramdisk_boot_files $deviceid $replace 11.4.1
-        fi
+        read -p "what ios version are you running right now? " r
+        _download_ramdisk_boot_files $deviceid $replace $r
+    elif [[ "$1" == "7."* || "$1" == "8."* ]]; then
+        _download_ramdisk_boot_files $deviceid $replace 8.4.1
+    else
+        _download_ramdisk_boot_files $deviceid $replace 11.4.1
     fi
-    if [ ! -e "$dir"/$deviceid/0.0/apticket.der ]; then
-        echo "missing ./apticket.der, which is required in order to proceed. exiting.."
-        exit
-    fi
-    if [ ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 ]; then
-        echo "missing ./sep-firmware.img4, which is required in order to proceed. exiting.."
-        exit
-    fi
-    if [ ! -e "$dir"/$deviceid/0.0/Baseband ]; then
-        echo "missing ./Baseband, which is required in order to proceed. exiting.."
-        exit
-    fi
-    if [ ! -e "$dir"/$deviceid/0.0/keybags ]; then
-        echo "missing ./keybags, which is required in order to proceed. exiting.."
-        exit
-    fi
-    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "lwvm init"
-    sleep 1
-    $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
-    _kill_if_running iproxy
-    echo "device should now reboot into recovery, pls wait"
-    echo "once in recovery you should follow instructions online to go back into dfu"
-    if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-        "$bin"/dfuhelper.sh
-    fi
-    _wait_for_dfu
+    _download_boot_files $deviceid $replace $1
+    _download_root_fs $deviceid $replace $1
     cd "$dir"/ramdisk
     if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" ]]; then
         "$bin"/gaster pwn
@@ -605,58 +482,151 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
     "$bin"/irecovery -f kernelcache.img4
     "$bin"/irecovery -c bootx &
     cd ..
-    read -p "pls press the enter key once device is in the ramdisk" r
+    read -p "pls press the enter key once device is in the ramdisk " r
     "$bin"/iproxy 2222 22 &
-    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat /gpt.txt | gptfdisk /dev/rdisk0s1"
     sleep 2
-    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync"
-    sleep 1
-    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync"
-    sleep 1
-    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync"
-    sleep 1
-    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_hfs -s -v System -J -b 4096 -n a=4096,c=4096,e=4096 /dev/disk0s1s1"
-    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_hfs -s -v Data -J -b 4096 -n a=4096,c=4096,e=4096 /dev/disk0s1s2"
-    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_hfs /dev/disk0s1s1 /mnt1"
-    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs -o suid,dev /dev/disk0s1s2 /mnt2"
-    "$bin"/sshpass -p 'alpine' scp -P 2222 "$dir"/$deviceid/$1/OS.tar root@localhost:/mnt2
-    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/OS.tar -C /mnt1"
-    if [[ "$1" == "7."* ]]; then
-        "$bin"/sshpass -p 'alpine' scp -P 2222 "$dir"/jb/cydia_ios7.tar root@localhost:/mnt2
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/cydia_ios7.tar -C /mnt1"
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/cydia_ios7.tar"
-    elif [[ "$1" == "8."* || "$1" == "9."* ]]; then
-        "$bin"/sshpass -p 'alpine' scp -P 2222 "$dir"/jb/cydia.tar root@localhost:/mnt2
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/cydia.tar -C /mnt1"
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/cydia.tar"
-    fi
-    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mv -v /mnt1/private/var/* /mnt2"
-    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt1/usr/local/standalone/firmware/Baseband"
-    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir /mnt2/keybags"
-    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt2/wireless/baseband_data"
-    "$bin"/sshpass -p "alpine" scp -r -P 2222 "$dir"/$deviceid/0.0/keybags root@localhost:/mnt2
-    "$bin"/sshpass -p "alpine" scp -r -P 2222 "$dir"/$deviceid/0.0/Baseband root@localhost:/mnt1/usr/local/standalone/firmware
-    "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/0.0/apticket.der root@localhost:/mnt1/System/Library/Caches/
-    "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/0.0/sep-firmware.img4 root@localhost:/mnt1/usr/standalone/firmware/
-    if [ -e "$dir"/$deviceid/0.0/FUD ]; then
-        "$bin"/sshpass -p "alpine" scp -r -P 2222 "$dir"/$deviceid/0.0/FUD root@localhost:/mnt1/usr/standalone/firmware
-    fi
-    if [ -e "$dir"/$deviceid/0.0/com.apple.factorydata ]; then
-        "$bin"/sshpass -p "alpine" scp -r -P 2222 "$dir"/$deviceid/0.0/com.apple.factorydata root@localhost:/mnt1/System/Library/Caches
-    fi
-    if [ -e "$dir"/$deviceid/0.0/wireless ]; then
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt2/wireless/Library/Preferences/"
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt2/wireless/Library/Databases/"
-        "$bin"/sshpass -p "alpine" scp -r -P 2222 "$dir"/$deviceid/0.0/wireless/Library/Preferences/ root@localhost:/mnt2/wireless/Library
-    fi
-    if [[ "$1" == "7."* || "$1" == "8."* || "$1" == "9."* ]]; then
-        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/fstab_rw root@localhost:/mnt1/etc/fstab
-    else
-        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/fstab root@localhost:/mnt1/etc/
-    fi
-    read -p "would you like to also delete Setup.app? " r
-    if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/Applications/Setup.app"
+    if [[ "$restore" == 1 ]]; then
+        mkdir -p "$dir"/$deviceid/0.0/
+        if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/Baseband || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
+            if [[ "$2" == "7."* || "$2" == "8."* || "$2" == "9."* || "$2" == "10.0" || "$2" == "10.1" || "$2" == "10.2" ]]; then
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_hfs /dev/disk0s1s1 /mnt1"
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -t hfs /dev/disk0s1s2 /mnt2"
+            else
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "bash -c mount_filesystems"
+            fi
+            if [ ! -e "$dir"/$deviceid/0.0/apticket.der ]; then
+                "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/Caches/apticket.der "$dir"/$deviceid/0.0/apticket.der
+            fi
+            if [ ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 ]; then
+                "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/usr/standalone/firmware/sep-firmware.img4 "$dir"/$deviceid/0.0/sep-firmware.img4
+            fi
+            if [ ! -e "$dir"/$deviceid/0.0/FUD ]; then
+                "$bin"/sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/usr/standalone/firmware/FUD "$dir"/$deviceid/0.0/FUD
+            fi
+            if [ ! -e "$dir"/$deviceid/0.0/Baseband ]; then
+                "$bin"/sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/usr/local/standalone/firmware/Baseband "$dir"/$deviceid/0.0/Baseband
+            fi
+            if [ ! -e "$dir"/$deviceid/0.0/firmware ]; then
+                "$bin"/sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/usr/standalone/firmware "$dir"/$deviceid/0.0/firmware
+            fi
+            if [ ! -e "$dir"/$deviceid/0.0/local ]; then
+                "$bin"/sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/usr/local "$dir"/$deviceid/0.0/local
+            fi
+            if [ ! -e "$dir"/$deviceid/0.0/keybags ]; then
+                "$bin"/sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt2/keybags "$dir"/$deviceid/0.0/keybags
+            fi
+            if [ ! -e "$dir"/$deviceid/0.0/wireless ]; then
+                "$bin"/sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt2/wireless "$dir"/$deviceid/0.0/wireless
+            fi
+            if [ ! -e "$dir"/$deviceid/0.0/com.apple.factorydata ]; then
+                "$bin"/sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/System/Library/Caches/com.apple.factorydata "$dir"/$deviceid/0.0/com.apple.factorydata
+            fi
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt1"
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt2"
+            if [[ "$1" == "7."* || "$1" == "8."* ]]; then
+                rm -rf ramdisk
+                _download_ramdisk_boot_files $deviceid $replace 8.4.1
+            else
+                rm -rf ramdisk
+                _download_ramdisk_boot_files $deviceid $replace 11.4.1
+            fi
+        fi
+        if [ ! -e "$dir"/$deviceid/0.0/apticket.der ]; then
+            echo "missing ./apticket.der, which is required in order to proceed. exiting.."
+            exit
+        fi
+        if [ ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 ]; then
+            echo "missing ./sep-firmware.img4, which is required in order to proceed. exiting.."
+            exit
+        fi
+        if [ ! -e "$dir"/$deviceid/0.0/Baseband ]; then
+            echo "missing ./Baseband, which is required in order to proceed. exiting.."
+            exit
+        fi
+        if [ ! -e "$dir"/$deviceid/0.0/keybags ]; then
+            echo "missing ./keybags, which is required in order to proceed. exiting.."
+            exit
+        fi
+        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "lwvm init"
+        sleep 1
+        $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
+        _kill_if_running iproxy
+        echo "device should now reboot into recovery, pls wait"
+        echo "once in recovery you should follow instructions online to go back into dfu"
+        if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+            "$bin"/dfuhelper.sh
+        fi
+        _wait_for_dfu
+        cd "$dir"/ramdisk
+        if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" ]]; then
+            "$bin"/gaster pwn
+        else
+            "$bin"/ipwnder -p
+        fi
+        "$bin"/irecovery -f iBSS.img4
+        "$bin"/irecovery -f iBSS.img4
+        "$bin"/irecovery -f iBEC.img4
+        "$bin"/irecovery -f ramdisk.img4
+        "$bin"/irecovery -c ramdisk
+        "$bin"/irecovery -f devicetree.img4
+        "$bin"/irecovery -c devicetree
+        if [ -e ./trustcache.img4 ]; then
+            "$bin"/irecovery -f trustcache.img4
+            "$bin"/irecovery -c firmware
+        fi
+        "$bin"/irecovery -f kernelcache.img4
+        "$bin"/irecovery -c bootx &
+        cd ..
+        read -p "pls press the enter key once device is in the ramdisk" r
+        "$bin"/iproxy 2222 22 &
+        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat /gpt.txt | gptfdisk /dev/rdisk0s1"
+        sleep 2
+        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync"
+        sleep 1
+        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync"
+        sleep 1
+        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync"
+        sleep 1
+        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_hfs -s -v System -J -b 4096 -n a=4096,c=4096,e=4096 /dev/disk0s1s1"
+        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_hfs -s -v Data -J -b 4096 -n a=4096,c=4096,e=4096 /dev/disk0s1s2"
+        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_hfs /dev/disk0s1s1 /mnt1"
+        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs -o suid,dev /dev/disk0s1s2 /mnt2"
+        "$bin"/sshpass -p 'alpine' scp -P 2222 "$dir"/$deviceid/$1/OS.tar root@localhost:/mnt2
+        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/OS.tar -C /mnt1"
+        if [[ "$1" == "7."* ]]; then
+            "$bin"/sshpass -p 'alpine' scp -P 2222 "$dir"/jb/cydia_ios7.tar root@localhost:/mnt2
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/cydia_ios7.tar -C /mnt1"
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/cydia_ios7.tar"
+        elif [[ "$1" == "8."* || "$1" == "9."* ]]; then
+            "$bin"/sshpass -p 'alpine' scp -P 2222 "$dir"/jb/cydia.tar root@localhost:/mnt2
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/cydia.tar -C /mnt1"
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/cydia.tar"
+        fi
+        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mv -v /mnt1/private/var/* /mnt2"
+        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt1/usr/local/standalone/firmware/Baseband"
+        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir /mnt2/keybags"
+        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt2/wireless/baseband_data"
+        "$bin"/sshpass -p "alpine" scp -r -P 2222 "$dir"/$deviceid/0.0/keybags root@localhost:/mnt2
+        "$bin"/sshpass -p "alpine" scp -r -P 2222 "$dir"/$deviceid/0.0/Baseband root@localhost:/mnt1/usr/local/standalone/firmware
+        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/0.0/apticket.der root@localhost:/mnt1/System/Library/Caches/
+        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/0.0/sep-firmware.img4 root@localhost:/mnt1/usr/standalone/firmware/
+        if [ -e "$dir"/$deviceid/0.0/FUD ]; then
+            "$bin"/sshpass -p "alpine" scp -r -P 2222 "$dir"/$deviceid/0.0/FUD root@localhost:/mnt1/usr/standalone/firmware
+        fi
+        if [ -e "$dir"/$deviceid/0.0/com.apple.factorydata ]; then
+            "$bin"/sshpass -p "alpine" scp -r -P 2222 "$dir"/$deviceid/0.0/com.apple.factorydata root@localhost:/mnt1/System/Library/Caches
+        fi
+        if [ -e "$dir"/$deviceid/0.0/wireless ]; then
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt2/wireless/Library/Preferences/"
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt2/wireless/Library/Databases/"
+            "$bin"/sshpass -p "alpine" scp -r -P 2222 "$dir"/$deviceid/0.0/wireless/Library/Preferences/ root@localhost:/mnt2/wireless/Library
+        fi
+        if [[ "$1" == "7."* || "$1" == "8."* || "$1" == "9."* ]]; then
+            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/fstab_rw root@localhost:/mnt1/etc/fstab
+        else
+            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/fstab root@localhost:/mnt1/etc/
+        fi
+        #"$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/Applications/Setup.app"
         "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/data_ark.plist_ios7.tar root@localhost:/mnt2/
         "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/data_ark.plist_ios7.tar -C /mnt2"
         "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/data_ark.plist_ios7.tar"
@@ -668,138 +638,178 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
             "$bin"/mobactivationd64patcher "$dir"/$deviceid/$1/mobactivationd.raw "$dir"/$deviceid/$1/mobactivationd.patched -b -c -d
             "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/$1/mobactivationd.patched root@localhost:/mnt1/System/Library/PrivateFrameworks/MobileActivation.framework/Support/mobactivationd
         fi
-    fi
-    "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/com.saurik.Cydia.Startup.plist root@localhost:/mnt1/System/Library/LaunchDaemons
-    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/chown root:wheel /mnt1/System/Library/LaunchDaemons/com.saurik.Cydia.Startup.plist"
-    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/OS.tar"
-    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/log/asl/SweepStore"
-    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/Library/PreinstalledAssets/*"
-    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/Library/Preferences/.GlobalPreferences.plist"
-    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/.forward"
-    if [[ "$1" == "7."*  ]]; then
-        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/untether_ios7.tar root@localhost:/mnt1/
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xvf /mnt1/untether_ios7.tar -C /mnt1/'
-        # adds wtfis.app to /Applications which runs evasi0n7 jailbreak on ios 7 to enable tweaks to work
-        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/wtfis.app_ios7.tar root@localhost:/mnt1/
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xvf /mnt1/wtfis.app_ios7.tar -C /mnt1/Applications'
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt1/.installed_wtfis"
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chmod 777 /mnt1/.installed_wtfis"
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt1/evasi0n7-installed"
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chmod 777 /mnt1/evasi0n7-installed"
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt2/mobile/Media/"
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt2/mobile/Media/.evasi0n7_installed"
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chmod 777 /mnt2/mobile/Media/.evasi0n7_installed"
-    elif [[ "$1" == "9."*  ]]; then
-        # adds /bin/launchctl and /wtfis/loadruncmd which are both required for wtfis.app to work properly
-        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/untether_ios9.tar root@localhost:/mnt1/
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xvf /mnt1/untether_ios9.tar -C /mnt1/'
-        # adds wtfis.app to /Applications which simply only runs uicache and resprings on ios 9
-        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/wtfis.app_ios9.tar root@localhost:/mnt1/
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xvf /mnt1/wtfis.app_ios9.tar -C /mnt1/Applications'
-        # make wtfis not try to bootstrap cydia
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt1/.installed_wtfis"
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chown root:wheel /mnt1/.installed_wtfis"
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chmod 777 /mnt1/.installed_wtfis"
-        # fix cydia launch daemon
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'cp /mnt1/usr/libexec/CrashHousekeeping /mnt1/usr/libexec/CrashHousekeeping_o'
-        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/startup_ios9.sh root@localhost:/mnt1/usr/libexec/CrashHousekeeping
-    fi
-    if [[ "$1" == "9."* || "$1" == "8."* ]]; then
-        read -p "would you like to also install Evermusic_Free.app? " r
-        if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
-            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/Evermusic_Free.app.tar root@localhost:/mnt1/
-            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt1/Evermusic_Free.app.tar -C /mnt1/Applications/"
-            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt1/Applications/Evermusic_Free.app'
+        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/com.saurik.Cydia.Startup.plist root@localhost:/mnt1/System/Library/LaunchDaemons
+        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/chown root:wheel /mnt1/System/Library/LaunchDaemons/com.saurik.Cydia.Startup.plist"
+        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/OS.tar"
+        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/log/asl/SweepStore"
+        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/Library/PreinstalledAssets/*"
+        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/Library/Preferences/.GlobalPreferences.plist"
+        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/.forward"
+        if [[ "$1" == "7."*  ]]; then
+            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/untether_ios7.tar root@localhost:/mnt1/
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xvf /mnt1/untether_ios7.tar -C /mnt1/'
+            # adds wtfis.app to /Applications which runs evasi0n7 jailbreak on ios 7 to enable tweaks to work
+            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/wtfis.app_ios7.tar root@localhost:/mnt1/
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xvf /mnt1/wtfis.app_ios7.tar -C /mnt1/Applications'
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt1/.installed_wtfis"
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chmod 777 /mnt1/.installed_wtfis"
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt1/evasi0n7-installed"
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chmod 777 /mnt1/evasi0n7-installed"
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt2/mobile/Media/"
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt2/mobile/Media/.evasi0n7_installed"
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chmod 777 /mnt2/mobile/Media/.evasi0n7_installed"
+        elif [[ "$1" == "9."*  ]]; then
+            # adds /bin/launchctl and /wtfis/loadruncmd which are both required for wtfis.app to work properly
+            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/untether_ios9.tar root@localhost:/mnt1/
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xvf /mnt1/untether_ios9.tar -C /mnt1/'
+            # adds wtfis.app to /Applications which simply only runs uicache and resprings on ios 9
+            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/wtfis.app_ios9.tar root@localhost:/mnt1/
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xvf /mnt1/wtfis.app_ios9.tar -C /mnt1/Applications'
+            # make wtfis not try to bootstrap cydia
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt1/.installed_wtfis"
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chown root:wheel /mnt1/.installed_wtfis"
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chmod 777 /mnt1/.installed_wtfis"
+            # fix cydia launch daemon
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'cp /mnt1/usr/libexec/CrashHousekeeping /mnt1/usr/libexec/CrashHousekeeping_o'
+            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/startup_ios9.sh root@localhost:/mnt1/usr/libexec/CrashHousekeeping
         fi
+        if [[ "$1" == "9."* || "$1" == "8."* ]]; then
+            read -p "would you like to also install Evermusic_Free.app? " r
+            if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
+                "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/Evermusic_Free.app.tar root@localhost:/mnt1/
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt1/Evermusic_Free.app.tar -C /mnt1/Applications/"
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt1/Applications/Evermusic_Free.app'
+            fi
+        fi
+        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/$1/kernelcache root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches
+        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt1/.cydia_no_stash"
+        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/chown root:wheel /mnt1/.cydia_no_stash"
+        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chmod 777 /mnt1/.cydia_no_stash"
+        if [[ "$1" == "8."* ]]; then
+            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/AppleInternal.tar root@localhost:/mnt1/
+            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/PrototypeTools.framework_ios8.tar root@localhost:/mnt1/
+            "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/CoreServices/SystemVersion.plist "$dir"/$deviceid/$1/SystemVersion.plist
+            sed -i -e 's/<\/dict>/<key>ReleaseType<\/key><string>Internal<\/string><key>ProductType<\/key><string>Internal<\/string><\/dict>/g' "$dir"/$deviceid/$1/SystemVersion.plist
+            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/$1/SystemVersion.plist root@localhost:/mnt1/System/Library/CoreServices/SystemVersion.plist
+            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/SpringBoard-Internal.strings root@localhost:/mnt1/System/Library/CoreServices/SpringBoard.app/en.lproj/
+            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/SpringBoard-Internal.strings root@localhost:/mnt1/System/Library/CoreServices/SpringBoard.app/en_GB.lproj/
+            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/com.apple.springboard_ios8.plist root@localhost:/mnt2/mobile/Library/Preferences/com.apple.springboard.plist
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar -xvf /mnt1/PrototypeTools.framework_ios8.tar -C /mnt1/System/Library/PrivateFrameworks/'
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt1/System/Library/PrivateFrameworks/PrototypeTools.framework'
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/PrototypeTools.framework_ios8.tar'
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar -xvf /mnt1/AppleInternal.tar -C /mnt1/'
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt1/AppleInternal/'
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/AppleInternal.tar'
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt2/mobile/Library/Caches/com.apple.MobileGestalt.plist'
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/HealthMigrator.migrator/'
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/MobileNotes.migrator/'
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/MobileSlideShow.migrator/'
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/MobileSafari.migrator/'
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/MapsDataClassMigrator.migrator/'
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/InternationalSupportMigrator.migrator/'
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/MobileAsset.migrator/'
+            "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/PrivateFrameworks/DataMigration.framework/XPCServices/com.apple.datamigrator.xpc/com.apple.datamigrator "$dir"/$deviceid/$1/com.apple.datamigrator
+            "$bin"/datamigrator64patcher "$dir"/$deviceid/$1/com.apple.datamigrator "$dir"/$deviceid/$1/com.apple.datamigrator_patched -n
+            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/$1/com.apple.datamigrator_patched root@localhost:/mnt1/System/Library/PrivateFrameworks/DataMigration.framework/XPCServices/com.apple.datamigrator.xpc/com.apple.datamigrator
+            "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/usr/libexec/lockdownd "$dir"/$deviceid/$1/lockdownd.raw
+            "$bin"/lockdownd64patcher "$dir"/$deviceid/$1/lockdownd.raw "$dir"/$deviceid/$1/lockdownd.patched -u -l
+            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/$1/lockdownd.patched root@localhost:/mnt1/usr/libexec/lockdownd
+        elif [[ "$1" == "7."* ]]; then
+            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/AppleInternal.tar root@localhost:/mnt1/
+            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/PrototypeTools.framework.tar root@localhost:/mnt1/
+            "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/CoreServices/SystemVersion.plist "$dir"/$deviceid/$1/SystemVersion.plist
+            sed -i -e 's/<\/dict>/<key>ReleaseType<\/key><string>Internal<\/string><key>ProductType<\/key><string>Internal<\/string><\/dict>/g' "$dir"/$deviceid/$1/SystemVersion.plist
+            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/$1/SystemVersion.plist root@localhost:/mnt1/System/Library/CoreServices/SystemVersion.plist
+            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/SpringBoard-Internal.strings root@localhost:/mnt1/System/Library/CoreServices/SpringBoard.app/en.lproj/
+            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/SpringBoard-Internal.strings root@localhost:/mnt1/System/Library/CoreServices/SpringBoard.app/en_GB.lproj/
+            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/com.apple.springboard.plist root@localhost:/mnt2/mobile/Library/Preferences/com.apple.springboard.plist
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar -xvf /mnt1/PrototypeTools.framework.tar -C /mnt1/System/Library/PrivateFrameworks/'
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt1/System/Library/PrivateFrameworks/PrototypeTools.framework'
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/PrototypeTools.framework.tar'
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar -xvf /mnt1/AppleInternal.tar -C /mnt1/'
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt1/AppleInternal/'
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/AppleInternal.tar'
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt2/mobile/Library/Caches/com.apple.MobileGestalt.plist'
+            "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/usr/libexec/lockdownd "$dir"/$deviceid/$1/lockdownd.raw
+            "$bin"/lockdownd64patcher "$dir"/$deviceid/$1/lockdownd.raw "$dir"/$deviceid/$1/lockdownd.patched -u -l -b
+            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/$1/lockdownd.patched root@localhost:/mnt1/usr/libexec/lockdownd
+        elif [[ "$1" == "9."* ]]; then
+            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/AppleInternal.tar root@localhost:/mnt1/
+            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/PrototypeTools.framework_ios9.tar root@localhost:/mnt1/
+            "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/CoreServices/SystemVersion.plist "$dir"/$deviceid/$1/SystemVersion.plist
+            sed -i -e 's/<\/dict>/<key>ReleaseType<\/key><string>Internal<\/string><key>ProductType<\/key><string>Internal<\/string><\/dict>/g' "$dir"/$deviceid/$1/SystemVersion.plist
+            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/$1/SystemVersion.plist root@localhost:/mnt1/System/Library/CoreServices/SystemVersion.plist
+            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/SpringBoard-Internal.strings root@localhost:/mnt1/System/Library/CoreServices/SpringBoard.app/en.lproj/
+            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/SpringBoard-Internal.strings root@localhost:/mnt1/System/Library/CoreServices/SpringBoard.app/en_GB.lproj/
+            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/com.apple.springboard_ios9.plist root@localhost:/mnt2/mobile/Library/Preferences/com.apple.springboard.plist
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar -xvf /mnt1/PrototypeTools.framework_ios9.tar -C /mnt1/System/Library/PrivateFrameworks/'
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt1/System/Library/PrivateFrameworks/PrototypeTools.framework'
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/PrototypeTools.framework_ios9.tar'
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar -xvf /mnt1/AppleInternal.tar -C /mnt1/'
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt1/AppleInternal/'
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/AppleInternal.tar'
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt2/mobile/Library/Caches/com.apple.MobileGestalt.plist'
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/MobileSafari.migrator/'
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/Calendar.migrator/'
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/MapsDataClassMigrator.migrator/'
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/MobileSlideShow.migrator/'
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/iapmigrator.migrator/'
+            "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/usr/libexec/lockdownd "$dir"/$deviceid/$1/lockdownd.raw
+            "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/PrivateFrameworks/MobileActivation.framework/Support/mobactivationd "$dir"/$deviceid/$1/mobactivationd.raw
+            #"$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/lockdownd_9.2 root@localhost:/mnt1/usr/libexec/lockdownd
+        fi
+        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/usr/lib/libmis.dylib"
+        if [[ "$1" == "9."* ]]; then
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram -c"
+        fi
+        $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
+        if [ -e "$dir"/$deviceid/$1/iBSS.img4 ]; then
+            if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+                "$bin"/dfuhelper.sh
+            fi
+            _wait_for_dfu
+            cd "$dir"/$deviceid/$1
+            if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" ]]; then
+                "$bin"/gaster pwn
+            else
+                "$bin"/ipwnder -p
+            fi
+            "$bin"/irecovery -f iBSS.img4
+            "$bin"/irecovery -f iBSS.img4
+            "$bin"/irecovery -f iBEC.img4
+            "$bin"/irecovery -f devicetree.img4
+            "$bin"/irecovery -c devicetree
+            if [ -e ./trustcache.img4 ]; then
+                "$bin"/irecovery -f trustcache.img4
+                "$bin"/irecovery -c firmware
+            fi
+            "$bin"/irecovery -f kernelcache.img4
+            "$bin"/irecovery -c bootx &
+            cd ../../
+        fi
+        _kill_if_running iproxy
+        if [[ "$1" == "8.0" ]]; then
+            echo "done"
+            exit
+        fi
+        echo "done"
+        exit
+    else
+        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1"
+        if [[ "$1" == "7."* ]]; then
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -t hfs /dev/disk0s1s2 /mnt2"
+        else
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s2 /mnt2"
+        fi
+        ssh -p2222 root@localhost
+        $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
     fi
-    "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/$1/kernelcache root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches
-    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt1/.cydia_no_stash"
-    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/chown root:wheel /mnt1/.cydia_no_stash"
-    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chmod 777 /mnt1/.cydia_no_stash"
-    if [[ "$1" == "8."* ]]; then
-        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/AppleInternal.tar root@localhost:/mnt1/
-        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/PrototypeTools.framework_ios8.tar root@localhost:/mnt1/
-        "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/CoreServices/SystemVersion.plist "$dir"/$deviceid/$1/SystemVersion.plist
-        sed -i -e 's/<\/dict>/<key>ReleaseType<\/key><string>Internal<\/string><key>ProductType<\/key><string>Internal<\/string><\/dict>/g' "$dir"/$deviceid/$1/SystemVersion.plist
-        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/$1/SystemVersion.plist root@localhost:/mnt1/System/Library/CoreServices/SystemVersion.plist
-        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/SpringBoard-Internal.strings root@localhost:/mnt1/System/Library/CoreServices/SpringBoard.app/en.lproj/
-        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/SpringBoard-Internal.strings root@localhost:/mnt1/System/Library/CoreServices/SpringBoard.app/en_GB.lproj/
-        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/com.apple.springboard_ios8.plist root@localhost:/mnt2/mobile/Library/Preferences/com.apple.springboard.plist
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar -xvf /mnt1/PrototypeTools.framework_ios8.tar -C /mnt1/System/Library/PrivateFrameworks/'
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt1/System/Library/PrivateFrameworks/PrototypeTools.framework'
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/PrototypeTools.framework_ios8.tar'
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar -xvf /mnt1/AppleInternal.tar -C /mnt1/'
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt1/AppleInternal/'
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/AppleInternal.tar'
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt2/mobile/Library/Caches/com.apple.MobileGestalt.plist'
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/HealthMigrator.migrator/'
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/MobileNotes.migrator/'
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/MobileSlideShow.migrator/'
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/MobileSafari.migrator/'
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/MapsDataClassMigrator.migrator/'
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/InternationalSupportMigrator.migrator/'
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/MobileAsset.migrator/'
-        "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/PrivateFrameworks/DataMigration.framework/XPCServices/com.apple.datamigrator.xpc/com.apple.datamigrator "$dir"/$deviceid/$1/com.apple.datamigrator
-        "$bin"/datamigrator64patcher "$dir"/$deviceid/$1/com.apple.datamigrator "$dir"/$deviceid/$1/com.apple.datamigrator_patched -n
-        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/$1/com.apple.datamigrator_patched root@localhost:/mnt1/System/Library/PrivateFrameworks/DataMigration.framework/XPCServices/com.apple.datamigrator.xpc/com.apple.datamigrator
-        "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/usr/libexec/lockdownd "$dir"/$deviceid/$1/lockdownd.raw
-        "$bin"/lockdownd64patcher "$dir"/$deviceid/$1/lockdownd.raw "$dir"/$deviceid/$1/lockdownd.patched -u -l
-        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/$1/lockdownd.patched root@localhost:/mnt1/usr/libexec/lockdownd
-    elif [[ "$1" == "7."* ]]; then
-        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/AppleInternal.tar root@localhost:/mnt1/
-        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/PrototypeTools.framework.tar root@localhost:/mnt1/
-        "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/CoreServices/SystemVersion.plist "$dir"/$deviceid/$1/SystemVersion.plist
-        sed -i -e 's/<\/dict>/<key>ReleaseType<\/key><string>Internal<\/string><key>ProductType<\/key><string>Internal<\/string><\/dict>/g' "$dir"/$deviceid/$1/SystemVersion.plist
-        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/$1/SystemVersion.plist root@localhost:/mnt1/System/Library/CoreServices/SystemVersion.plist
-        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/SpringBoard-Internal.strings root@localhost:/mnt1/System/Library/CoreServices/SpringBoard.app/en.lproj/
-        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/SpringBoard-Internal.strings root@localhost:/mnt1/System/Library/CoreServices/SpringBoard.app/en_GB.lproj/
-        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/com.apple.springboard.plist root@localhost:/mnt2/mobile/Library/Preferences/com.apple.springboard.plist
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar -xvf /mnt1/PrototypeTools.framework.tar -C /mnt1/System/Library/PrivateFrameworks/'
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt1/System/Library/PrivateFrameworks/PrototypeTools.framework'
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/PrototypeTools.framework.tar'
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar -xvf /mnt1/AppleInternal.tar -C /mnt1/'
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt1/AppleInternal/'
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/AppleInternal.tar'
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt2/mobile/Library/Caches/com.apple.MobileGestalt.plist'
-        "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/usr/libexec/lockdownd "$dir"/$deviceid/$1/lockdownd.raw
-        "$bin"/lockdownd64patcher "$dir"/$deviceid/$1/lockdownd.raw "$dir"/$deviceid/$1/lockdownd.patched -u -l -b
-        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/$1/lockdownd.patched root@localhost:/mnt1/usr/libexec/lockdownd
-    elif [[ "$1" == "9."* ]]; then
-        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/AppleInternal.tar root@localhost:/mnt1/
-        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/PrototypeTools.framework_ios9.tar root@localhost:/mnt1/
-        "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/CoreServices/SystemVersion.plist "$dir"/$deviceid/$1/SystemVersion.plist
-        sed -i -e 's/<\/dict>/<key>ReleaseType<\/key><string>Internal<\/string><key>ProductType<\/key><string>Internal<\/string><\/dict>/g' "$dir"/$deviceid/$1/SystemVersion.plist
-        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/$1/SystemVersion.plist root@localhost:/mnt1/System/Library/CoreServices/SystemVersion.plist
-        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/SpringBoard-Internal.strings root@localhost:/mnt1/System/Library/CoreServices/SpringBoard.app/en.lproj/
-        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/SpringBoard-Internal.strings root@localhost:/mnt1/System/Library/CoreServices/SpringBoard.app/en_GB.lproj/
-        "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/com.apple.springboard_ios9.plist root@localhost:/mnt2/mobile/Library/Preferences/com.apple.springboard.plist
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar -xvf /mnt1/PrototypeTools.framework_ios9.tar -C /mnt1/System/Library/PrivateFrameworks/'
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt1/System/Library/PrivateFrameworks/PrototypeTools.framework'
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/PrototypeTools.framework_ios9.tar'
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar -xvf /mnt1/AppleInternal.tar -C /mnt1/'
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt1/AppleInternal/'
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/AppleInternal.tar'
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt2/mobile/Library/Caches/com.apple.MobileGestalt.plist'
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/MobileSafari.migrator/'
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/Calendar.migrator/'
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/MapsDataClassMigrator.migrator/'
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/MobileSlideShow.migrator/'
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/iapmigrator.migrator/'
-        "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/usr/libexec/lockdownd "$dir"/$deviceid/$1/lockdownd.raw
-        "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/PrivateFrameworks/MobileActivation.framework/Support/mobactivationd "$dir"/$deviceid/$1/mobactivationd.raw
-        #"$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/lockdownd_9.2 root@localhost:/mnt1/usr/libexec/lockdownd
-    fi
-    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/usr/lib/libmis.dylib"
-    if [[ "$1" == "9."* ]]; then
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram -c"
-    fi
-    $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
     if [ -e "$dir"/$deviceid/$1/iBSS.img4 ]; then
         if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
             "$bin"/dfuhelper.sh
-        fi
+        fi    
         _wait_for_dfu
-        cd "$dir"/$deviceid/$1
+         cd "$dir"/$deviceid/$1
         if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" ]]; then
             "$bin"/gaster pwn
         else
@@ -817,47 +827,7 @@ if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
         "$bin"/irecovery -f kernelcache.img4
         "$bin"/irecovery -c bootx &
         cd ../../
-    fi
-    _kill_if_running iproxy
-    if [[ "$1" == "8.0" ]]; then
-        echo "done"
         exit
     fi
-    echo "done"
-    exit
-else
-    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1"
-    if [[ "$1" == "7."* ]]; then
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -t hfs /dev/disk0s1s2 /mnt2"
-    else
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s2 /mnt2"
-    fi
-    ssh -p2222 root@localhost
-    $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
-fi
-if [ -e "$dir"/$deviceid/$1/iBSS.img4 ]; then
-    if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-        "$bin"/dfuhelper.sh
-    fi    
-    _wait_for_dfu
-     cd "$dir"/$deviceid/$1
-    if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" ]]; then
-        "$bin"/gaster pwn
-    else
-        "$bin"/ipwnder -p
-    fi
-    "$bin"/irecovery -f iBSS.img4
-    "$bin"/irecovery -f iBSS.img4
-    "$bin"/irecovery -f iBEC.img4
-    "$bin"/irecovery -f devicetree.img4
-    "$bin"/irecovery -c devicetree
-    if [ -e ./trustcache.img4 ]; then
-        "$bin"/irecovery -f trustcache.img4
-        "$bin"/irecovery -c firmware
-    fi
-    "$bin"/irecovery -f kernelcache.img4
-    "$bin"/irecovery -c bootx &
-    cd ../../
-    exit
 fi
 } | tee logs/"$(date +%T)"-"$(date +%F)"-"$(uname)"-"$(uname -r)".log
