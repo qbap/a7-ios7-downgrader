@@ -78,6 +78,7 @@ parse_arg() {
     case "$1" in
         clean)
             clean=1
+            hit=1
             ;;
         ssh)
             _kill_if_running iproxy
