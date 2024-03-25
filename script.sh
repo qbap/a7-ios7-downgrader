@@ -99,11 +99,8 @@ parse_cmdline() {
         if [[ "$arg" == --* ]] && [ -z "$no_more_opts" ]; then
             parse_opt "$arg";
             hit=1
-        elif [ "$arg_count" -lt "$max_args" ]; then
-            parse_arg "$arg";
         else
-            echo "[-] Too many arguments. Use $0 --help for help.";
-            exit 1;
+            parse_arg "$arg";
         fi
     done
     if [[ "$hit" == 0 ]]; then
