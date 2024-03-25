@@ -119,12 +119,15 @@ parse_arg() {
             exit 0
             ;;
         *)
-            echo "[-] Unknown option $1. Use $0 --help for help."
-            exit 1;
             ;;
     esac
 }
 parse_cmdline() {
+    if [ -z "$1" ]; then
+        print_help
+        exit 0
+        ;;
+    fi
     for arg in $@; do
         if [[ "$arg" == --* ]] && [ -z "$no_more_opts" ]; then
             parse_opt "$arg";
