@@ -63,9 +63,12 @@ parse_opt() {
             restore=1
             ;;
         --boot)
+            if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+                "$bin"/dfuhelper.sh
+            fi
+            _wait_for_dfu
             _download_boot_files $deviceid $replace $1
             if [ -e "$dir"/$deviceid/$1/iBSS.img4 ]; then
-                _wait_for_dfu
                 cd "$dir"/$deviceid/$1
                 if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" ]]; then
                     "$bin"/gaster pwn
