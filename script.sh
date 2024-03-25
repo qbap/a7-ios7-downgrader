@@ -32,7 +32,6 @@ Main operation mode:
     --restore           Wipe device and downgrade ios
     --boot              Don't enter ramdisk or wipe device, just boot
     --clean             Delete all the created boot files for your device
-    --dfuhelper         A helper to help get A11 devices into DFU mode from recovery mode
 
 The iOS version argument should be the iOS version you are downgrading to.
 EOF
@@ -48,10 +47,6 @@ parse_opt() {
             ;;
         --dump-blobs)
             dump_blobs=1
-            ;;
-        --dfuhelper)
-            "$bin"/dfuhelper.sh
-            exit 0
             ;;
         --ssh)
             _kill_if_running iproxy
@@ -109,10 +104,6 @@ parse_opt() {
 parse_arg() {
     arg_count=$((arg_count + 1))
     case "$1" in
-        dfuhelper)
-            "$bin"/dfuhelper.sh
-            exit 0
-            ;;
         clean)
             rm -rf "$dir"/$deviceid/$1/
             rm -rf "$dir"/ramdisk/
@@ -437,11 +428,6 @@ done
 if [ "$cmd_not_found" = "1" ]; then
     exit 1
 fi
-parse_cmdline "$@"
-# Check for pyimg4
-if ! python3 -c 'import pkgutil; exit(not pkgutil.find_loader("pyimg4"))'; then
-    python3 -m pip install pyimg4
-fi
 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
     "$bin"/dfuhelper.sh
 fi
@@ -450,8 +436,10 @@ check=$("$bin"/irecovery -q | grep CPID | sed 's/CPID: //')
 replace=$("$bin"/irecovery -q | grep MODEL | sed 's/MODEL: //')
 deviceid=$("$bin"/irecovery -q | grep PRODUCT | sed 's/PRODUCT: //')
 echo $deviceid
-if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-    "$bin"/dfuhelper.sh
+parse_cmdline "$@"
+# Check for pyimg4
+if ! python3 -c 'import pkgutil; exit(not pkgutil.find_loader("pyimg4"))'; then
+    python3 -m pip install pyimg4
 fi
 _wait_for_dfu
 if [[ "$ramdisk" == 1 || "$restore" == 1 ]]; then
