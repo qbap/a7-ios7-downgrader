@@ -19,7 +19,7 @@
 | 7.0.4    | &#9745;   | &#9744;      | &#9744;        | &#9745;   | &#9745;   | &#9745;  | &#9745;     | &#9745;   | &#9745; | &#9744;  | &#9745;    | &#9745;|
 | 7.0.6    | &#9745;   | &#9744;      | &#9744;        | &#9745;   | &#9745;   | &#9745;  | &#9745;     | &#9745;   | &#9745; | &#9744;  | &#9745;    | &#9745;|
 | 7.1.2    | &#9745;   | &#9744;      | &#9744;        | &#9745;   | &#9745;   | &#9745;  | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9745;    | &#9745;|
-| 8.0b4    | &#9745;   | &#9744;      | &#9744;        | &#9744;   | &#9745;   | &#9745;  | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9745;    | &#9745;|
+| 8.0      | &#9745;   | &#9744;      | &#9744;        | &#9744;   | &#9745;   | &#9745;  | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9745;    | &#9745;|
 | 9.0.1    | &#9745;   | &#9745;      | &#9745;        | &#9744;   | &#9745;   | &#9745;  | &#9745;     | &#9745;   | &#9744; | &#9745;  | &#9744;    | &#9744;|
 | 9.0.2    | &#9745;   | &#9745;      | &#9745;        | &#9744;   | &#9745;   | &#9745;  | &#9745;     | &#9745;   | &#9744; | &#9745;  | &#9744;    | &#9744;|
 | 9.1      | &#9745;   | &#9745;      | &#9745;        | &#9744;   | &#9745;   | &#9745;  | &#9745;     | &#9745;   | &#9744; | &#9745;  | &#9744;    | &#9744;|
@@ -35,6 +35,16 @@ to use this app, you need to downgrade to a supported version, and have a suppor
 `xcode-select install` to install `git` on macos
 
 `git clone --recursive https://github.com/y08wilm/Semaphorin && cd Semaphorin`
+
+## Support
+
+we now have a discord server where you can get help with this project
+
+you can join with this discord invite link https://discord.gg/WQWDBBYJTb
+
+if for some reason that invite link does not work, please contact [wilm271](https://t.me/wilm271) on telegram
+
+the discord server is strictly for semaphorin support only, do not bring personal issues into our server
 
 ## First run
 
@@ -52,6 +62,10 @@ when the script asks `what ios version are you running right now?` type your cur
 
 it should then begin the process of downgrading your device, please follow the on screen instructions
 
+your device will be jailbroken
+
+if you are on ios 7 please hit "go" in the wtfis app on your home screen to patch sandbox to allow cydia substrate to work properly
+
 ## Subsequent runs after downgrade is finished
 
 connect iphone in dfu mode
@@ -60,7 +74,7 @@ connect iphone in dfu mode
 
 for example you may write `sudo ./semaphorin.sh 7.1.2 --boot` if you downgraded to ios 7.1.2 earlier
 
-when the script asks `would you like to skip the ramdisk and boot ios $1?` type `yes` and hit enter
+it should then boot ios as normal and be jailbroken
 
 ## Setup.app bypass
 
