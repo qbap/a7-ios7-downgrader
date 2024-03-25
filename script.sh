@@ -368,7 +368,6 @@ _kill_if_running() {
         fi
     fi
 }
-# Check for required commands
 if [ "$os" = 'Linux' ]; then
     linux_cmds='lsusb'
 fi
@@ -405,7 +404,6 @@ replace=$("$bin"/irecovery -q | grep MODEL | sed 's/MODEL: //')
 deviceid=$("$bin"/irecovery -q | grep PRODUCT | sed 's/PRODUCT: //')
 echo $deviceid
 parse_cmdline "$@"
-# Check for pyimg4
 if ! python3 -c 'import pkgutil; exit(not pkgutil.find_loader("pyimg4"))'; then
     python3 -m pip install pyimg4
 fi
