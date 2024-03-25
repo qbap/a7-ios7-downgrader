@@ -61,9 +61,7 @@ parse_opt() {
             boot=1
             ;;
         --clean)
-            rm -rf "$dir"/$deviceid/$1/
-            rm -rf "$dir"/ramdisk/
-            exit 0
+            clean=1
             ;;
         --help)
             print_help
@@ -416,6 +414,12 @@ if ! python3 -c 'import pkgutil; exit(not pkgutil.find_loader("pyimg4"))'; then
     python3 -m pip install pyimg4
 fi
 _wait_for_dfu
+if [[ "$clean" == 1 ]]; then
+    rm -rf "$dir"/$deviceid/$1/
+    rm -rf "$dir"/$deviceid/ramdisk/
+    echo "[*] Removed the created boot files"
+    exit 0
+fi
 if [[ "$boot" == 1 ]]; then
     _download_boot_files $deviceid $replace $1
     if [ -e "$dir"/$deviceid/$1/iBSS.img4 ]; then
