@@ -1,6 +1,7 @@
 #/bin/bash
 mkdir -p logs
 verbose=1
+set -e
 {
 echo "[*] Command ran:`if [ $EUID = 0 ]; then echo " sudo"; fi` ./semaphorin.sh $@"
 os=$(uname)
@@ -194,7 +195,7 @@ _download_ramdisk_boot_files() {
             fi
             hdiutil attach -mountpoint /tmp/ramdisk "$dir"/ramdisk/RestoreRamDisk.dmg
             sudo diskutil enableOwnership /tmp/ramdisk
-            sudo "$bin"/gnutar -xvf "$sshtars"/ssh_hfsplus.tar -C /tmp/ramdisk
+            sudo "$bin"/gnutar -xvf "$sshtars"/ssh_apfs.tar -C /tmp/ramdisk
             hdiutil detach /tmp/ramdisk
             "$bin"/img4tool -c "$dir"/ramdisk/ramdisk.im4p -t rdsk "$dir"/ramdisk/RestoreRamDisk.dmg
             "$bin"/img4tool -c "$dir"/ramdisk/ramdisk.img4 -p "$dir"/ramdisk/ramdisk.im4p -m IM4M
