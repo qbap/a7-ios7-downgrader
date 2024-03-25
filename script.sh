@@ -807,30 +807,5 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 ]]; then
         ssh -p2222 root@localhost
         $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" &)
     fi
-    if [ -e "$dir"/$deviceid/$1/iBSS.img4 ]; then
-        if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-            "$bin"/dfuhelper.sh
-        fi    
-        _wait_for_dfu
-         cd "$dir"/$deviceid/$1
-        if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" ]]; then
-            "$bin"/gaster pwn
-        else
-            "$bin"/ipwnder -p
-        fi
-        "$bin"/irecovery -f iBSS.img4
-        "$bin"/irecovery -f iBSS.img4
-        "$bin"/irecovery -f iBEC.img4
-        "$bin"/irecovery -f devicetree.img4
-        "$bin"/irecovery -c devicetree
-        if [ -e ./trustcache.img4 ]; then
-            "$bin"/irecovery -f trustcache.img4
-            "$bin"/irecovery -c firmware
-        fi
-        "$bin"/irecovery -f kernelcache.img4
-        "$bin"/irecovery -c bootx &
-        cd ../../
-        exit
-    fi
 fi
 } | tee logs/"$(date +%T)"-"$(date +%F)"-"$(uname)"-"$(uname -r)".log
