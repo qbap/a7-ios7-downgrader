@@ -472,7 +472,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
     "$bin"/irecovery -f kernelcache.img4
     "$bin"/irecovery -c bootx &
     cd ..
-    sleep 2
+    sleep 8
     "$bin"/iproxy 2222 22 &
     sleep 2
     if [[ "$restore" == 1 ]]; then
@@ -567,7 +567,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
         "$bin"/irecovery -f kernelcache.img4
         "$bin"/irecovery -c bootx &
         cd ..
-        read -p "pls press the enter key once device is in the ramdisk" r
+        sleep 8
         "$bin"/iproxy 2222 22 &
         "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat /gpt.txt | gptfdisk /dev/rdisk0s1" 2> /dev/null
         sleep 2
