@@ -77,9 +77,7 @@ parse_arg() {
     arg_count=$((arg_count + 1))
     case "$1" in
         clean)
-            rm -rf "$dir"/$deviceid/$1/
-            rm -rf "$dir"/ramdisk/
-            exit 0
+            clean=1
             ;;
         ssh)
             _kill_if_running iproxy
