@@ -20,11 +20,11 @@ print_help() {
 Usage: $0 [VERSION]... [OPTION]...
 iOS 7.0.1-9.2.1 seprmvr64, downgrade& jailbreak tool for checkm8 devices
 Examples:
-  $0 7.1.2 --dfuhelper
-  $0 7.1.2 --restore
-  $0 7.1.2 --boot
+    $0 7.1.2 --dfuhelper
+    $0 7.1.2 --restore
+    $0 7.1.2 --boot
 
-Options:
+Main operation mode:
     --help              Print this help
     --ramdisk           Download& enter ramdisk
     --dump-blobs        Self explanatory
@@ -34,8 +34,7 @@ Options:
     --clean             Delete all the created boot files for your device
     --dfuhelper         A helper to help get A11 devices into DFU mode from recovery mode
 
-The iOS version argument should be the iOS version of your device.
-It is required when starting from DFU mode.
+The iOS version argument should be the iOS version you are downgrading to.
 EOF
 }
 
