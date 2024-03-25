@@ -128,107 +128,107 @@ _wait_for_dfu() {
 _download_ramdisk_boot_files() {
     ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$bin"/jq '.firmwares | .[] | select(.version=="'$3'")' | "$bin"/jq -s '.[0] | .url' --raw-output)
     rm -rf BuildManifest.plist
-    mkdir -p "$dir"/$1/ramdisk
+    mkdir -p "$dir"/$1/ramdisk/$3
     rm -rf work
     mkdir work
     cd work
     "$bin"/img4tool -e -s "$dir"/other/shsh/"${check}".shsh -m IM4M
-    if [ ! -e "$dir"/$1/ramdisk/ramdisk.img4 ]; then
+    if [ ! -e "$dir"/$1/ramdisk/$3/ramdisk.img4 ]; then
         "$bin"/pzb -g BuildManifest.plist "$ipswurl"
-        if [ ! -e "$dir"/$1/ramdisk/kernelcache.dec ]; then
+        if [ ! -e "$dir"/$1/ramdisk/$3/kernelcache.dec ]; then
             "$bin"/pzb -g $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) "$ipswurl"
             if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* ]]; then
                 fn="$(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)"
                 ivkey="$(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
-                "$bin"/img4 -i $fn -o "$dir"/$1/ramdisk/kcache.raw -k $ivkey
-                "$bin"/img4 -i $fn -o "$dir"/$1/ramdisk/kernelcache.dec -k $ivkey -D
-                pyimg4 im4p extract -i $fn -o "$dir"/$1/ramdisk/kernelcache_pyimg4.dec --iv ${ivkey:0:32} --key ${ivkey:32} --extra "$dir"/$1/ramdisk/kpp.bin
+                "$bin"/img4 -i $fn -o "$dir"/$1/ramdisk/$3/kcache.raw -k $ivkey
+                "$bin"/img4 -i $fn -o "$dir"/$1/ramdisk/$3/kernelcache.dec -k $ivkey -D
+                pyimg4 im4p extract -i $fn -o "$dir"/$1/ramdisk/$3/kernelcache_pyimg4.dec --iv ${ivkey:0:32} --key ${ivkey:32} --extra "$dir"/$1/ramdisk/$3/kpp.bin
             else
-                "$bin"/img4 -i $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) -o "$dir"/$1/ramdisk/kcache.raw
-                "$bin"/img4 -i $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) -o "$dir"/$1/ramdisk/kernelcache.dec -D
+                "$bin"/img4 -i $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) -o "$dir"/$1/ramdisk/$3/kcache.raw
+                "$bin"/img4 -i $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) -o "$dir"/$1/ramdisk/$3/kernelcache.dec -D
             fi
         fi
-        if [ ! -e "$dir"/$1/ramdisk/iBSS.dec ]; then
+        if [ ! -e "$dir"/$1/ramdisk/$3/iBSS.dec ]; then
             "$bin"/pzb -g $(awk "/""$2""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
             fn="$(awk "/""$2""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')"
             ivkey="$(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
-            "$bin"/img4 -i $fn -o "$dir"/$1/ramdisk/iBSS.dec -k $ivkey
+            "$bin"/img4 -i $fn -o "$dir"/$1/ramdisk/$3/iBSS.dec -k $ivkey
         fi
-        if [ ! -e "$dir"/$1/ramdisk/iBEC.dec ]; then
+        if [ ! -e "$dir"/$1/ramdisk/$3/iBEC.dec ]; then
             "$bin"/pzb -g $(awk "/""$2""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
             fn="$(awk "/""$2""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')"
             ivkey="$(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
-            "$bin"/img4 -i $fn -o "$dir"/$1/ramdisk/iBEC.dec -k $ivkey
+            "$bin"/img4 -i $fn -o "$dir"/$1/ramdisk/$3/iBEC.dec -k $ivkey
         fi
-        if [ ! -e "$dir"/$1/ramdisk/DeviceTree.dec ]; then
+        if [ ! -e "$dir"/$1/ramdisk/$3/DeviceTree.dec ]; then
             "$bin"/pzb -g $(awk "/""$2""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
             if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* ]]; then
                 fn="$(awk "/""$2""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]all_flash.*production[/]//' | sed 's/Firmware[/]all_flash[/]//')"
                 ivkey="$(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
-                "$bin"/img4 -i $fn -o "$dir"/$1/ramdisk/DeviceTree.dec -k $ivkey
+                "$bin"/img4 -i $fn -o "$dir"/$1/ramdisk/$3/DeviceTree.dec -k $ivkey
             else
-                mv $(awk "/""$2""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]all_flash.*production[/]//' | sed 's/Firmware[/]all_flash[/]//') "$dir"/$1/ramdisk/DeviceTree.dec
+                mv $(awk "/""$2""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]all_flash.*production[/]//' | sed 's/Firmware[/]all_flash[/]//') "$dir"/$1/ramdisk/$3/DeviceTree.dec
             fi
         fi
-        if [ ! -e "$dir"/$1/ramdisk/RestoreRamDisk.dmg ]; then
+        if [ ! -e "$dir"/$1/ramdisk/$3/RestoreRamDisk.dmg ]; then
             "$bin"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
             if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* ]]; then
                 fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
                 ivkey="$(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
-                "$bin"/img4 -i $fn -o "$dir"/$1/ramdisk/RestoreRamDisk.dmg -k $ivkey
+                "$bin"/img4 -i $fn -o "$dir"/$1/ramdisk/$3/RestoreRamDisk.dmg -k $ivkey
             else
-                "$bin"/img4 -i "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -o "$dir"/$1/ramdisk/RestoreRamDisk.dmg
+                "$bin"/img4 -i "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -o "$dir"/$1/ramdisk/$3/RestoreRamDisk.dmg
             fi
         fi
         if [[ "$3" == "12."* ]]; then
-            if [ ! -e "$dir"/$1/ramdisk/trustcache.img4 ]; then
+            if [ ! -e "$dir"/$1/ramdisk/$3/trustcache.img4 ]; then
                 "$bin"/pzb -g Firmware/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)".trustcache "$ipswurl"
-                 mv "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)".trustcache "$dir"/$1/ramdisk/trustcache.im4p
+                 mv "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)".trustcache "$dir"/$1/ramdisk/$3/trustcache.im4p
             fi
         fi
         rm -rf BuildManifest.plist
         if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* ]]; then
             if [[ "$3" == "9."* ]]; then
-                hdiutil resize -size 80M "$dir"/$1/ramdisk/RestoreRamDisk.dmg
+                hdiutil resize -size 80M "$dir"/$1/ramdisk/$3/RestoreRamDisk.dmg
             else
-                hdiutil resize -size 60M "$dir"/$1/ramdisk/RestoreRamDisk.dmg
+                hdiutil resize -size 60M "$dir"/$1/ramdisk/$3/RestoreRamDisk.dmg
             fi
-            hdiutil attach -mountpoint /tmp/ramdisk "$dir"/$1/ramdisk/RestoreRamDisk.dmg
+            hdiutil attach -mountpoint /tmp/ramdisk "$dir"/$1/ramdisk/$3/RestoreRamDisk.dmg
             sudo diskutil enableOwnership /tmp/ramdisk
             sudo "$bin"/gnutar -xvf "$sshtars"/ssh_apfs.tar -C /tmp/ramdisk
             hdiutil detach /tmp/ramdisk
-            "$bin"/img4tool -c "$dir"/$1/ramdisk/ramdisk.im4p -t rdsk "$dir"/$1/ramdisk/RestoreRamDisk.dmg
-            "$bin"/img4tool -c "$dir"/$1/ramdisk/ramdisk.img4 -p "$dir"/$1/ramdisk/ramdisk.im4p -m IM4M
+            "$bin"/img4tool -c "$dir"/$1/ramdisk/$3/ramdisk.im4p -t rdsk "$dir"/$1/ramdisk/$3/RestoreRamDisk.dmg
+            "$bin"/img4tool -c "$dir"/$1/ramdisk/$3/ramdisk.img4 -p "$dir"/$1/ramdisk/$3/ramdisk.im4p -m IM4M
             if [[ "$3" == "9."* ]]; then
-                "$bin"/iBoot64Patcher "$dir"/$1/ramdisk/iBSS.dec "$dir"/$1/ramdisk/iBSS.patched
-                "$bin"/iBoot64Patcher "$dir"/$1/ramdisk/iBEC.dec "$dir"/$1/ramdisk/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 -progress"
+                "$bin"/iBoot64Patcher "$dir"/$1/ramdisk/$3/iBSS.dec "$dir"/$1/ramdisk/$3/iBSS.patched
+                "$bin"/iBoot64Patcher "$dir"/$1/ramdisk/$3/iBEC.dec "$dir"/$1/ramdisk/$3/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 -progress"
             else
-                "$bin"/ipatcher "$dir"/$1/ramdisk/iBSS.dec "$dir"/$1/ramdisk/iBSS.patched
-                "$bin"/ipatcher "$dir"/$1/ramdisk/iBEC.dec "$dir"/$1/ramdisk/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 -progress"
+                "$bin"/ipatcher "$dir"/$1/ramdisk/$3/iBSS.dec "$dir"/$1/ramdisk/$3/iBSS.patched
+                "$bin"/ipatcher "$dir"/$1/ramdisk/$3/iBEC.dec "$dir"/$1/ramdisk/$3/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 -progress"
             fi
-            "$bin"/img4 -i "$dir"/$1/ramdisk/iBSS.patched -o "$dir"/$1/ramdisk/iBSS.img4 -M IM4M -A -T ibss
-            "$bin"/img4 -i "$dir"/$1/ramdisk/iBEC.patched -o "$dir"/$1/ramdisk/iBEC.img4 -M IM4M -A -T ibec
-            "$bin"/img4 -i "$dir"/$1/ramdisk/kernelcache.dec -o "$dir"/$1/ramdisk/kernelcache.img4 -M IM4M -T rkrn
-            "$bin"/img4 -i "$dir"/$1/ramdisk/devicetree.dec -o "$dir"/$1/ramdisk/devicetree.img4 -A -M IM4M -T rdtr
+            "$bin"/img4 -i "$dir"/$1/ramdisk/$3/iBSS.patched -o "$dir"/$1/ramdisk/$3/iBSS.img4 -M IM4M -A -T ibss
+            "$bin"/img4 -i "$dir"/$1/ramdisk/$3/iBEC.patched -o "$dir"/$1/ramdisk/$3/iBEC.img4 -M IM4M -A -T ibec
+            "$bin"/img4 -i "$dir"/$1/ramdisk/$3/kernelcache.dec -o "$dir"/$1/ramdisk/$3/kernelcache.img4 -M IM4M -T rkrn
+            "$bin"/img4 -i "$dir"/$1/ramdisk/$3/devicetree.dec -o "$dir"/$1/ramdisk/$3/devicetree.img4 -A -M IM4M -T rdtr
         else
-            hdiutil resize -size 120M "$dir"/$1/ramdisk/RestoreRamDisk.dmg
-            hdiutil attach -mountpoint /tmp/ramdisk "$dir"/$1/ramdisk/RestoreRamDisk.dmg
+            hdiutil resize -size 120M "$dir"/$1/ramdisk/$3/RestoreRamDisk.dmg
+            hdiutil attach -mountpoint /tmp/ramdisk "$dir"/$1/ramdisk/$3/RestoreRamDisk.dmg
             sudo diskutil enableOwnership /tmp/ramdisk
             sudo "$bin"/gnutar -xvf "$sshtars"/ssh_apfs.tar -C /tmp/ramdisk
             hdiutil detach /tmp/ramdisk
-            "$bin"/img4 -i "$dir"/$1/ramdisk/RestoreRamDisk.dmg -o "$dir"/$1/ramdisk/ramdisk.img4 -M IM4M -A -T rdsk
-            "$bin"/iBoot64Patcher "$dir"/$1/ramdisk/iBSS.dec "$dir"/$1/ramdisk/iBSS.patched
-            "$bin"/iBoot64Patcher "$dir"/$1/ramdisk/iBEC.dec "$dir"/$1/ramdisk/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 -restore -progress" -n
-            "$bin"/img4 -i "$dir"/$1/ramdisk/iBSS.patched -o "$dir"/$1/ramdisk/iBSS.img4 -M IM4M -A -T ibss
-            "$bin"/img4 -i "$dir"/$1/ramdisk/iBEC.patched -o "$dir"/$1/ramdisk/iBEC.img4 -M IM4M -A -T ibec
-            "$bin"/Kernel64Patcher2 "$dir"/$1/ramdisk/kcache.raw "$dir"/$1/ramdisk/kcache2.patched -a
-            "$bin"/kerneldiff "$dir"/$1/ramdisk/kcache.raw "$dir"/$1/ramdisk/kcache2.patched "$dir"/$1/ramdisk/kc.bpatch
-            "$bin"/img4 -i "$dir"/$1/ramdisk/kernelcache.dec -o "$dir"/$1/ramdisk/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/ramdisk/kc.bpatch
-            "$bin"/img4 -i "$dir"/$1/ramdisk/kernelcache.dec -o "$dir"/$1/ramdisk/kernelcache -M IM4M -T krnl -P "$dir"/$1/ramdisk/kc.bpatch
+            "$bin"/img4 -i "$dir"/$1/ramdisk/$3/RestoreRamDisk.dmg -o "$dir"/$1/ramdisk/$3/ramdisk.img4 -M IM4M -A -T rdsk
+            "$bin"/iBoot64Patcher "$dir"/$1/ramdisk/$3/iBSS.dec "$dir"/$1/ramdisk/$3/iBSS.patched
+            "$bin"/iBoot64Patcher "$dir"/$1/ramdisk/$3/iBEC.dec "$dir"/$1/ramdisk/$3/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 -restore -progress" -n
+            "$bin"/img4 -i "$dir"/$1/ramdisk/$3/iBSS.patched -o "$dir"/$1/ramdisk/$3/iBSS.img4 -M IM4M -A -T ibss
+            "$bin"/img4 -i "$dir"/$1/ramdisk/$3/iBEC.patched -o "$dir"/$1/ramdisk/$3/iBEC.img4 -M IM4M -A -T ibec
+            "$bin"/Kernel64Patcher2 "$dir"/$1/ramdisk/$3/kcache.raw "$dir"/$1/ramdisk/$3/kcache2.patched -a
+            "$bin"/kerneldiff "$dir"/$1/ramdisk/$3/kcache.raw "$dir"/$1/ramdisk/$3/kcache2.patched "$dir"/$1/ramdisk/$3/kc.bpatch
+            "$bin"/img4 -i "$dir"/$1/ramdisk/$3/kernelcache.dec -o "$dir"/$1/ramdisk/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/ramdisk/$3/kc.bpatch
+            "$bin"/img4 -i "$dir"/$1/ramdisk/$3/kernelcache.dec -o "$dir"/$1/ramdisk/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/ramdisk/$3/kc.bpatch
             if [[ "$3" == "12."* ]]; then
-                "$bin"/img4 -i "$dir"/$1/ramdisk/trustcache.im4p -o "$dir"/$1/ramdisk/trustcache.img4 -M IM4M -T rtsc
+                "$bin"/img4 -i "$dir"/$1/ramdisk/$3/trustcache.im4p -o "$dir"/$1/ramdisk/$3/trustcache.img4 -M IM4M -T rtsc
             fi
-            "$bin"/img4 -i "$dir"/$1/ramdisk/devicetree.dec -o "$dir"/$1/ramdisk/devicetree.img4 -M IM4M -T rdtr
+            "$bin"/img4 -i "$dir"/$1/ramdisk/$3/devicetree.dec -o "$dir"/$1/ramdisk/$3/devicetree.img4 -M IM4M -T rdtr
         fi
     fi
     cd ..
@@ -451,13 +451,14 @@ if [[ "$boot" == 1 ]]; then
     exit 0
 fi
 if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
-    if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/Baseband || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
-        read -p "what ios version are you running right now? " r
-        _download_ramdisk_boot_files $deviceid $replace $r
-    elif [[ "$1" == "7."* || "$1" == "8."* ]]; then
+    if [[ "$version" == "7."* || "$version" == "8."* ]]; then
         _download_ramdisk_boot_files $deviceid $replace 8.4.1
     else
         _download_ramdisk_boot_files $deviceid $replace 11.4.1
+    fi
+    if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/Baseband || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
+        read -p "what ios version are you running right now? " r
+        _download_ramdisk_boot_files $deviceid $replace $r
     fi
     _download_boot_files $deviceid $replace $version
     _download_root_fs $deviceid $replace $version
@@ -466,7 +467,13 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
         "$bin"/dfuhelper.sh
     fi
     _wait_for_dfu
-    cd "$dir"/$deviceid/ramdisk
+    if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/Baseband || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
+        cd "$dir"/$deviceid/ramdisk/$r
+    elif [[ "$version" == "7."* || "$version" == "8."* ]]; then
+        cd "$dir"/$deviceid/ramdisk/8.4.1
+    else
+        cd "$dir"/$deviceid/ramdisk/11.4.1
+    fi
     if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" ]]; then
         "$bin"/gaster pwn
     else
@@ -527,13 +534,6 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
             fi
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt1" 2> /dev/null
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt2" 2> /dev/null
-            if [[ "$version" == "7."* || "$version" == "8."* ]]; then
-                rm -rf ramdisk
-                _download_ramdisk_boot_files $deviceid $replace 8.4.1
-            else
-                rm -rf ramdisk
-                _download_ramdisk_boot_files $deviceid $replace 11.4.1
-            fi
         fi
         if [ ! -e "$dir"/$deviceid/0.0/apticket.der ]; then
             echo "missing ./apticket.der, which is required in order to proceed. exiting.."
@@ -561,7 +561,11 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
             "$bin"/dfuhelper.sh
         fi
         _wait_for_dfu
-        cd "$dir"/$deviceid/ramdisk
+        if [[ "$version" == "7."* || "$version" == "8."* ]]; then
+            cd "$dir"/$deviceid/ramdisk/8.4.1
+        else
+            cd "$dir"/$deviceid/ramdisk/11.4.1
+        fi
         if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" ]]; then
             "$bin"/gaster pwn
         else
