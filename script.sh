@@ -128,16 +128,20 @@ parse_cmdline() {
         print_help
         exit 0
     fi
+    hit=0
     for arg in $@; do
         if [[ "$arg" == --* ]] && [ -z "$no_more_opts" ]; then
             parse_opt "$arg";
-        elif [ "$arg_count" -lt "$max_args" ]; then
-            parse_arg "$arg";
+            hit=1
         else
             echo "[-] Too many arguments. Use $0 --help for help.";
             exit 1;
         fi
     done
+    if [[ "$hit" == 0 ]]; then
+        print_help
+        exit 0
+    fi
 }
 parse_cmdline "$@"
 _wait_for_dfu() {
