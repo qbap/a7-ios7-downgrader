@@ -119,7 +119,6 @@ parse_arg() {
             exit 0
             ;;
         *)
-            echo "[-] Unknown option $1. Use $0 --help for help."
             ;;
     esac
 }
