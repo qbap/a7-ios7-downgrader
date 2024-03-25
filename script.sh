@@ -802,6 +802,8 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
             if [[ -e "$dir"/$deviceid/0.0/apticket.der ]]; then
                 echo "$dir"/$deviceid/0.0/apticket.der
             fi
+            $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
+            exit
         fi
         ssh -p2222 root@localhost
         $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
