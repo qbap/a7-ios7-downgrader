@@ -196,7 +196,7 @@ _download_ramdisk_boot_files() {
             fi
             hdiutil attach -mountpoint /tmp/ramdisk "$dir"/$1/ramdisk/$3/RestoreRamDisk.dmg
             sudo diskutil enableOwnership /tmp/ramdisk
-            sudo "$bin"/gnutar -xvf "$sshtars"/ssh_apfs.tar -C /tmp/ramdisk
+            sudo "$bin"/gnutar -xvf "$sshtars"/ssh.tar -C /tmp/ramdisk
             hdiutil detach /tmp/ramdisk
             "$bin"/img4tool -c "$dir"/$1/ramdisk/$3/ramdisk.im4p -t rdsk "$dir"/$1/ramdisk/$3/RestoreRamDisk.dmg
             "$bin"/img4tool -c "$dir"/$1/ramdisk/$3/ramdisk.img4 -p "$dir"/$1/ramdisk/$3/ramdisk.im4p -m IM4M
@@ -215,7 +215,12 @@ _download_ramdisk_boot_files() {
             hdiutil resize -size 120M "$dir"/$1/ramdisk/$3/RestoreRamDisk.dmg
             hdiutil attach -mountpoint /tmp/ramdisk "$dir"/$1/ramdisk/$3/RestoreRamDisk.dmg
             sudo diskutil enableOwnership /tmp/ramdisk
-            sudo "$bin"/gnutar -xvf "$sshtars"/ssh_apfs.tar -C /tmp/ramdisk
+            if [[ "$3" == "10.0"* || "$3" == "10.1"* || "$3" == "10.2"* || "$3" == "11.4.1" ]]; then
+                sudo "$bin"/gnutar -xvf "$sshtars"/ssh.tar -C /tmp/ramdisk
+            else
+                # fix mount_filesystems
+                sudo "$bin"/gnutar -xzvf "$sshtars"/ssh.tar_new.gz -C /tmp/ramdisk
+            fi
             hdiutil detach /tmp/ramdisk
             "$bin"/img4 -i "$dir"/$1/ramdisk/$3/RestoreRamDisk.dmg -o "$dir"/$1/ramdisk/$3/ramdisk.img4 -M IM4M -A -T rdsk
             "$bin"/iBoot64Patcher "$dir"/$1/ramdisk/$3/iBSS.dec "$dir"/$1/ramdisk/$3/iBSS.patched
