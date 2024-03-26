@@ -226,7 +226,7 @@ _download_ramdisk_boot_files() {
             "$bin"/kerneldiff "$dir"/$1/ramdisk/$3/kcache.raw "$dir"/$1/ramdisk/$3/kcache2.patched "$dir"/$1/ramdisk/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/ramdisk/$3/kernelcache.dec -o "$dir"/$1/ramdisk/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/ramdisk/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/ramdisk/$3/kernelcache.dec -o "$dir"/$1/ramdisk/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/ramdisk/$3/kc.bpatch
-            if [[ "$3" == "12."* ]]; then
+            if [[ ! "$3" == "7."* && ! "$3" == "8."* && ! "$3" == "9."* && ! "$3" == "10."* && ! "$3" == "11."* ]]; then
                 "$bin"/img4 -i "$dir"/$1/ramdisk/$3/trustcache.im4p -o "$dir"/$1/ramdisk/$3/trustcache.img4 -M IM4M -T rtsc
             fi
             "$bin"/img4 -i "$dir"/$1/ramdisk/$3/devicetree.dec -o "$dir"/$1/ramdisk/$3/devicetree.img4 -M IM4M -T rdtr
