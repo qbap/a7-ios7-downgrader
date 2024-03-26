@@ -11,7 +11,6 @@ sshtars="$(pwd)/sshtars"
 echo "semaphorin | Version 1.0"
 echo "Written by y08wilm and Mineek | Some code and ramdisk from Nathan"
 echo ""
-sudo mount -uw /
 max_args=1
 arg_count=0
 print_help() {
@@ -459,10 +458,10 @@ if [[ "$boot" == 1 ]]; then
     _download_boot_files $deviceid $replace $version
     if [ -e "$dir"/$deviceid/$version/iBSS.img4 ]; then
         cd "$dir"/$deviceid/$version
-        if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" ]]; then
-            "$bin"/gaster pwn
-        else
+        if [[ "$deviceid" == "iPhone6,2" || "$deviceid" == "iPhone6,1" || "$deviceid" == "iPad4,4" || "$deviceid" == "iPad4,5" ]]; then
             "$bin"/ipwnder -p
+        else
+            "$bin"/gaster pwn
         fi
         "$bin"/irecovery -f iBSS.img4
         "$bin"/irecovery -f iBSS.img4
@@ -504,10 +503,10 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
     else
         cd "$dir"/$deviceid/ramdisk/11.4.1
     fi
-    if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" ]]; then
-        "$bin"/gaster pwn
-    else
+    if [[ "$deviceid" == "iPhone6,2" || "$deviceid" == "iPhone6,1" || "$deviceid" == "iPad4,4" || "$deviceid" == "iPad4,5" ]]; then
         "$bin"/ipwnder -p
+    else
+        "$bin"/gaster pwn
     fi
     "$bin"/irecovery -f iBSS.img4
     "$bin"/irecovery -f iBSS.img4
@@ -598,10 +597,10 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
         else
             cd "$dir"/$deviceid/ramdisk/11.4.1
         fi
-        if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" ]]; then
-            "$bin"/gaster pwn
-        else
+        if [[ "$deviceid" == "iPhone6,2" || "$deviceid" == "iPhone6,1" || "$deviceid" == "iPad4,4" || "$deviceid" == "iPad4,5" ]]; then
             "$bin"/ipwnder -p
+        else
+            "$bin"/gaster pwn
         fi
         "$bin"/irecovery -f iBSS.img4
         "$bin"/irecovery -f iBSS.img4
@@ -814,10 +813,10 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
             fi
             _wait_for_dfu
             cd "$dir"/$deviceid/$version
-            if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" ]]; then
-                "$bin"/gaster pwn
-            else
+            if [[ "$deviceid" == "iPhone6,2" || "$deviceid" == "iPhone6,1" || "$deviceid" == "iPad4,4" || "$deviceid" == "iPad4,5" ]]; then
                 "$bin"/ipwnder -p
+            else
+                "$bin"/gaster pwn
             fi
             "$bin"/irecovery -f iBSS.img4
             "$bin"/irecovery -f iBSS.img4
