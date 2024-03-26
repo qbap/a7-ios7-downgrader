@@ -181,7 +181,7 @@ _download_ramdisk_boot_files() {
                 "$bin"/img4 -i "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -o "$dir"/$1/ramdisk/$3/RestoreRamDisk.dmg
             fi
         fi
-        if [[ "$3" == "12."* ]]; then
+        if [[ ! "$3" == "7."* && ! "$3" == "8."* && ! "$3" == "9."* && ! "$3" == "10."* && ! "$3" == "11."* ]]; then
             if [ ! -e "$dir"/$1/ramdisk/$3/trustcache.img4 ]; then
                 "$bin"/pzb -g Firmware/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)".trustcache "$ipswurl"
                  mv "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)".trustcache "$dir"/$1/ramdisk/$3/trustcache.im4p
@@ -509,7 +509,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
         "$bin"/gaster pwn
     fi
     "$bin"/irecovery -f iBSS.img4
-    #"$bin"/irecovery -f iBSS.img4
+    "$bin"/irecovery -f iBSS.img4
     "$bin"/irecovery -f iBEC.img4
     "$bin"/irecovery -f ramdisk.img4
     "$bin"/irecovery -c ramdisk
