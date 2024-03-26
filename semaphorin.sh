@@ -509,7 +509,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
         "$bin"/gaster pwn
     fi
     "$bin"/irecovery -f iBSS.img4
-    "$bin"/irecovery -f iBSS.img4
+    #"$bin"/irecovery -f iBSS.img4
     "$bin"/irecovery -f iBEC.img4
     "$bin"/irecovery -f ramdisk.img4
     "$bin"/irecovery -c ramdisk
