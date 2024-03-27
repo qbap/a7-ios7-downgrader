@@ -627,10 +627,8 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
     else
         _download_ramdisk_boot_files $deviceid $replace 11.4.1
     fi
-    if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/Baseband || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
-        read -p "what ios version are you running right now? " r
-        _download_ramdisk_boot_files $deviceid $replace $r
-    fi
+    read -p "what ios version were you running before downgrade? " r
+    _download_ramdisk_boot_files $deviceid $replace $r
     _download_root_fs $deviceid $replace $version
     _download_boot_files $deviceid $replace $version
     sleep 1
