@@ -144,13 +144,21 @@ _download_ramdisk_boot_files() {
         if [ ! -e "$dir"/$1/ramdisk/$3/iBSS.dec ]; then
             "$bin"/pzb -g $(awk "/""$2""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
             fn="$(awk "/""$2""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')"
-            ivkey="$(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
+            if [[ "$3" == "10.0"* || "$3" == "10.1"* || "$3" == "10.2"* ]]; then
+                ivkey="$(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn 10.3 $1)"
+            else
+                ivkey="$(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
+            fi
             "$bin"/img4 -i $fn -o "$dir"/$1/ramdisk/$3/iBSS.dec -k $ivkey
         fi
         if [ ! -e "$dir"/$1/ramdisk/$3/iBEC.dec ]; then
             "$bin"/pzb -g $(awk "/""$2""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
             fn="$(awk "/""$2""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')"
-            ivkey="$(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
+            if [[ "$3" == "10.0"* || "$3" == "10.1"* || "$3" == "10.2"* ]]; then
+                ivkey="$(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn 10.3 $1)"
+            else
+                ivkey="$(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
+            fi
             "$bin"/img4 -i $fn -o "$dir"/$1/ramdisk/$3/iBEC.dec -k $ivkey
         fi
         if [[ "$3" == "10.0"* || "$3" == "10.1"* || "$3" == "10.2"* ]]; then
@@ -285,13 +293,21 @@ _download_boot_files() {
         if [ ! -e "$dir"/$1/$3/iBSS.dec ]; then
             "$bin"/pzb -g $(awk "/""$2""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
             fn="$(awk "/""$2""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')"
-            ivkey="$(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
+            if [[ "$3" == "10.0"* || "$3" == "10.1"* || "$3" == "10.2"* ]]; then
+                ivkey="$(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn 10.3 $1)"
+            else
+                ivkey="$(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
+            fi
             "$bin"/img4 -i $fn -o "$dir"/$1/$3/iBSS.dec -k $ivkey
         fi
         if [ ! -e "$dir"/$1/$3/iBEC.dec ]; then
             "$bin"/pzb -g $(awk "/""$2""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
             fn="$(awk "/""$2""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')"
-            ivkey="$(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
+            if [[ "$3" == "10.0"* || "$3" == "10.1"* || "$3" == "10.2"* ]]; then
+                ivkey="$(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn 10.3 $1)"
+            else
+                ivkey="$(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
+            fi
             "$bin"/img4 -i $fn -o "$dir"/$1/$3/iBEC.dec -k $ivkey
         fi
         if [[ "$3" == "10.0"* || "$3" == "10.1"* || "$3" == "10.2"* ]]; then
