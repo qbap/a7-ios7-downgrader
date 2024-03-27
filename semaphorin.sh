@@ -351,7 +351,7 @@ _download_boot_files() {
         if [[ "$3" == "8."* ]]; then
             "$bin"/img4 -i "$dir"/$1/$3/iBSS.patched -o "$dir"/$1/$3/iBSS.img4 -M IM4M -A -T ibss
             "$bin"/img4 -i "$dir"/$1/$3/iBEC.patched -o "$dir"/$1/$3/iBEC.img4 -M IM4M -A -T ibec
-            if [[ "$1" == "iPhone6,2" || "$1" == "iPhone6,1" || "$1" == "iPad4,4" || "$1" == "iPad4,5" || "$1" == "iPad4,2" ]]; then
+            if [[ "$1" == "iPhone6,2" || "$1" == "iPhone6,1" || "$1" == "iPad4,4" || "$1" == "iPad4,5" || "$1" == "iPad4,2" || "$deviceid" == "iPad4,8" ]]; then
                 "$bin"/seprmvr64lite "$dir"/jb/kcache_12A4331d.raw "$dir"/$1/$3/kcache.patched
                 "$bin"/Kernel64Patcher "$dir"/$1/$3/kcache.patched "$dir"/$1/$3/kcache2.patched -p -f -a -m -g -s
                 "$bin"/kerneldiff "$dir"/jb/kcache_12A4331d.raw "$dir"/$1/$3/kcache2.patched "$dir"/$1/$3/kc.bpatch
@@ -1028,7 +1028,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
             fi
             _wait_for_dfu
             cd "$dir"/$deviceid/$version
-            if [[ "$deviceid" == "iPhone6,2" || "$deviceid" == "iPhone6,1" || "$deviceid" == "iPad4,4" || "$deviceid" == "iPad4,5" || "$deviceid" == "iPad4,2" ]]; then
+            if [[ "$deviceid" == "iPhone6,2" || "$deviceid" == "iPhone6,1" || "$deviceid" == "iPad4,4" || "$deviceid" == "iPad4,5" || "$deviceid" == "iPad4,2" || "$deviceid" == "iPad4,8" ]]; then
                 "$bin"/ipwnder -p
             else
                 "$bin"/gaster pwn
