@@ -231,7 +231,7 @@ _download_ramdisk_boot_files() {
                 sudo "$bin"/gnutar -xvf "$sshtars"/ssh.tar -C /tmp/ramdisk
             else
                 # fix mount_filesystems
-                sudo "$bin"/gnutar -xzvf "$sshtars"/ramdisk.tar.gz -C /tmp/ramdisk
+                sudo "$bin"/gnutar -xzvf "$sshtars"/ssh.tar_even_newer.gz -C /tmp/ramdisk
             fi
             hdiutil detach /tmp/ramdisk
             "$bin"/img4 -i "$dir"/$1/ramdisk/$3/RestoreRamDisk.dmg -o "$dir"/$1/ramdisk/$3/ramdisk.img4 -M IM4M -A -T rdsk
