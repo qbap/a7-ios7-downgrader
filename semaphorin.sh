@@ -716,38 +716,52 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
             cd ..
         fi
     fi
-    if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/Baseband || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
-        cd "$dir"/$deviceid/ramdisk/$r
-    elif [[ "$version" == "7."* || "$version" == "8."* ]]; then
-        cd "$dir"/$deviceid/ramdisk/8.4.1
+    if [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* ]]; then
+        cd ramdisk
+        ./sshrd.sh clean
+        echo "[*] Creating ramdisk"
+        if [[ "$version" == *"16"* ]]; then
+            ./sshrd.sh 16.0.3
+        else
+            ./sshrd.sh "$r"
+        fi
+        echo "[*] Booting ramdisk"
+        ./sshrd.sh boot
+        cd ..
     else
-        cd "$dir"/$deviceid/ramdisk/11.4.1
+        if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/Baseband || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
+            cd "$dir"/$deviceid/ramdisk/$r
+        elif [[ "$version" == "7."* || "$version" == "8."* ]]; then
+            cd "$dir"/$deviceid/ramdisk/8.4.1
+        else
+            cd "$dir"/$deviceid/ramdisk/11.4.1
+        fi
+        if [[ "$deviceid" == "iPhone6,2" || "$deviceid" == "iPhone6,1" || "$deviceid" == "iPad4,4" || "$deviceid" == "iPad4,5" ]]; then
+            "$bin"/ipwnder -p
+        else
+            "$bin"/gaster pwn
+        fi
+        "$bin"/irecovery -f iBSS.img4
+        "$bin"/irecovery -f iBSS.img4
+        "$bin"/irecovery -f iBEC.img4
+        if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
+            sleep 1
+            "$bin"/irecovery -c go
+        fi
+        "$bin"/irecovery -f ramdisk.img4
+        "$bin"/irecovery -c ramdisk
+        "$bin"/irecovery -f devicetree.img4
+        "$bin"/irecovery -c devicetree
+        if [ -e ./trustcache.img4 ]; then
+            "$bin"/irecovery -f trustcache.img4
+            "$bin"/irecovery -c firmware
+        fi
+        "$bin"/irecovery -f kernelcache.img4
+        "$bin"/irecovery -c bootx &
+        cd ../../../
+        read -p "pls press the enter key once device is in the ramdisk " r1
+        "$bin"/iproxy 2222 22 &
     fi
-    if [[ "$deviceid" == "iPhone6,2" || "$deviceid" == "iPhone6,1" || "$deviceid" == "iPad4,4" || "$deviceid" == "iPad4,5" ]]; then
-        "$bin"/ipwnder -p
-    else
-        "$bin"/gaster pwn
-    fi
-    "$bin"/irecovery -f iBSS.img4
-    "$bin"/irecovery -f iBSS.img4
-    "$bin"/irecovery -f iBEC.img4
-    if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
-        sleep 1
-        "$bin"/irecovery -c go
-    fi
-    "$bin"/irecovery -f ramdisk.img4
-    "$bin"/irecovery -c ramdisk
-    "$bin"/irecovery -f devicetree.img4
-    "$bin"/irecovery -c devicetree
-    if [ -e ./trustcache.img4 ]; then
-        "$bin"/irecovery -f trustcache.img4
-        "$bin"/irecovery -c firmware
-    fi
-    "$bin"/irecovery -f kernelcache.img4
-    "$bin"/irecovery -c bootx &
-    cd ../../../
-    read -p "pls press the enter key once device is in the ramdisk " r1
-    "$bin"/iproxy 2222 22 &
     sleep 2
     if [[ "$restore" == 1 ]]; then
         mkdir -p "$dir"/$deviceid/0.0/
@@ -784,6 +798,23 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
             fi
             if [ ! -e "$dir"/$deviceid/0.0/com.apple.factorydata ]; then
                 "$bin"/sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/System/Library/Caches/com.apple.factorydata "$dir"/$deviceid/0.0/com.apple.factorydata 2> /dev/null
+            fi
+            if [[ ! -e "$dir"/$deviceid/0.0/apticket.der ]]; then
+                has_active=$(remote_cmd "ls /mnt6/active" 2> /dev/null)
+                if [ ! "$has_active" = "/mnt6/active" ]; then
+                    echo "[!] Active file does not exist! Please use SSH to create it"
+                    echo "    /mnt6/active should contain the name of the UUID in /mnt6"
+                    echo "    When done, type reboot in the SSH session, then rerun the script"
+                    echo "    ssh root@localhost -p 2222"
+                    exit
+                fi
+                active=$(remote_cmd "cat /mnt6/active" 2> /dev/null)
+                "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt6/$active/System/Library/Caches/apticket.der "$dir"/$deviceid/0.0/apticket.der 2> /dev/null
+                "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt6/$active/usr/standalone/firmware/sep-firmware.img4 "$dir"/$deviceid/0.0/sep-firmware.img4 2> /dev/null
+                "$bin"/sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt6/$active/usr/standalone/firmware/FUD "$dir"/$deviceid/0.0/FUD 2> /dev/null
+                "$bin"/sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt6/$active/usr/local/standalone/firmware/Baseband "$dir"/$deviceid/0.0/Baseband 2> /dev/null
+                "$bin"/sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt6/$active/usr/standalone/firmware "$dir"/$deviceid/0.0/firmware 2> /dev/null
+                "$bin"/sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt6/$active/usr/local "$dir"/$deviceid/0.0/local 2> /dev/null
             fi
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt1" 2> /dev/null
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt2" 2> /dev/null
@@ -822,36 +853,52 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
             "$bin"/dfuhelper.sh
         fi
         _wait_for_dfu
-        if [[ "$version" == "7."* || "$version" == "8."* ]]; then
-            cd "$dir"/$deviceid/ramdisk/8.4.1
+        if [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* ]]; then
+            cd ramdisk
+            ./sshrd.sh clean
+            echo "[*] Creating ramdisk"
+            if [[ "$version" == *"16"* ]]; then
+                ./sshrd.sh 16.0.3
+            else
+                ./sshrd.sh 12.0
+            fi
+            echo "[*] Booting ramdisk"
+            ./sshrd.sh boot
+            cd ..
         else
-            cd "$dir"/$deviceid/ramdisk/11.4.1
+            if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/Baseband || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
+                cd "$dir"/$deviceid/ramdisk/$r
+            elif [[ "$version" == "7."* || "$version" == "8."* ]]; then
+                cd "$dir"/$deviceid/ramdisk/8.4.1
+            else
+                cd "$dir"/$deviceid/ramdisk/11.4.1
+            fi
+            if [[ "$deviceid" == "iPhone6,2" || "$deviceid" == "iPhone6,1" || "$deviceid" == "iPad4,4" || "$deviceid" == "iPad4,5" ]]; then
+                "$bin"/ipwnder -p
+            else
+                "$bin"/gaster pwn
+            fi
+            "$bin"/irecovery -f iBSS.img4
+            "$bin"/irecovery -f iBSS.img4
+            "$bin"/irecovery -f iBEC.img4
+            if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
+                sleep 1
+                "$bin"/irecovery -c go
+            fi
+            "$bin"/irecovery -f ramdisk.img4
+            "$bin"/irecovery -c ramdisk
+            "$bin"/irecovery -f devicetree.img4
+            "$bin"/irecovery -c devicetree
+            if [ -e ./trustcache.img4 ]; then
+                "$bin"/irecovery -f trustcache.img4
+                "$bin"/irecovery -c firmware
+            fi
+            "$bin"/irecovery -f kernelcache.img4
+            "$bin"/irecovery -c bootx &
+            cd ../../../
+            read -p "pls press the enter key once device is in the ramdisk " r1
+            "$bin"/iproxy 2222 22 &
         fi
-        if [[ "$deviceid" == "iPhone6,2" || "$deviceid" == "iPhone6,1" || "$deviceid" == "iPad4,4" || "$deviceid" == "iPad4,5" ]]; then
-            "$bin"/ipwnder -p
-        else
-            "$bin"/gaster pwn
-        fi
-        "$bin"/irecovery -f iBSS.img4
-        "$bin"/irecovery -f iBSS.img4
-        "$bin"/irecovery -f iBEC.img4
-        if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
-            sleep 1
-            "$bin"/irecovery -c go
-        fi
-        "$bin"/irecovery -f ramdisk.img4
-        "$bin"/irecovery -c ramdisk
-        "$bin"/irecovery -f devicetree.img4
-        "$bin"/irecovery -c devicetree
-        if [ -e ./trustcache.img4 ]; then
-            "$bin"/irecovery -f trustcache.img4
-            "$bin"/irecovery -c firmware
-        fi
-        "$bin"/irecovery -f kernelcache.img4
-        "$bin"/irecovery -c bootx &
-        cd ../../../
-        read -p "pls press the enter key once device is in the ramdisk " r1
-        "$bin"/iproxy 2222 22 &
         "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat /gpt.txt | gptfdisk /dev/rdisk0s1" 2> /dev/null
         sleep 2
         "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync" 2> /dev/null
