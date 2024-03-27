@@ -33,7 +33,9 @@ Main operation mode:
 The iOS version argument should be the iOS version you are downgrading to.
 EOF
 }
-
+remote_cmd() {
+    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "$@"
+}
 parse_opt() {
     case "$1" in
         --)
@@ -661,6 +663,23 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
             fi
             if [ ! -e "$dir"/$deviceid/0.0/com.apple.factorydata ]; then
                 "$bin"/sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/System/Library/Caches/com.apple.factorydata "$dir"/$deviceid/0.0/com.apple.factorydata 2> /dev/null
+            fi
+            if [[ ! -e "$dir"/$deviceid/0.0/apticket.der ]]; then
+                has_active=$(remote_cmd "ls /mnt6/active" 2> /dev/null)
+                if [ ! "$has_active" = "/mnt6/active" ]; then
+                    echo "[!] Active file does not exist! Please use SSH to create it"
+                    echo "    /mnt6/active should contain the name of the UUID in /mnt6"
+                    echo "    When done, type reboot in the SSH session, then rerun the script"
+                    echo "    ssh root@localhost -p 2222"
+                    exit
+                fi
+                active=$(remote_cmd "cat /mnt6/active" 2> /dev/null)
+                "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt6/$active/System/Library/Caches/apticket.der "$dir"/$deviceid/0.0/apticket.der 2> /dev/null
+                "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt6/$active/usr/standalone/firmware/sep-firmware.img4 "$dir"/$deviceid/0.0/sep-firmware.img4 2> /dev/null
+                "$bin"/sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt6/$active/usr/standalone/firmware/FUD "$dir"/$deviceid/0.0/FUD 2> /dev/null
+                "$bin"/sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt6/$active/usr/local/standalone/firmware/Baseband "$dir"/$deviceid/0.0/Baseband 2> /dev/null
+                "$bin"/sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt6/$active/usr/standalone/firmware "$dir"/$deviceid/0.0/firmware 2> /dev/null
+                "$bin"/sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt6/$active/usr/local "$dir"/$deviceid/0.0/local 2> /dev/null
             fi
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt1" 2> /dev/null
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt2" 2> /dev/null
