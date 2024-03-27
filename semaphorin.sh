@@ -156,6 +156,7 @@ _download_ramdisk_boot_files() {
         if [[ "$3" == "10.0"* || "$3" == "10.1"* || "$3" == "10.2"* ]]; then
             rm -rf BuildManifest.plist
             ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$bin"/jq '.firmwares | .[] | select(.version=="'$3'")' | "$bin"/jq -s '.[0] | .url' --raw-output)
+            "$bin"/pzb -g BuildManifest.plist "$ipswurl"
         fi
         if [ ! -e "$dir"/$1/ramdisk/$3/kernelcache.dec ]; then
             "$bin"/pzb -g $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) "$ipswurl"
@@ -296,6 +297,7 @@ _download_boot_files() {
         if [[ "$3" == "10.0"* || "$3" == "10.1"* || "$3" == "10.2"* ]]; then
             rm -rf BuildManifest.plist
             ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$bin"/jq '.firmwares | .[] | select(.version=="'$3'")' | "$bin"/jq -s '.[0] | .url' --raw-output)
+            "$bin"/pzb -g BuildManifest.plist "$ipswurl"
         fi
         if [ ! -e "$dir"/$1/$3/kernelcache.dec ]; then
             "$bin"/pzb -g $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) "$ipswurl"
