@@ -667,7 +667,11 @@ if [[ "$boot" == 1 ]]; then
         sleep 1
         "$bin"/irecovery -f iBSS.img4
         sleep 2
-        "$bin"/irecovery -f iBEC.img4
+        if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
+            :
+        else
+            "$bin"/irecovery -f iBEC.img4
+        fi
         if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
             sleep 1
             "$bin"/irecovery -c go
@@ -727,7 +731,11 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
     sleep 1
     "$bin"/irecovery -f iBSS.img4
     sleep 2
-    "$bin"/irecovery -f iBEC.img4
+    if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
+        :
+    else
+        "$bin"/irecovery -f iBEC.img4
+    fi
     if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
         sleep 1
         "$bin"/irecovery -c go
