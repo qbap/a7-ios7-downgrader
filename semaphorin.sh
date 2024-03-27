@@ -624,6 +624,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
         if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/Baseband || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
             cd ramdisk
             echo "[*] Creating ramdisk"
+            ./sshrd.sh clean
             if [[ "$version" == *"16"* ]]; then
                 ./sshrd.sh 16.0.3
             else
