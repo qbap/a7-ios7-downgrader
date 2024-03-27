@@ -608,6 +608,9 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
     fi
     if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
         read -p "what ios version are you running right now? " r
+        if [[ "$r" == "10.3"* ]]; then
+            r="11.0"
+        fi
         _download_ramdisk_boot_files $deviceid $replace $r
     fi
     _download_root_fs $deviceid $replace $version
