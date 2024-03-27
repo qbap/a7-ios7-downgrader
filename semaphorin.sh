@@ -621,46 +621,23 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
     else
         "$bin"/gaster pwn
     fi
-    sleep 1
+    "$bin"/irecovery -f iBSS.img4
     "$bin"/irecovery -f iBSS.img4
     "$bin"/irecovery -f iBEC.img4
     if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
         sleep 1
         "$bin"/irecovery -c go
     fi
-    sleep 1
     "$bin"/irecovery -f ramdisk.img4
-    sleep 1
     "$bin"/irecovery -c ramdisk
-    sleep 1
     "$bin"/irecovery -f devicetree.img4
-    sleep 1
     "$bin"/irecovery -c devicetree
-    sleep 1
-    "$bin"/irecovery -f trustcache.img4
-    sleep 1
-    "$bin"/irecovery -c firmware
-    sleep 1
-    "$bin"/irecovery -kernelcache.img4
-    sleep 1
-    "$bin"/irecovery -c bootx
-    #"$bin"/irecovery -f iBSS.img4
-    #"$bin"/irecovery -f iBSS.img4
-    #"$bin"/irecovery -f iBEC.img4
-    #if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
-    #    sleep 1
-    #    "$bin"/irecovery -c go
-    #fi
-    #"$bin"/irecovery -f ramdisk.img4
-    #"$bin"/irecovery -c ramdisk
-    #"$bin"/irecovery -f devicetree.img4
-    #"$bin"/irecovery -c devicetree
-    #if [ -e ./trustcache.img4 ]; then
-    #    "$bin"/irecovery -f trustcache.img4
-    #    "$bin"/irecovery -c firmware
-    #fi
-    #"$bin"/irecovery -f kernelcache.img4
-    #"$bin"/irecovery -c bootx &
+    if [ -e ./trustcache.img4 ]; then
+        "$bin"/irecovery -f trustcache.img4
+        "$bin"/irecovery -c firmware
+    fi
+    "$bin"/irecovery -f kernelcache.img4
+    "$bin"/irecovery -c bootx &
     cd ../../../
     sleep 8
     "$bin"/iproxy 2222 22 &
