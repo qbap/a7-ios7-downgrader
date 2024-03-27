@@ -220,19 +220,7 @@ _download_ramdisk_boot_files() {
             "$bin"/img4tool -c "$dir"/$1/ramdisk/$3/ramdisk.img4 -p "$dir"/$1/ramdisk/$3/ramdisk.im4p -m IM4M
             if [[ "$3" == "9."* ]]; then
                 "$bin"/iBoot64Patcher "$dir"/$1/ramdisk/$3/iBSS.dec "$dir"/$1/ramdisk/$3/iBSS.patched
-                if [[ ! "$?" == "0" ]]; then
-                    # apply generic patches
-                    "$bin"/iBoot64Patcher2 "$dir"/$1/ramdisk/$3/iBSS.dec "$dir"/$1/ramdisk/$3/iBSS.patched2
-                    # remove sigchecks
-                    "$bin"/Kernel64Patcher "$dir"/$1/ramdisk/$3/iBSS.patched2 "$dir"/$1/ramdisk/$3/iBSS.patched -c
-                fi
                 "$bin"/iBoot64Patcher "$dir"/$1/ramdisk/$3/iBEC.dec "$dir"/$1/ramdisk/$3/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 -progress"
-                if [[ ! "$?" == "0" ]]; then
-                    # apply generic patches
-                    "$bin"/iBoot64Patcher2 "$dir"/$1/ramdisk/$3/iBEC.dec "$dir"/$1/ramdisk/$3/iBEC.patched2 -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 -progress"
-                    # remove sigchecks
-                    "$bin"/Kernel64Patcher "$dir"/$1/ramdisk/$3/iBEC.patched2 "$dir"/$1/ramdisk/$3/iBEC.patched -c
-                fi
             else
                 "$bin"/ipatcher "$dir"/$1/ramdisk/$3/iBSS.dec "$dir"/$1/ramdisk/$3/iBSS.patched
                 "$bin"/ipatcher "$dir"/$1/ramdisk/$3/iBEC.dec "$dir"/$1/ramdisk/$3/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 -progress"
@@ -249,28 +237,10 @@ _download_ramdisk_boot_files() {
             hdiutil detach /tmp/ramdisk
             "$bin"/img4 -i "$dir"/$1/ramdisk/$3/RestoreRamDisk.dmg -o "$dir"/$1/ramdisk/$3/ramdisk.img4 -M IM4M -A -T rdsk
             "$bin"/iBoot64Patcher "$dir"/$1/ramdisk/$3/iBSS.dec "$dir"/$1/ramdisk/$3/iBSS.patched
-            if [[ ! "$?" == "0" ]]; then
-                # apply generic patches
-                "$bin"/iBoot64Patcher2 "$dir"/$1/ramdisk/$3/iBSS.dec "$dir"/$1/ramdisk/$3/iBSS.patched2
-                # remove sigchecks
-                "$bin"/Kernel64Patcher "$dir"/$1/ramdisk/$3/iBSS.patched2 "$dir"/$1/ramdisk/$3/iBSS.patched -c
-            fi
             if [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* ]]; then
                 "$bin"/iBoot64Patcher "$dir"/$1/ramdisk/$3/iBEC.dec "$dir"/$1/ramdisk/$3/iBEC.patched -b "rd=md0 debug=0x2014e -v wdt=-1 `if [ "$check" = '0x8960' ] || [ "$check" = '0x7000' ] || [ "$check" = '0x7001' ]; then echo "-restore"; fi`"
-                if [[ ! "$?" == "0" ]]; then
-                    # apply generic patches
-                    "$bin"/iBoot64Patcher2 "$dir"/$1/ramdisk/$3/iBEC.dec "$dir"/$1/ramdisk/$3/iBEC.patched2 -b "rd=md0 debug=0x2014e -v wdt=-1 `if [ "$check" = '0x8960' ] || [ "$check" = '0x7000' ] || [ "$check" = '0x7001' ]; then echo "-restore"; fi`"
-                    # remove sigchecks
-                    "$bin"/Kernel64Patcher "$dir"/$1/ramdisk/$3/iBEC.patched2 "$dir"/$1/ramdisk/$3/iBEC.patched -c
-                fi
             else
                 "$bin"/iBoot64Patcher "$dir"/$1/ramdisk/$3/iBEC.dec "$dir"/$1/ramdisk/$3/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 amfi_get_out_of_my_way=1 -restore -progress" -n
-                if [[ ! "$?" == "0" ]]; then
-                    # apply generic patches
-                    "$bin"/iBoot64Patcher2 "$dir"/$1/ramdisk/$3/iBEC.dec "$dir"/$1/ramdisk/$3/iBEC.patched2 -e -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 amfi_get_out_of_my_way=1 -restore -progress"
-                    # remove sigchecks
-                    "$bin"/Kernel64Patcher "$dir"/$1/ramdisk/$3/iBEC.patched2 "$dir"/$1/ramdisk/$3/iBEC.patched -c
-                fi
             fi
             "$bin"/img4 -i "$dir"/$1/ramdisk/$3/iBSS.patched -o "$dir"/$1/ramdisk/$3/iBSS.img4 -M IM4M -A -T ibss
             "$bin"/img4 -i "$dir"/$1/ramdisk/$3/iBEC.patched -o "$dir"/$1/ramdisk/$3/iBEC.img4 -M IM4M -A -T ibec
@@ -376,19 +346,7 @@ _download_boot_files() {
             "$bin"/iBoot64Patcher "$dir"/$1/$3/iBEC.dec "$dir"/$1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1 amfi_get_out_of_my_way=1 amfi_allow_any_signature=1"
         else
             "$bin"/iBoot64Patcher "$dir"/$1/$3/iBSS.dec "$dir"/$1/$3/iBSS.patched
-            if [[ ! "$?" == "0" ]]; then
-                # apply generic patches
-                "$bin"/iBoot64Patcher2 "$dir"/$1/$3/iBSS.dec "$dir"/$1/$3/iBSS.patched2
-                # remove sigchecks
-                "$bin"/Kernel64Patcher "$dir"/$1/$3/iBSS.patched2 "$dir"/$1/$3/iBSS.patched -c
-            fi
             "$bin"/iBoot64Patcher "$dir"/$1/$3/iBEC.dec "$dir"/$1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1 amfi_get_out_of_my_way=1 amfi_allow_any_signature=1" -n
-            if [[ ! "$?" == "0" ]]; then
-                # apply generic patches
-                "$bin"/iBoot64Patcher2 "$dir"/$1/$3/iBEC.dec "$dir"/$1/$3/iBEC.patched2 -e -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1 amfi_get_out_of_my_way=1 amfi_allow_any_signature=1"
-                # remove sigchecks
-                "$bin"/Kernel64Patcher "$dir"/$1/$3/iBEC.patched2 "$dir"/$1/$3/iBEC.patched -c
-            fi
         fi
         if [[ "$3" == "8."* ]]; then
             "$bin"/img4 -i "$dir"/$1/$3/iBSS.patched -o "$dir"/$1/$3/iBSS.img4 -M IM4M -A -T ibss
