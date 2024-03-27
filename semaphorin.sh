@@ -224,17 +224,14 @@ _download_ramdisk_boot_files() {
             "$bin"/img4 -i "$dir"/$1/ramdisk/$3/kernelcache.dec -o "$dir"/$1/ramdisk/$3/kernelcache.img4 -M IM4M -T rkrn
             "$bin"/img4 -i "$dir"/$1/ramdisk/$3/devicetree.dec -o "$dir"/$1/ramdisk/$3/devicetree.img4 -A -M IM4M -T rdtr
         else
+            hdiutil resize -size 120M "$dir"/$1/ramdisk/$3/RestoreRamDisk.dmg
+            hdiutil attach -mountpoint /tmp/ramdisk "$dir"/$1/ramdisk/$3/RestoreRamDisk.dmg
+            sudo diskutil enableOwnership /tmp/ramdisk
             if [[ "$3" == "10."* || "$3" == "11."* || "$3" == "12."* ]]; then
-                hdiutil resize -size 120M "$dir"/$1/ramdisk/$3/RestoreRamDisk.dmg
-                hdiutil attach -mountpoint /tmp/ramdisk "$dir"/$1/ramdisk/$3/RestoreRamDisk.dmg
-                sudo diskutil enableOwnership /tmp/ramdisk
                 sudo "$bin"/gnutar -xvf "$sshtars"/ssh.tar -C /tmp/ramdisk
             else
-                hdiutil resize -size 140M "$dir"/$1/ramdisk/$3/RestoreRamDisk.dmg
-                hdiutil attach -mountpoint /tmp/ramdisk "$dir"/$1/ramdisk/$3/RestoreRamDisk.dmg
-                sudo diskutil enableOwnership /tmp/ramdisk
                 # fix mount_filesystems
-                sudo "$bin"/gnutar -xzvf "$sshtars"/ssh.tar_even_newer.gz -C /tmp/ramdisk
+                sudo "$bin"/gnutar -xzvf "$sshtars"/ssh.tar_even_newer.tar -C /tmp/ramdisk
             fi
             hdiutil detach /tmp/ramdisk
             "$bin"/img4 -i "$dir"/$1/ramdisk/$3/RestoreRamDisk.dmg -o "$dir"/$1/ramdisk/$3/ramdisk.img4 -M IM4M -A -T rdsk
