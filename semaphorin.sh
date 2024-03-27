@@ -557,6 +557,7 @@ if [[ "$clean" == 1 ]]; then
     rm -rf "$dir"/$deviceid/$version/DeviceTree*
     rm -rf "$dir"/$deviceid/$version/devicetree*
     rm -rf "$dir"/$deviceid/ramdisk/
+    rm -rf "$dir"/work/
     echo "[*] Removed the created boot files"
     exit 0
 fi
