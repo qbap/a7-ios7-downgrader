@@ -351,7 +351,7 @@ _download_boot_files() {
         if [[ "$3" == "8."* ]]; then
             "$bin"/img4 -i "$dir"/$1/$3/iBSS.patched -o "$dir"/$1/$3/iBSS.img4 -M IM4M -A -T ibss
             "$bin"/img4 -i "$dir"/$1/$3/iBEC.patched -o "$dir"/$1/$3/iBEC.img4 -M IM4M -A -T ibec
-            if [[ "$1" == "iPhone6,2" || "$1" == "iPhone6,1" || "$1" == "iPad4,4" || "$1" == "iPad4,5" ]]; then
+            if [[ "$1" == "iPhone6,2" || "$1" == "iPhone6,1" || "$1" == "iPad4,4" || "$1" == "iPad4,5" || "$1" == "iPad4,2" ]]; then
                 "$bin"/seprmvr64lite "$dir"/jb/kcache_12A4331d.raw "$dir"/$1/$3/kcache.patched
                 "$bin"/Kernel64Patcher "$dir"/$1/$3/kcache.patched "$dir"/$1/$3/kcache2.patched -p -f -a -m -g -s
                 "$bin"/kerneldiff "$dir"/jb/kcache_12A4331d.raw "$dir"/$1/$3/kcache2.patched "$dir"/$1/$3/kc.bpatch
@@ -481,6 +481,16 @@ _download_root_fs() {
                 "$bin"/dmg extract 058-01282-053.dmg OS.dmg -k 67a958bddcc762e21702583b20b87caad97ed96433e9e7e8a57ef4ea53d71549f030c125
                 "$bin"/img4 -i kernelcache.release.j86 -o "$dir"/jb/kcache_12A4331d.raw -k 4c70597be8d32ab7c7177e1b1e3f1ba00065ed0b2222d0c9c8484a7dada36f2165037fa3324ee5e8aa2bd198a56fd2d9
                 "$bin"/img4 -i kernelcache.release.j86 -o "$dir"/jb/kernelcache_12A4331d.dec -k 4c70597be8d32ab7c7177e1b1e3f1ba00065ed0b2222d0c9c8484a7dada36f2165037fa3324ee5e8aa2bd198a56fd2d9 -D
+                cd ../../work/
+            elif [[ "$deviceid" == "iPad4,2" ]]; then
+                # https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.2%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
+                cd "$dir"/$1/$3
+                "$bin"/aria2c https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.2%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
+                "$bin"/7z x media_ipsw.rar
+                "$bin"/7z x $(find . -name '*.ipsw*')
+                "$bin"/dmg extract 058-01330-053.dmg OS.dmg -k 65e1ae6a877652010bcafd88c1b882494b66bd9c2dc3ebbe35d0ebc42466be1a3956c6cc
+                "$bin"/img4 -i kernelcache.release.j72 -o "$dir"/jb/kcache_12A4331d.raw -k 93c94a8186de108199771d504c753ecf397433be91c748045b026631d976ac6fe80a2c196db01e6eef506ce231a3fb44
+                "$bin"/img4 -i kernelcache.release.j72 -o "$dir"/jb/kernelcache_12A4331d.dec -k 93c94a8186de108199771d504c753ecf397433be91c748045b026631d976ac6fe80a2c196db01e6eef506ce231a3fb44 -D
                 cd ../../work/
             else
                 "$bin"/pzb -g BuildManifest.plist "$ipswurl"
@@ -1016,7 +1026,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
             fi
             _wait_for_dfu
             cd "$dir"/$deviceid/$version
-            if [[ "$deviceid" == "iPhone6,2" || "$deviceid" == "iPhone6,1" || "$deviceid" == "iPad4,4" || "$deviceid" == "iPad4,5" ]]; then
+            if [[ "$deviceid" == "iPhone6,2" || "$deviceid" == "iPhone6,1" || "$deviceid" == "iPad4,4" || "$deviceid" == "iPad4,5" || "$deviceid" == "iPad4,2" ]]; then
                 "$bin"/ipwnder -p
             else
                 "$bin"/gaster pwn
