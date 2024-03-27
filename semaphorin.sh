@@ -242,12 +242,64 @@ _download_ramdisk_boot_files() {
                 # remove sigchecks
                 "$bin"/Kernel64Patcher "$dir"/$1/ramdisk/$3/iBSS.patched2 "$dir"/$1/ramdisk/$3/iBSS.patched -c
             fi
-            "$bin"/iBoot64Patcher "$dir"/$1/ramdisk/$3/iBEC.dec "$dir"/$1/ramdisk/$3/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 amfi_get_out_of_my_way=1 -restore -progress"
-            if [[ ! "$?" == "0" ]]; then
-                # apply generic patches
-                "$bin"/iBoot64Patcher2 "$dir"/$1/ramdisk/$3/iBEC.dec "$dir"/$1/ramdisk/$3/iBEC.patched2 -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 amfi_get_out_of_my_way=1 -restore -progress"
-                # remove sigchecks
-                "$bin"/Kernel64Patcher "$dir"/$1/ramdisk/$3/iBEC.patched2 "$dir"/$1/ramdisk/$3/iBEC.patched -c
+            if [[ "$3" == "10.0"* || "$3" == "10.1"* || "$3" == "10.2"* || "$3" == "11.4.1" ]]; then
+                if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
+                    "$bin"/iBoot64Patcher "$dir"/$1/ramdisk/$3/iBSS.dec "$dir"/$1/ramdisk/$3/iBSS.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 amfi_get_out_of_my_way=1 -restore -progress" -n
+                    if [[ ! "$?" == "0" ]]; then
+                        # apply generic patches
+                        "$bin"/iBoot64Patcher2 "$dir"/$1/ramdisk/$3/iBSS.dec "$dir"/$1/ramdisk/$3/iBSS.patched2 -e -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 amfi_get_out_of_my_way=1 -restore -progress"
+                        # remove sigchecks
+                        "$bin"/Kernel64Patcher "$dir"/$1/ramdisk/$3/iBSS.patched2 "$dir"/$1/ramdisk/$3/iBSS.patched -c
+                    fi
+                else
+                    "$bin"/iBoot64Patcher "$dir"/$1/ramdisk/$3/iBSS.dec "$dir"/$1/ramdisk/$3/iBSS.patched
+                    if [[ ! "$?" == "0" ]]; then
+                        # apply generic patches
+                        "$bin"/iBoot64Patcher2 "$dir"/$1/ramdisk/$3/iBSS.dec "$dir"/$1/ramdisk/$3/iBSS.patched2
+                        # remove sigchecks
+                        "$bin"/Kernel64Patcher "$dir"/$1/ramdisk/$3/iBSS.patched2 "$dir"/$1/ramdisk/$3/iBSS.patched -c
+                    fi
+                fi
+                if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
+                    :
+                else
+                    "$bin"/iBoot64Patcher "$dir"/$1/ramdisk/$3/iBEC.dec "$dir"/$1/ramdisk/$3/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 amfi_get_out_of_my_way=1 -restore -progress" -n
+                    if [[ ! "$?" == "0" ]]; then
+                        # apply generic patches
+                        "$bin"/iBoot64Patcher2 "$dir"/$1/ramdisk/$3/iBEC.dec "$dir"/$1/ramdisk/$3/iBEC.patched2 -e -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 amfi_get_out_of_my_way=1 -restore -progress"
+                        # remove sigchecks
+                        "$bin"/Kernel64Patcher "$dir"/$1/ramdisk/$3/iBEC.patched2 "$dir"/$1/ramdisk/$3/iBEC.patched -c
+                    fi
+                fi
+            else
+                if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
+                    "$bin"/iBoot64Patcher "$dir"/$1/ramdisk/$3/iBSS.dec "$dir"/$1/ramdisk/$3/iBSS.patched -b "rd=md0 debug=0x2014e -v wdt=-1" -n
+                    if [[ ! "$?" == "0" ]]; then
+                        # apply generic patches
+                        "$bin"/iBoot64Patcher2 "$dir"/$1/ramdisk/$3/iBSS.dec "$dir"/$1/ramdisk/$3/iBSS.patched2 -e -b "rd=md0 debug=0x2014e -v wdt=-1"
+                        # remove sigchecks
+                        "$bin"/Kernel64Patcher "$dir"/$1/ramdisk/$3/iBSS.patched2 "$dir"/$1/ramdisk/$3/iBSS.patched -c
+                    fi
+                else
+                    "$bin"/iBoot64Patcher "$dir"/$1/ramdisk/$3/iBSS.dec "$dir"/$1/ramdisk/$3/iBSS.patched
+                    if [[ ! "$?" == "0" ]]; then
+                        # apply generic patches
+                        "$bin"/iBoot64Patcher2 "$dir"/$1/ramdisk/$3/iBSS.dec "$dir"/$1/ramdisk/$3/iBSS.patched2
+                        # remove sigchecks
+                        "$bin"/Kernel64Patcher "$dir"/$1/ramdisk/$3/iBSS.patched2 "$dir"/$1/ramdisk/$3/iBSS.patched -c
+                    fi
+                fi
+                if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
+                    :
+                else
+                    "$bin"/iBoot64Patcher "$dir"/$1/ramdisk/$3/iBEC.dec "$dir"/$1/ramdisk/$3/iBEC.patched -b "rd=md0 debug=0x2014e -v wdt=-1 `if [ "$check" = '0x8960' ] || [ "$check" = '0x7000' ] || [ "$check" = '0x7001' ]; then echo "-restore"; fi`" -n
+                    if [[ ! "$?" == "0" ]]; then
+                        # apply generic patches
+                        "$bin"/iBoot64Patcher2 "$dir"/$1/ramdisk/$3/iBEC.dec "$dir"/$1/ramdisk/$3/iBEC.patched2 -e -b "rd=md0 debug=0x2014e -v wdt=-1 `if [ "$check" = '0x8960' ] || [ "$check" = '0x7000' ] || [ "$check" = '0x7001' ]; then echo "-restore"; fi`"
+                        # remove sigchecks
+                        "$bin"/Kernel64Patcher "$dir"/$1/ramdisk/$3/iBEC.patched2 "$dir"/$1/ramdisk/$3/iBEC.patched -c
+                    fi
+                fi
             fi
             "$bin"/img4 -i "$dir"/$1/ramdisk/$3/iBSS.patched -o "$dir"/$1/ramdisk/$3/iBSS.img4 -M IM4M -A -T ibss
             "$bin"/img4 -i "$dir"/$1/ramdisk/$3/iBEC.patched -o "$dir"/$1/ramdisk/$3/iBEC.img4 -M IM4M -A -T ibec
@@ -333,22 +385,62 @@ _download_boot_files() {
             "$bin"/ipatcher "$dir"/$1/$3/iBSS.dec "$dir"/$1/$3/iBSS.patched
             "$bin"/ipatcher "$dir"/$1/$3/iBEC.dec "$dir"/$1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1"
         elif [[ "$3" == "9."* ]]; then
-            "$bin"/iBoot64Patcher "$dir"/$1/$3/iBSS.dec "$dir"/$1/$3/iBSS.patched
-            "$bin"/iBoot64Patcher "$dir"/$1/$3/iBEC.dec "$dir"/$1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1 amfi_get_out_of_my_way=1 amfi_allow_any_signature=1"
-        else
-            "$bin"/iBoot64Patcher "$dir"/$1/$3/iBSS.dec "$dir"/$1/$3/iBSS.patched
-            if [[ ! "$?" == "0" ]]; then
-                # apply generic patches
-                "$bin"/iBoot64Patcher2 "$dir"/$1/$3/iBSS.dec "$dir"/$1/$3/iBSS.patched2
-                # remove sigchecks
-                "$bin"/Kernel64Patcher "$dir"/$1/$3/iBSS.patched2 "$dir"/$1/$3/iBSS.patched -c
+            if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
+                "$bin"/iBoot64Patcher "$dir"/$1/$3/iBSS.dec "$dir"/$1/$3/iBSS.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1 amfi_get_out_of_my_way=1 amfi_allow_any_signature=1" -n
+                if [[ ! "$?" == "0" ]]; then
+                    # apply generic patches
+                    "$bin"/iBoot64Patcher2 "$dir"/$1/$3/iBSS.dec "$dir"/$1/$3/iBSS.patched2 -e -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1 amfi_get_out_of_my_way=1 amfi_allow_any_signature=1"
+                    # remove sigchecks
+                    "$bin"/Kernel64Patcher "$dir"/$1/$3/iBSS.patched2 "$dir"/$1/$3/iBSS.patched -c
+                fi
+            else
+                "$bin"/iBoot64Patcher "$dir"/$1/$3/iBSS.dec "$dir"/$1/$3/iBSS.patched
+                if [[ ! "$?" == "0" ]]; then
+                    # apply generic patches
+                    "$bin"/iBoot64Patcher2 "$dir"/$1/$3/iBSS.dec "$dir"/$1/$3/iBSS.patched2
+                    # remove sigchecks
+                    "$bin"/Kernel64Patcher "$dir"/$1/$3/iBSS.patched2 "$dir"/$1/$3/iBSS.patched -c
+                fi
             fi
-            "$bin"/iBoot64Patcher "$dir"/$1/$3/iBEC.dec "$dir"/$1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1 amfi_get_out_of_my_way=1 amfi_allow_any_signature=1"
-            if [[ ! "$?" == "0" ]]; then
-                # apply generic patches
-                "$bin"/iBoot64Patcher2 "$dir"/$1/$3/iBEC.dec "$dir"/$1/$3/iBEC.patched2 -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1 amfi_get_out_of_my_way=1 amfi_allow_any_signature=1"
-                # remove sigchecks
-                "$bin"/Kernel64Patcher "$dir"/$1/$3/iBEC.patched2 "$dir"/$1/$3/iBEC.patched -c
+            if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
+                :
+            else
+                "$bin"/iBoot64Patcher "$dir"/$1/$3/iBEC.dec "$dir"/$1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1 amfi_get_out_of_my_way=1 amfi_allow_any_signature=1" -n
+                if [[ ! "$?" == "0" ]]; then
+                    # apply generic patches
+                    "$bin"/iBoot64Patcher2 "$dir"/$1/$3/iBEC.dec "$dir"/$1/$3/iBEC.patched2 -e -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1 amfi_get_out_of_my_way=1 amfi_allow_any_signature=1"
+                    # remove sigchecks
+                    "$bin"/Kernel64Patcher "$dir"/$1/$3/iBEC.patched2 "$dir"/$1/$3/iBEC.patched -c
+                fi
+            fi
+        else
+            if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
+                "$bin"/iBoot64Patcher "$dir"/$1/$3/iBSS.dec "$dir"/$1/$3/iBSS.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1 amfi_get_out_of_my_way=1 amfi_allow_any_signature=1" -n
+                if [[ ! "$?" == "0" ]]; then
+                    # apply generic patches
+                    "$bin"/iBoot64Patcher2 "$dir"/$1/$3/iBSS.dec "$dir"/$1/$3/iBSS.patched2 -e -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1 amfi_get_out_of_my_way=1 amfi_allow_any_signature=1"
+                    # remove sigchecks
+                    "$bin"/Kernel64Patcher "$dir"/$1/$3/iBSS.patched2 "$dir"/$1/$3/iBSS.patched -c
+                fi
+            else
+                "$bin"/iBoot64Patcher "$dir"/$1/$3/iBSS.dec "$dir"/$1/$3/iBSS.patched
+                if [[ ! "$?" == "0" ]]; then
+                    # apply generic patches
+                    "$bin"/iBoot64Patcher2 "$dir"/$1/$3/iBSS.dec "$dir"/$1/$3/iBSS.patched2
+                    # remove sigchecks
+                    "$bin"/Kernel64Patcher "$dir"/$1/$3/iBSS.patched2 "$dir"/$1/$3/iBSS.patched -c
+                fi
+            fi
+            if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
+                :
+            else
+                "$bin"/iBoot64Patcher "$dir"/$1/$3/iBEC.dec "$dir"/$1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1 amfi_get_out_of_my_way=1 amfi_allow_any_signature=1" -n
+                if [[ ! "$?" == "0" ]]; then
+                    # apply generic patches
+                    "$bin"/iBoot64Patcher2 "$dir"/$1/$3/iBEC.dec "$dir"/$1/$3/iBEC.patched2 -e -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1 amfi_get_out_of_my_way=1 amfi_allow_any_signature=1"
+                    # remove sigchecks
+                    "$bin"/Kernel64Patcher "$dir"/$1/$3/iBEC.patched2 "$dir"/$1/$3/iBEC.patched -c
+                fi
             fi
         fi
         if [[ "$3" == "8."* ]]; then
@@ -572,21 +664,32 @@ if [[ "$boot" == 1 ]]; then
         else
             "$bin"/gaster pwn
         fi
+        sleep 1
         "$bin"/irecovery -f iBSS.img4
-        "$bin"/irecovery -f iBSS.img4
+        sleep 2
         "$bin"/irecovery -f iBEC.img4
         if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
             sleep 1
             "$bin"/irecovery -c go
         fi
+        sleep 1
+        "$bin"/irecovery -f ramdisk.img4
+        sleep 1
+        "$bin"/irecovery -c ramdisk
+        sleep 1
         "$bin"/irecovery -f devicetree.img4
+        sleep 1
         "$bin"/irecovery -c devicetree
+        sleep 1
         if [ -e ./trustcache.img4 ]; then
             "$bin"/irecovery -f trustcache.img4
-            "$bin"/irecovery -c firmware
+            sleep 1
         fi
+        "$bin"/irecovery -c firmware
+        sleep 1
         "$bin"/irecovery -f kernelcache.img4
-        "$bin"/irecovery -c bootx &
+        sleep 1
+        "$bin"/irecovery -c bootx
         cd ../../
         exit
     fi
@@ -621,23 +724,32 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
     else
         "$bin"/gaster pwn
     fi
+    sleep 1
     "$bin"/irecovery -f iBSS.img4
-    "$bin"/irecovery -f iBSS.img4
+    sleep 2
     "$bin"/irecovery -f iBEC.img4
     if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
         sleep 1
         "$bin"/irecovery -c go
     fi
+    sleep 1
     "$bin"/irecovery -f ramdisk.img4
+    sleep 1
     "$bin"/irecovery -c ramdisk
+    sleep 1
     "$bin"/irecovery -f devicetree.img4
+    sleep 1
     "$bin"/irecovery -c devicetree
+    sleep 1
     if [ -e ./trustcache.img4 ]; then
         "$bin"/irecovery -f trustcache.img4
-        "$bin"/irecovery -c firmware
+        sleep 1
     fi
+    "$bin"/irecovery -c firmware
+    sleep 1
     "$bin"/irecovery -f kernelcache.img4
-    "$bin"/irecovery -c bootx &
+    sleep 1
+    "$bin"/irecovery -c bootx
     cd ../../../
     sleep 8
     "$bin"/iproxy 2222 22 &
@@ -719,23 +831,32 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
         else
             "$bin"/gaster pwn
         fi
+        sleep 1
         "$bin"/irecovery -f iBSS.img4
-        "$bin"/irecovery -f iBSS.img4
+        sleep 2
         "$bin"/irecovery -f iBEC.img4
         if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
             sleep 1
             "$bin"/irecovery -c go
         fi
+        sleep 1
         "$bin"/irecovery -f ramdisk.img4
+        sleep 1
         "$bin"/irecovery -c ramdisk
+        sleep 1
         "$bin"/irecovery -f devicetree.img4
+        sleep 1
         "$bin"/irecovery -c devicetree
+        sleep 1
         if [ -e ./trustcache.img4 ]; then
             "$bin"/irecovery -f trustcache.img4
-            "$bin"/irecovery -c firmware
+            sleep 1
         fi
+        "$bin"/irecovery -c firmware
+        sleep 1
         "$bin"/irecovery -f kernelcache.img4
-        "$bin"/irecovery -c bootx &
+        sleep 1
+        "$bin"/irecovery -c bootx
         cd ../../../
         sleep 8
         "$bin"/iproxy 2222 22 &
@@ -939,21 +1060,32 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
             else
                 "$bin"/gaster pwn
             fi
+            sleep 1
             "$bin"/irecovery -f iBSS.img4
-            "$bin"/irecovery -f iBSS.img4
+            sleep 2
             "$bin"/irecovery -f iBEC.img4
             if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
                 sleep 1
                 "$bin"/irecovery -c go
             fi
+            sleep 1
+            "$bin"/irecovery -f ramdisk.img4
+            sleep 1
+            "$bin"/irecovery -c ramdisk
+            sleep 1
             "$bin"/irecovery -f devicetree.img4
+            sleep 1
             "$bin"/irecovery -c devicetree
+            sleep 1
             if [ -e ./trustcache.img4 ]; then
                 "$bin"/irecovery -f trustcache.img4
-                "$bin"/irecovery -c firmware
+                sleep 1
             fi
+            "$bin"/irecovery -c firmware
+            sleep 1
             "$bin"/irecovery -f kernelcache.img4
-            "$bin"/irecovery -c bootx &
+            sleep 1
+            "$bin"/irecovery -c bootx
             cd ../../
         fi
         _kill_if_running iproxy
@@ -967,8 +1099,8 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
             else
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s2 /mnt2" 2> /dev/null
             fi
-        #else
-            #"$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "bash -c mount_filesystems" 2> /dev/null
+        else
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "bash -c mount_filesystems" 2> /dev/null
         fi
         if [[ "$dump_blobs" == 1 ]]; then
             mkdir -p "$dir"/$deviceid/0.0/
