@@ -627,8 +627,10 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
     else
         _download_ramdisk_boot_files $deviceid $replace 11.4.1
     fi
-    read -p "what ios version were you running before downgrade? " r
-    _download_ramdisk_boot_files $deviceid $replace $r
+    if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/Baseband || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
+        read -p "what ios version are you running right now? " r
+        _download_ramdisk_boot_files $deviceid $replace $r
+    fi
     _download_root_fs $deviceid $replace $version
     _download_boot_files $deviceid $replace $version
     sleep 1
@@ -637,91 +639,17 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
     fi
     _wait_for_dfu
     if [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* ]]; then
-        mkdir -p "$dir"/$deviceid/0.0/
+        cd ramdisk
+        ./sshrd.sh clean
+        echo "[*] Creating ramdisk"
         if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/Baseband || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
-            cd ramdisk
-            ./sshrd.sh clean
-            echo "[*] Creating ramdisk"
-            if [[ "$version" == *"16"* ]]; then
+            if [[ "$r" == *"16"* ]]; then
                 ./sshrd.sh 16.0.3
             else
                 ./sshrd.sh "$r"
             fi
-            echo "[*] Booting ramdisk"
-            ./sshrd.sh boot
-            read -p "pls press the enter key once device is in the ramdisk " r1
-            "$bin"/iproxy 2222 22 &
-            if [[ "$r" == "7."* || "$r" == "8."* || "$r" == "9."* || "$r" == "10.0"* || "$r" == "10.1"* || "$r" == "10.2"* ]]; then
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_hfs /dev/disk0s1s1 /mnt1" 2> /dev/null
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -t hfs /dev/disk0s1s2 /mnt2" 2> /dev/null
-            else
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "bash -c mount_filesystems" 2> /dev/null
-            fi
-            if [ ! -e "$dir"/$deviceid/0.0/apticket.der ]; then
-                "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/Caches/apticket.der "$dir"/$deviceid/0.0/apticket.der 2> /dev/null
-            fi
-            if [ ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 ]; then
-                "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/usr/standalone/firmware/sep-firmware.img4 "$dir"/$deviceid/0.0/sep-firmware.img4 2> /dev/null
-            fi
-            if [ ! -e "$dir"/$deviceid/0.0/FUD ]; then
-                "$bin"/sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/usr/standalone/firmware/FUD "$dir"/$deviceid/0.0/FUD 2> /dev/null
-            fi
-            if [ ! -e "$dir"/$deviceid/0.0/Baseband ]; then
-                "$bin"/sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/usr/local/standalone/firmware/Baseband "$dir"/$deviceid/0.0/Baseband 2> /dev/null
-            fi
-            if [ ! -e "$dir"/$deviceid/0.0/firmware ]; then
-                "$bin"/sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/usr/standalone/firmware "$dir"/$deviceid/0.0/firmware 2> /dev/null
-            fi
-            if [ ! -e "$dir"/$deviceid/0.0/local ]; then
-                "$bin"/sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/usr/local "$dir"/$deviceid/0.0/local 2> /dev/null
-            fi
-            if [ ! -e "$dir"/$deviceid/0.0/keybags ]; then
-                "$bin"/sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt2/keybags "$dir"/$deviceid/0.0/keybags 2> /dev/null
-            fi
-            if [ ! -e "$dir"/$deviceid/0.0/wireless ]; then
-                "$bin"/sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt2/wireless "$dir"/$deviceid/0.0/wireless 2> /dev/null
-            fi
-            if [ ! -e "$dir"/$deviceid/0.0/com.apple.factorydata ]; then
-                "$bin"/sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/System/Library/Caches/com.apple.factorydata "$dir"/$deviceid/0.0/com.apple.factorydata 2> /dev/null
-            fi
-            if [[ ! -e "$dir"/$deviceid/0.0/apticket.der ]]; then
-                has_active=$(remote_cmd "ls /mnt6/active" 2> /dev/null)
-                if [ ! "$has_active" = "/mnt6/active" ]; then
-                    echo "[!] Active file does not exist! Please use SSH to create it"
-                    echo "    /mnt6/active should contain the name of the UUID in /mnt6"
-                    echo "    When done, type reboot in the SSH session, then rerun the script"
-                    echo "    ssh root@localhost -p 2222"
-                    exit
-                fi
-                active=$(remote_cmd "cat /mnt6/active" 2> /dev/null)
-                "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt6/$active/System/Library/Caches/apticket.der "$dir"/$deviceid/0.0/apticket.der 2> /dev/null
-                "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt6/$active/usr/standalone/firmware/sep-firmware.img4 "$dir"/$deviceid/0.0/sep-firmware.img4 2> /dev/null
-                "$bin"/sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt6/$active/usr/standalone/firmware/FUD "$dir"/$deviceid/0.0/FUD 2> /dev/null
-                "$bin"/sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt6/$active/usr/local/standalone/firmware/Baseband "$dir"/$deviceid/0.0/Baseband 2> /dev/null
-                "$bin"/sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt6/$active/usr/standalone/firmware "$dir"/$deviceid/0.0/firmware 2> /dev/null
-                "$bin"/sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt6/$active/usr/local "$dir"/$deviceid/0.0/local 2> /dev/null
-            fi
-            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt1" 2> /dev/null
-            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt2" 2> /dev/null
-            if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/Baseband || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
-                echo "[*] An error occured while trying to back up the required files required to downgrade"
-                exit
-            else
-                echo "[*] Backed up the required files required to downgrade"
-            fi
-            $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
-            _wait_for_dfu
-            cd ..
-        fi
-    fi
-    if [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* ]]; then
-        cd ramdisk
-        ./sshrd.sh clean
-        echo "[*] Creating ramdisk"
-        if [[ "$version" == *"16"* ]]; then
-            ./sshrd.sh 16.0.3
         else
-            ./sshrd.sh "$r"
+            ./sshrd.sh 11.4.1
         fi
         echo "[*] Booting ramdisk"
         ./sshrd.sh boot
@@ -757,9 +685,9 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
         "$bin"/irecovery -f kernelcache.img4
         "$bin"/irecovery -c bootx &
         cd ../../../
-        read -p "pls press the enter key once device is in the ramdisk " r1
-        "$bin"/iproxy 2222 22 &
     fi
+    read -p "pls press the enter key once device is in the ramdisk " r1
+    "$bin"/iproxy 2222 22 &
     sleep 2
     if [[ "$restore" == 1 ]]; then
         mkdir -p "$dir"/$deviceid/0.0/
@@ -855,11 +783,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
             cd ramdisk
             ./sshrd.sh clean
             echo "[*] Creating ramdisk"
-            if [[ "$version" == *"16"* ]]; then
-                ./sshrd.sh 16.0.3
-            else
-                ./sshrd.sh 12.0
-            fi
+            ./sshrd.sh 11.4.1
             echo "[*] Booting ramdisk"
             ./sshrd.sh boot
             cd ..
@@ -894,9 +818,9 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
             "$bin"/irecovery -f kernelcache.img4
             "$bin"/irecovery -c bootx &
             cd ../../../
-            read -p "pls press the enter key once device is in the ramdisk " r1
-            "$bin"/iproxy 2222 22 &
         fi
+        read -p "pls press the enter key once device is in the ramdisk " r1
+        "$bin"/iproxy 2222 22 &
         "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat /gpt.txt | gptfdisk /dev/rdisk0s1" 2> /dev/null
         sleep 2
         "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync" 2> /dev/null
