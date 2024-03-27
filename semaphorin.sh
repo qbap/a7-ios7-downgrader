@@ -627,7 +627,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
     "$bin"/irecovery -f iBEC.img4
     if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
         sleep 1
-        "$oscheck"/irecovery -c go
+        "$bin"/irecovery -c go
     fi
     sleep 1
     "$bin"/irecovery -f ramdisk.img4
