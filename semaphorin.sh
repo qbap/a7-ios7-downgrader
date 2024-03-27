@@ -227,11 +227,11 @@ _download_ramdisk_boot_files() {
             hdiutil resize -size 120M "$dir"/$1/ramdisk/$3/RestoreRamDisk.dmg
             hdiutil attach -mountpoint /tmp/ramdisk "$dir"/$1/ramdisk/$3/RestoreRamDisk.dmg
             sudo diskutil enableOwnership /tmp/ramdisk
-            if [[ "$3" == "10.0"* || "$3" == "10.1"* || "$3" == "10.2"* || "$3" == "11.4.1" ]]; then
+            if [[ "$3" == "10."* || "$3" == "11."* || "$3" == "12."* ]]; then
                 sudo "$bin"/gnutar -xvf "$sshtars"/ssh.tar -C /tmp/ramdisk
             else
                 # fix mount_filesystems
-                sudo "$bin"/gnutar -xzvf "$sshtars"/ssh.tar_new.gz -C /tmp/ramdisk
+                sudo "$bin"/gnutar -xzvf "$sshtars"/ramdisk.tar.gz -C /tmp/ramdisk
             fi
             hdiutil detach /tmp/ramdisk
             "$bin"/img4 -i "$dir"/$1/ramdisk/$3/RestoreRamDisk.dmg -o "$dir"/$1/ramdisk/$3/ramdisk.img4 -M IM4M -A -T rdsk
@@ -575,6 +575,10 @@ if [[ "$boot" == 1 ]]; then
         "$bin"/irecovery -f iBSS.img4
         "$bin"/irecovery -f iBSS.img4
         "$bin"/irecovery -f iBEC.img4
+        if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
+            sleep 1
+            "$bin"/irecovery -c go
+        fi
         "$bin"/irecovery -f devicetree.img4
         "$bin"/irecovery -c devicetree
         if [ -e ./trustcache.img4 ]; then
@@ -620,6 +624,10 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
     "$bin"/irecovery -f iBSS.img4
     "$bin"/irecovery -f iBSS.img4
     "$bin"/irecovery -f iBEC.img4
+    if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
+        sleep 1
+        "$bin"/irecovery -c go
+    fi
     "$bin"/irecovery -f ramdisk.img4
     "$bin"/irecovery -c ramdisk
     "$bin"/irecovery -f devicetree.img4
@@ -714,6 +722,10 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
         "$bin"/irecovery -f iBSS.img4
         "$bin"/irecovery -f iBSS.img4
         "$bin"/irecovery -f iBEC.img4
+        if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
+            sleep 1
+            "$bin"/irecovery -c go
+        fi
         "$bin"/irecovery -f ramdisk.img4
         "$bin"/irecovery -c ramdisk
         "$bin"/irecovery -f devicetree.img4
@@ -930,6 +942,10 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
             "$bin"/irecovery -f iBSS.img4
             "$bin"/irecovery -f iBSS.img4
             "$bin"/irecovery -f iBEC.img4
+            if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
+                sleep 1
+                "$bin"/irecovery -c go
+            fi
             "$bin"/irecovery -f devicetree.img4
             "$bin"/irecovery -c devicetree
             if [ -e ./trustcache.img4 ]; then
