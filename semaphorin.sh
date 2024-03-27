@@ -350,10 +350,10 @@ _download_boot_files() {
                 # remove sigchecks
                 "$bin"/Kernel64Patcher "$dir"/$1/$3/iBSS.patched2 "$dir"/$1/$3/iBSS.patched -c
             fi
-            "$bin"/iBoot64Patcher "$dir"/$1/$3/iBEC.dec "$dir"/$1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1 amfi_get_out_of_my_way=1 amfi_allow_any_signature=1"
+            "$bin"/iBoot64Patcher "$dir"/$1/$3/iBEC.dec "$dir"/$1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1 amfi_get_out_of_my_way=1 amfi_allow_any_signature=1" -n
             if [[ ! "$?" == "0" ]]; then
                 # apply generic patches
-                "$bin"/iBoot64Patcher2 "$dir"/$1/$3/iBEC.dec "$dir"/$1/$3/iBEC.patched2 -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1 amfi_get_out_of_my_way=1 amfi_allow_any_signature=1"
+                "$bin"/iBoot64Patcher2 "$dir"/$1/$3/iBEC.dec "$dir"/$1/$3/iBEC.patched2 -e -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1 amfi_get_out_of_my_way=1 amfi_allow_any_signature=1"
                 # remove sigchecks
                 "$bin"/Kernel64Patcher "$dir"/$1/$3/iBEC.patched2 "$dir"/$1/$3/iBEC.patched -c
             fi
