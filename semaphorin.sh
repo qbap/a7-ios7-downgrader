@@ -227,12 +227,7 @@ _download_ramdisk_boot_files() {
             hdiutil resize -size 120M "$dir"/$1/ramdisk/$3/RestoreRamDisk.dmg
             hdiutil attach -mountpoint /tmp/ramdisk "$dir"/$1/ramdisk/$3/RestoreRamDisk.dmg
             sudo diskutil enableOwnership /tmp/ramdisk
-            if [[ "$3" == "10."* || "$3" == "11."* || "$3" == "12."* ]]; then
-                sudo "$bin"/gnutar -xvf "$sshtars"/ssh.tar -C /tmp/ramdisk
-            else
-                # fix mount_filesystems
-                sudo "$bin"/gnutar -xvf "$sshtars"/ssh.tar_even_newer.tar -C /tmp/ramdisk
-            fi
+            sudo "$bin"/gnutar -xvf "$sshtars"/ssh.tar -C /tmp/ramdisk
             hdiutil detach /tmp/ramdisk
             "$bin"/img4 -i "$dir"/$1/ramdisk/$3/RestoreRamDisk.dmg -o "$dir"/$1/ramdisk/$3/ramdisk.img4 -M IM4M -A -T rdsk
             "$bin"/iBoot64Patcher "$dir"/$1/ramdisk/$3/iBSS.dec "$dir"/$1/ramdisk/$3/iBSS.patched
@@ -623,8 +618,8 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
         mkdir -p "$dir"/$deviceid/0.0/
         if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/Baseband || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
             cd ramdisk
-            echo "[*] Creating ramdisk"
             ./sshrd.sh clean
+            echo "[*] Creating ramdisk"
             if [[ "$version" == *"16"* ]]; then
                 ./sshrd.sh 16.0.3
             else
