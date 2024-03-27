@@ -582,10 +582,6 @@ if [[ "$boot" == 1 ]]; then
         "$bin"/irecovery -f iBSS.img4
         "$bin"/irecovery -f iBSS.img4
         "$bin"/irecovery -f iBEC.img4
-        if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
-            sleep 1
-            "$bin"/irecovery -c go
-        fi
         "$bin"/irecovery -f devicetree.img4
         "$bin"/irecovery -c devicetree
         if [ -e ./trustcache.img4 ]; then
