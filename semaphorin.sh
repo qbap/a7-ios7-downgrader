@@ -585,7 +585,7 @@ _kill_if_running() {
 if [ "$os" = 'Linux' ]; then
     linux_cmds='lsusb'
 fi
-if [ -e java/bin/java ]; then
+if [ ! -e java/bin/java ]; then
     mkdir java
     cd java
     curl -k -SLO https://builds.openlogic.com/downloadJDK/openlogic-openjdk-jre/8u262-b10/openlogic-openjdk-jre-8u262-b10-mac-x64.zip
