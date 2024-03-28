@@ -86,9 +86,21 @@ parse_arg() {
             exit 0
             ;;
         *)
-            version="$1"
+            if [ -z "$version" ]; then
+                version="$1"
+            else
+                whatversionamionrightnow="$1"
+            fi
             if [[ "$version" == "8.0b4" ]]; then
                 version="8.0"
+            fi
+            if [[ "$version" == "8."* && ! "$version" == "8.0" ]]; then
+                echo "[-] Downgrading to that version is not yet feasible"
+                exit
+            fi
+            if [[ "$version" == "9."* && "$version" == "9.3"* ]]; then
+                echo "[-] Downgrading to that version is not yet feasible"
+                exit
             fi
             ;;
     esac
@@ -145,9 +157,9 @@ _download_ramdisk_boot_files() {
             "$bin"/pzb -g $(awk "/""$2""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
             fn="$(awk "/""$2""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')"
             if [[ "$3" == "10.0"* || "$3" == "10.1"* || "$3" == "10.2"* ]]; then
-                ivkey="$(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn 10.3 $1)"
+                ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn 10.3 $1)"
             else
-                ivkey="$(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
+                ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
             fi
             "$bin"/img4 -i $fn -o "$dir"/$1/ramdisk/$3/iBSS.dec -k $ivkey
         fi
@@ -155,9 +167,9 @@ _download_ramdisk_boot_files() {
             "$bin"/pzb -g $(awk "/""$2""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
             fn="$(awk "/""$2""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')"
             if [[ "$3" == "10.0"* || "$3" == "10.1"* || "$3" == "10.2"* ]]; then
-                ivkey="$(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn 10.3 $1)"
+                ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn 10.3 $1)"
             else
-                ivkey="$(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
+                ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
             fi
             "$bin"/img4 -i $fn -o "$dir"/$1/ramdisk/$3/iBEC.dec -k $ivkey
         fi
@@ -170,7 +182,7 @@ _download_ramdisk_boot_files() {
             "$bin"/pzb -g $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) "$ipswurl"
             if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* ]]; then
                 fn="$(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)"
-                ivkey="$(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
+                ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
                 "$bin"/img4 -i $fn -o "$dir"/$1/ramdisk/$3/kcache.raw -k $ivkey
                 "$bin"/img4 -i $fn -o "$dir"/$1/ramdisk/$3/kernelcache.dec -k $ivkey -D
                 pyimg4 im4p extract -i $fn -o "$dir"/$1/ramdisk/$3/kernelcache_pyimg4.dec --iv ${ivkey:0:32} --key ${ivkey:32} --extra "$dir"/$1/ramdisk/$3/kpp.bin
@@ -183,7 +195,7 @@ _download_ramdisk_boot_files() {
             "$bin"/pzb -g $(awk "/""$2""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
             if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* ]]; then
                 fn="$(awk "/""$2""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]all_flash.*production[/]//' | sed 's/Firmware[/]all_flash[/]//')"
-                ivkey="$(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
+                ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
                 "$bin"/img4 -i $fn -o "$dir"/$1/ramdisk/$3/DeviceTree.dec -k $ivkey
             else
                 mv $(awk "/""$2""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]all_flash.*production[/]//' | sed 's/Firmware[/]all_flash[/]//') "$dir"/$1/ramdisk/$3/DeviceTree.dec
@@ -193,7 +205,7 @@ _download_ramdisk_boot_files() {
             "$bin"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
             if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* ]]; then
                 fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
-                ivkey="$(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
+                ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
                 "$bin"/img4 -i $fn -o "$dir"/$1/ramdisk/$3/RestoreRamDisk.dmg -k $ivkey
             else
                 "$bin"/img4 -i "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -o "$dir"/$1/ramdisk/$3/RestoreRamDisk.dmg
@@ -294,9 +306,9 @@ _download_boot_files() {
             "$bin"/pzb -g $(awk "/""$2""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
             fn="$(awk "/""$2""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')"
             if [[ "$3" == "10.0"* || "$3" == "10.1"* || "$3" == "10.2"* ]]; then
-                ivkey="$(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn 10.3 $1)"
+                ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn 10.3 $1)"
             else
-                ivkey="$(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
+                ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
             fi
             "$bin"/img4 -i $fn -o "$dir"/$1/$3/iBSS.dec -k $ivkey
         fi
@@ -304,9 +316,9 @@ _download_boot_files() {
             "$bin"/pzb -g $(awk "/""$2""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
             fn="$(awk "/""$2""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')"
             if [[ "$3" == "10.0"* || "$3" == "10.1"* || "$3" == "10.2"* ]]; then
-                ivkey="$(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn 10.3 $1)"
+                ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn 10.3 $1)"
             else
-                ivkey="$(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
+                ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
             fi
             "$bin"/img4 -i $fn -o "$dir"/$1/$3/iBEC.dec -k $ivkey
         fi
@@ -319,7 +331,7 @@ _download_boot_files() {
             "$bin"/pzb -g $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) "$ipswurl"
             if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* ]]; then
                 fn="$(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)"
-                ivkey="$(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
+                ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
                 "$bin"/img4 -i $fn -o "$dir"/$1/$3/kcache.raw -k $ivkey
                 "$bin"/img4 -i $fn -o "$dir"/$1/$3/kernelcache.dec -k $ivkey -D
                 pyimg4 im4p extract -i $fn -o "$dir"/$1/$3/kernelcache_pyimg4.dec --iv ${ivkey:0:32} --key ${ivkey:32} --extra "$dir"/$1/$3/kpp.bin
@@ -332,7 +344,7 @@ _download_boot_files() {
             "$bin"/pzb -g $(awk "/""$2""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
             if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* ]]; then
                 fn="$(awk "/""$2""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]all_flash.*production[/]//' | sed 's/Firmware[/]all_flash[/]//')"
-                ivkey="$(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
+                ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
                 "$bin"/img4 -i $fn -o "$dir"/$1/$3/DeviceTree.dec -k $ivkey
             else
                 mv $(awk "/""$2""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]all_flash.*production[/]//' | sed 's/Firmware[/]all_flash[/]//') "$dir"/$1/$3/DeviceTree.dec
@@ -342,7 +354,7 @@ _download_boot_files() {
             "$bin"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
             if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* ]]; then
                 fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
-                ivkey="$(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
+                ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
                 "$bin"/img4 -i $fn -o "$dir"/$1/$3/RestoreRamDisk.dmg -k $ivkey
             else
                 "$bin"/img4 -i "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -o "$dir"/$1/$3/RestoreRamDisk.dmg
@@ -470,7 +482,7 @@ _download_root_fs() {
                 "$bin"/pzb -g BuildManifest.plist "$ipswurl"
                 "$bin"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
                 fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
-                ivkey="$(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
+                ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
                 "$bin"/dmg extract $fn "$dir"/$1/$3/OS.dmg -k $ivkey
             elif [[ "$deviceid" == "iPhone6,1" || "$deviceid" == "iPhone6,2" ]]; then
                 # https://archive.org/download/Apple_iPhone_Firmware/Apple%20iPhone%206.1%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/
@@ -546,7 +558,7 @@ _download_root_fs() {
                 "$bin"/pzb -g BuildManifest.plist "$ipswurl"
                 "$bin"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
                 fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
-                ivkey="$(java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
+                ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
                 "$bin"/dmg extract $fn "$dir"/$1/$3/OS.dmg -k $ivkey
             fi
         fi
@@ -573,7 +585,16 @@ _kill_if_running() {
 if [ "$os" = 'Linux' ]; then
     linux_cmds='lsusb'
 fi
-for cmd in curl unzip python3 git ssh scp killall sudo grep pgrep java ${linux_cmds}; do
+if [ -e java/bin/java ]; then
+    mkdir java
+    cd java
+    curl -k -SLO https://builds.openlogic.com/downloadJDK/openlogic-openjdk-jre/8u262-b10/openlogic-openjdk-jre-8u262-b10-mac-x64.zip
+    "$bin"/7z x openlogic-openjdk-jre-8u262-b10-mac-x64.zip
+    sudo cp -rf openlogic-openjdk-jre-8u262-b10-mac-x64\jdk1.8.0_262.jre\Contents\Home\* .
+    sudo rm -rf openlogic-openjdk-jre-8u262-b10-mac-x64\
+    cd ..
+fi
+for cmd in curl unzip python3 git ssh scp killall sudo grep pgrep ${linux_cmds}; do
     if ! command -v "${cmd}" > /dev/null; then
         if [ "$cmd" = "python3" ]; then
             echo "[-] Command '${cmd}' not installed, please install it!";
@@ -666,7 +687,11 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
         _download_ramdisk_boot_files $deviceid $replace 11.4.1
     fi
     if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
-        read -p "what ios version are you running right now? " r
+        if [ -z "$whatversionamionrightnow" ]; then
+            read -p "what ios version are you running right now? " r
+        else
+            r="$whatversionamionrightnow"
+        fi
         if [[ "$r" == "10.3"* ]]; then
             r="11.0"
         fi
@@ -709,7 +734,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
     "$bin"/irecovery -f kernelcache.img4
     "$bin"/irecovery -c bootx &
     cd ../../../
-    read -p "pls press the enter key once device is in the ramdisk " r1
+    read -p "pls press the enter key on your keyboard once device is in the ramdisk " r1
     "$bin"/iproxy 2222 22 &
     sleep 2
     if [[ "$restore" == 1 ]]; then
@@ -826,7 +851,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
         "$bin"/irecovery -f kernelcache.img4
         "$bin"/irecovery -c bootx &
         cd ../../../
-        read -p "pls press the enter key once device is in the ramdisk " r1
+        read -p "pls press the enter key on your keyboard once device is in the ramdisk " r1
         "$bin"/iproxy 2222 22 &
         "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat /gpt.txt | gptfdisk /dev/rdisk0s1" 2> /dev/null
         sleep 2
