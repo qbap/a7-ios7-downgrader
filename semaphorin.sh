@@ -216,7 +216,7 @@ _download_ramdisk_boot_files() {
             sudo diskutil enableOwnership /tmp/ramdisk
             sudo "$bin"/gnutar -xzvf "$sshtars"/ssh.tar.gz -C /tmp/ramdisk
             if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* || "$3" == "10."* || "$3" == "11."* ]]; then
-                sudo "$bin"/gnutar -xvf "$sshtars"/libcharset_1.dylib_libiconv.2.dylib.tar -C /tmp/ramdisk/usr/lib
+                sudo "$bin"/gnutar -xvf "$dir"/jb/libcharset_1.dylib_libiconv.2.dylib.tar -C /tmp/ramdisk/usr/lib
             fi
             hdiutil detach /tmp/ramdisk
             "$bin"/img4tool -c "$dir"/$1/ramdisk/$3/ramdisk.im4p -t rdsk "$dir"/$1/ramdisk/$3/RestoreRamDisk.dmg
@@ -238,7 +238,7 @@ _download_ramdisk_boot_files() {
             sudo diskutil enableOwnership /tmp/ramdisk
             sudo "$bin"/gnutar -xzvf "$sshtars"/ssh.tar.gz -C /tmp/ramdisk
             if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* || "$3" == "10."* || "$3" == "11."* ]]; then
-                sudo "$bin"/gnutar -xvf "$sshtars"/libcharset_1.dylib_libiconv.2.dylib.tar -C /tmp/ramdisk/usr/lib
+                sudo "$bin"/gnutar -xvf "$dir"/jb/libcharset_1.dylib_libiconv.2.dylib.tar -C /tmp/ramdisk/usr/lib
             fi
             hdiutil detach /tmp/ramdisk
             "$bin"/img4 -i "$dir"/$1/ramdisk/$3/RestoreRamDisk.dmg -o "$dir"/$1/ramdisk/$3/ramdisk.img4 -M IM4M -A -T rdsk
