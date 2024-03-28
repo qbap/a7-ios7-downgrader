@@ -117,6 +117,8 @@ in order for tweaks to work on ios 7.1.x, open the wtfis app on the home screen 
 
 when booting ios 8 you will find that you wont see any app icons on the home screen when you first slide to unlock. to fix this, slide up from the bottom of the screen and tap on calculator. once in the calculator app, press the home button and then you will be at the home screen and all your app icons will appear as normal
 
+ipads do not uicache cydia properly with this script, to launch cydia please open safari and type `cydia://` into the address bar
+
 ## Requirements
 
 mac os high sierra 10.13** catalina should work but anything newer then that may not work
