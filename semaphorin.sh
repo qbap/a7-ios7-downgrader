@@ -21,13 +21,6 @@ Examples:
     $0 7.1.2 --restore
     $0 7.1.2 --boot
 
-GUI usage: $0 [VERSION...] [OPTION...] [SRC]...
-The SRC argument is optional and should be the iOS version you are downgrading from.
-Examples:
-    $0 7.1.2 --restore 12.5.7
-    $0 7.1.2 --restore 10.3.3
-    $0 7.1.2 --boot
-
 Main operation mode:
     --help              Print this help
     --ramdisk           Download& enter ramdisk
@@ -95,8 +88,6 @@ parse_arg() {
         *)
             if [ -z "$version" ]; then
                 version="$1"
-            else
-                whatversionamionrightnow="$1"
             fi
             if [[ "$version" == "8.0b4" ]]; then
                 version="8.0"
@@ -700,11 +691,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
         _download_ramdisk_boot_files $deviceid $replace 11.4.1
     fi
     if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
-        if [ -z "$whatversionamionrightnow" ]; then
-            read -p "what ios version are you running right now? " r
-        else
-            r="$whatversionamionrightnow"
-        fi
+        read -p "what ios version are you running right now? " r
         if [[ "$r" == "10.3"* ]]; then
             r="11.0"
         fi
