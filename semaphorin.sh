@@ -746,6 +746,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
                     echo "    /mnt6/active should contain the name of the UUID in /mnt6"
                     echo "    When done, type reboot in the SSH session, then rerun the script"
                     echo "    ssh root@localhost -p 2222"
+                    $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
                     exit
                 fi
                 active=$(remote_cmd "cat /mnt6/active" 2> /dev/null)
@@ -857,11 +858,6 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
         fi
         if [ -e "$dir"/$deviceid/0.0/com.apple.factorydata ]; then
             "$bin"/sshpass -p "alpine" scp -r -P 2222 "$dir"/$deviceid/0.0/com.apple.factorydata root@localhost:/mnt1/System/Library/Caches 2> /dev/null
-        fi
-        if [ -e "$dir"/$deviceid/0.0/wireless ]; then
-            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt2/wireless/Library/Preferences/" 2> /dev/null
-            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt2/wireless/Library/Databases/" 2> /dev/null
-            "$bin"/sshpass -p "alpine" scp -r -P 2222 "$dir"/$deviceid/0.0/wireless/Library/Preferences/ root@localhost:/mnt2/wireless/Library 2> /dev/null
         fi
         if [[ "$version" == "7."* || "$version" == "8."* || "$version" == "9."* ]]; then
             "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/fstab_rw root@localhost:/mnt1/etc/fstab 2> /dev/null
