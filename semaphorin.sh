@@ -233,12 +233,11 @@ _download_ramdisk_boot_files() {
             hdiutil resize -size 120M "$dir"/$1/ramdisk/$3/RestoreRamDisk.dmg
             hdiutil attach -mountpoint /tmp/ramdisk "$dir"/$1/ramdisk/$3/RestoreRamDisk.dmg
             sudo diskutil enableOwnership /tmp/ramdisk
-            if [[ "$3" == "11.4.1" ]]; then
-                # use ssh tar that has gptfdisk and lwvm inside so we can downgrade ios
-                sudo "$bin"/gnutar -xvf "$sshtars"/ssh.tar -C /tmp/ramdisk
-            else
+            if [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* ]]; then
                 # use ssh tar that can mount_filesystems properly on newer ios versions
                 sudo "$bin"/gnutar -xzvf "$sshtars"/ssh.tar.gz -C /tmp/ramdisk
+            else
+                sudo "$bin"/gnutar -xvf "$sshtars"/ssh.tar -C /tmp/ramdisk
             fi
             hdiutil detach /tmp/ramdisk
             "$bin"/img4 -i "$dir"/$1/ramdisk/$3/RestoreRamDisk.dmg -o "$dir"/$1/ramdisk/$3/ramdisk.img4 -M IM4M -A -T rdsk
