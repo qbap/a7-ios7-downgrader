@@ -218,9 +218,10 @@ _download_ramdisk_boot_files() {
             if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* || "$3" == "10."* || "$3" == "11."* ]]; then
                 # fix scp
                 sudo "$bin"/gnutar -xvf "$dir"/jb/libcharset_1.dylib_libiconv.2.dylib.tar -C /tmp/ramdisk/usr/lib
+            else
+                # fix scp
+                sudo "$bin"/gnutar -xvf "$dir"/jb/libresolv.9.dylib.tar -C /tmp/ramdisk/usr/lib
             fi
-            # fix scp
-            sudo "$bin"/gnutar -xvf "$dir"/jb/libresolv.9.dylib.tar -C /tmp/ramdisk/usr/lib
             hdiutil detach /tmp/ramdisk
             "$bin"/img4tool -c "$dir"/$1/ramdisk/$3/ramdisk.im4p -t rdsk "$dir"/$1/ramdisk/$3/RestoreRamDisk.dmg
             "$bin"/img4tool -c "$dir"/$1/ramdisk/$3/ramdisk.img4 -p "$dir"/$1/ramdisk/$3/ramdisk.im4p -m IM4M
@@ -243,9 +244,10 @@ _download_ramdisk_boot_files() {
             if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* || "$3" == "10."* || "$3" == "11."* ]]; then
                 # fix scp
                 sudo "$bin"/gnutar -xvf "$dir"/jb/libcharset_1.dylib_libiconv.2.dylib.tar -C /tmp/ramdisk/usr/lib
+            else
+                # fix scp
+                sudo "$bin"/gnutar -xvf "$dir"/jb/libresolv.9.dylib.tar -C /tmp/ramdisk/usr/lib
             fi
-            # fix scp
-            sudo "$bin"/gnutar -xvf "$dir"/jb/libresolv.9.dylib.tar -C /tmp/ramdisk/usr/lib
             hdiutil detach /tmp/ramdisk
             "$bin"/img4 -i "$dir"/$1/ramdisk/$3/RestoreRamDisk.dmg -o "$dir"/$1/ramdisk/$3/ramdisk.img4 -M IM4M -A -T rdsk
             "$bin"/iBoot64Patcher "$dir"/$1/ramdisk/$3/iBSS.dec "$dir"/$1/ramdisk/$3/iBSS.patched
