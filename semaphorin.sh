@@ -15,11 +15,18 @@ max_args=1
 arg_count=0
 print_help() {
     cat << EOF
-Usage: $0 [OPTION]... [VERSION]...
+Usage: $0 [VERSION...] [OPTION...]
 iOS 7.0.1-9.2.1 seprmvr64, downgrade& jailbreak tool for checkm8 devices
 Examples:
-    $0 --restore 7.1.2
-    $0 --boot 7.1.2
+    $0 7.1.2 --restore
+    $0 7.1.2 --boot
+
+GUI usage: $0 [VERSION...] [OPTION...] [SRC]...
+The SRC argument is optional and should be the iOS version you are downgrading from.
+Examples:
+    $0 7.1.2 --restore 12.5.7
+    $0 7.1.2 --restore 10.3.3
+    $0 7.1.2 --boot
 
 Main operation mode:
     --help              Print this help
@@ -101,6 +108,12 @@ parse_arg() {
             if [[ "$version" == "9."* && "$version" == "9.3"* ]]; then
                 echo "[-] Downgrading to that version is not yet feasible"
                 exit
+            fi
+            if [[ "$version" == "8.0" ]]; then
+                if [[ ! "$1" == "iPhone6,2" && ! "$1" == "iPhone6,1" && ! "$1" == "iPad4,4" && ! "$1" == "iPad4,5" && ! "$1" == "iPad4,2" && ! "$deviceid" == "iPad4,8" ]]; then
+                    echo "[-] Downgrading to that version is not yet feasible on your device"
+                    exit
+                fi
             fi
             ;;
     esac
@@ -911,6 +924,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
             if [[ -e "$dir"/$deviceid/$version/kcache_12A4331d.raw ]]; then
                 # fix laggy keyboard on ios 8 beta 4
                 # see https://files.catbox.moe/mbyrin.jpg to otherwise see the crash log of kbd
+                # you can remove this command if you want, just know the keyboard will be very laggy
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/Applications/Setup.app" 2> /dev/null
             fi
         elif [[ "$version" == "9.3"* ]]; then
