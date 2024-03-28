@@ -219,8 +219,10 @@ _download_ramdisk_boot_files() {
                 # fix scp
                 sudo "$bin"/gnutar -xvf "$dir"/jb/libcharset.1.dylib_libiconv.2.dylib.tar -C /tmp/ramdisk/usr/lib
             fi
-            # fix scp
-            sudo "$bin"/gnutar -xvf "$dir"/jb/libresolv.9.dylib.tar -C /tmp/ramdisk/usr/lib
+            if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* || "$3" == "10."* || "$3" == "11."* || "$3" == "12."* || "$3" == "13.0"* || "$3" == "13.1"* || "$3" == "13.2"* || "$3" == "13.3"* ]]; then
+                # fix scp
+                sudo "$bin"/gnutar -xvf "$dir"/jb/libresolv.9.dylib.tar -C /tmp/ramdisk/usr/lib
+            fi
             # gptfdisk automation shenanigans
             sudo "$bin"/gnutar -xvf "$dir"/jb/gpt.txt.tar -C /tmp/ramdisk
             hdiutil detach /tmp/ramdisk
@@ -246,8 +248,10 @@ _download_ramdisk_boot_files() {
                 # fix scp
                 sudo "$bin"/gnutar -xvf "$dir"/jb/libcharset.1.dylib_libiconv.2.dylib.tar -C /tmp/ramdisk/usr/lib
             fi
-            # fix scp
-            sudo "$bin"/gnutar -xvf "$dir"/jb/libresolv.9.dylib.tar -C /tmp/ramdisk/usr/lib
+            if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* || "$3" == "10."* || "$3" == "11."* || "$3" == "12."* || "$3" == "13.0"* || "$3" == "13.1"* || "$3" == "13.2"* || "$3" == "13.3"* ]]; then
+                # fix scp
+                sudo "$bin"/gnutar -xvf "$dir"/jb/libresolv.9.dylib.tar -C /tmp/ramdisk/usr/lib
+            fi
             # gptfdisk automation shenanigans
             sudo "$bin"/gnutar -xvf "$dir"/jb/gpt.txt.tar -C /tmp/ramdisk
             hdiutil detach /tmp/ramdisk
