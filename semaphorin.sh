@@ -656,6 +656,10 @@ if [[ "$clean" == 1 ]]; then
     exit 0
 fi
 if [[ "$boot" == 1 ]]; then
+    if [[ "$version" == "8.0" ]]; then
+        # required to get ios 8 beta 4 kernel
+        _download_root_fs $deviceid $replace $version
+    fi
     _download_boot_files $deviceid $replace $version
     if [ -e "$dir"/$deviceid/$version/iBSS.img4 ]; then
         cd "$dir"/$deviceid/$version
