@@ -699,6 +699,9 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
     fi
     if [[ "$restore" == 1 ]]; then
         _download_root_fs $deviceid $replace $version
+    elif [[ "$version" == "8.0" ]]; then
+        # required to get ios 8 beta 4 kernel
+        _download_root_fs $deviceid $replace $version
     fi
     _download_boot_files $deviceid $replace $version
     sleep 1
