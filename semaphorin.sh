@@ -613,7 +613,16 @@ _wait_for_dfu
 if [[ "$clean" == 1 ]]; then
     rm -rf "$dir"/$deviceid/$version/iBSS*
     rm -rf "$dir"/$deviceid/$version/iBEC*
-    rm -rf "$dir"/$deviceid/$version/k*
+    rm -rf "$dir"/$deviceid/$version/kcache2.patched
+    rm -rf "$dir"/$deviceid/$version/kcache.patched
+    rm -rf "$dir"/$deviceid/$version/kcache.raw
+    rm -rf "$dir"/$deviceid/$version/kernelcache.dec
+    rm -rf "$dir"/$deviceid/$version/kc.bpatch
+    rm -rf "$dir"/$deviceid/$version/kernelcache.img4
+    rm -rf "$dir"/$deviceid/$version/kernelcache
+    rm -rf "$dir"/$deviceid/$version/kernelcache.im4p.img4
+    rm -rf "$dir"/$deviceid/$version/kernelcache.im4p
+    rm -rf "$dir"/$deviceid/$version/kpp.bin
     rm -rf "$dir"/$deviceid/$version/DeviceTree*
     rm -rf "$dir"/$deviceid/$version/devicetree*
     rm -rf "$dir"/$deviceid/ramdisk/
