@@ -1,5 +1,9 @@
 iPhone6,1_7.1.2_11D257_Restore.ipsw
 iPhone6,1_8.4.1_12H321_Restore.ipsw
+java/
+logs
+trustcache.*
+ramdisk.*
 mnt2.tar
 mnt2-done.tar
 target
@@ -9,7 +13,6 @@ DeviceTree*
 devicetree*
 sep-firmware*
 rw.dmg
-ramdisk*
 RestoreRamDisk*
 iBSS*
 iBEC*
@@ -50,3 +53,5 @@ com.apple.datamigrator*
 lockdownd.*
 securityd.*
 SystemVersion.plist*
+kcache_12A4331d.raw
+kernelcache_12A4331d.dec

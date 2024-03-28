@@ -1,30 +1,27 @@
 <div align="center">
-<img src="https://files.catbox.moe/nj23rm.png" height="128" width="128" style="border-radius:25%">
+<img src="https://files.catbox.moe/x7b0e2.png" height="128" width="128" style="border-radius:25%">
    <h1> Semaphorin 
       <br/> seprmvr64, downgrade& jailbreak utility
    </h1>
 </div>
 
-<h6 align="center"> Should Support iOS/iPadOS 7.0.1 - 9.2.1  </h6>
+<h6 align="center"> Should Support iOS/iPadOS 7.0.1 - 8.0b4  </h6>
 
 # IF YOUR DEVICE SUPPORTS [LEGACY-IOS-KIT](https://github.com/LukeZGD/Legacy-iOS-Kit), YOU SHOULD REALLY USE THAT OVER THIS.
 
 # Chart of compatibility
 
-| iOS      | iPhone 5s | iPhone 6/ 6+ | iPhone 6s/ 6s+ | App Store | Home btn  | Vol keys | Root fs r/w | Cydia     | Tweaks  | Respring | Sideloadly | iTunes |
-|----------|-----------|--------------|----------------|-----------|-----------|----------|-------------|-----------|---------|----------|------------|--------|
-| 7.0.1    | &#9745;   | &#9744;      | &#9744;        | &#9745;   | &#9744;   | &#9744;  | &#9745;     | &#9745;   | &#9745; | &#9744;  | &#9745;    | &#9745;|
-| 7.0.2    | &#9745;   | &#9744;      | &#9744;        | &#9745;   | &#9744;   | &#9745;  | &#9745;     | &#9745;   | &#9745; | &#9744;  | &#9745;    | &#9745;|
-| 7.0.3    | &#9745;   | &#9744;      | &#9744;        | &#9745;   | &#9745;   | &#9745;  | &#9745;     | &#9745;   | &#9745; | &#9744;  | &#9745;    | &#9745;|
-| 7.0.4    | &#9745;   | &#9744;      | &#9744;        | &#9745;   | &#9745;   | &#9745;  | &#9745;     | &#9745;   | &#9745; | &#9744;  | &#9745;    | &#9745;|
-| 7.0.6    | &#9745;   | &#9744;      | &#9744;        | &#9745;   | &#9745;   | &#9745;  | &#9745;     | &#9745;   | &#9745; | &#9744;  | &#9745;    | &#9745;|
-| 7.1.2    | &#9745;   | &#9744;      | &#9744;        | &#9745;   | &#9745;   | &#9745;  | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9745;    | &#9745;|
-| 8.0b4    | &#9745;   | &#9744;      | &#9744;        | &#9744;   | &#9745;   | &#9745;  | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9745;    | &#9745;|
-| 9.0.1    | &#9745;   | &#9745;      | &#9745;        | &#9744;   | &#9745;   | &#9745;  | &#9745;     | &#9745;   | &#9744; | &#9745;  | &#9744;    | &#9744;|
-| 9.0.2    | &#9745;   | &#9745;      | &#9745;        | &#9744;   | &#9745;   | &#9745;  | &#9745;     | &#9745;   | &#9744; | &#9745;  | &#9744;    | &#9744;|
-| 9.1      | &#9745;   | &#9745;      | &#9745;        | &#9744;   | &#9745;   | &#9745;  | &#9745;     | &#9745;   | &#9744; | &#9745;  | &#9744;    | &#9744;|
-| 9.2      | &#9745;   | &#9745;      | &#9745;        | &#9744;   | &#9745;   | &#9745;  | &#9745;     | &#9745;   | &#9744; | &#9745;  | &#9744;    | &#9744;|
-| 9.2.1    | &#9745;   | &#9745;      | &#9745;        | &#9744;   | &#9745;   | &#9745;  | &#9745;     | &#9745;   | &#9744; | &#9745;  | &#9744;    | &#9744;|
+| iOS      | iPhone 5s | iPad Mini 2 | iPad Air 1 | App Store | Home btn  | Vol keys | Root fs r/w | Cydia     | Tweaks  | Respring | Sideloadly | iTunes |
+|----------|-----------|-------------|------------|-----------|-----------|----------|-------------|-----------|---------|----------|------------|--------|
+| 7.0.1    | &#9745;   | &#9744;     | &#9744;    | &#9745;   | &#9744;   | &#9744;  | &#9745;     | &#9745;   | &#9745; | &#9744;  | &#9745;    | &#9745;|
+| 7.0.2    | &#9745;   | &#9744;     | &#9744;    | &#9745;   | &#9744;   | &#9745;  | &#9745;     | &#9745;   | &#9745; | &#9744;  | &#9745;    | &#9745;|
+| 7.0.3    | &#9745;   | &#9745;     | &#9744;    | &#9745;   | &#9745;   | &#9745;  | &#9745;     | &#9745;   | &#9745; | &#9744;  | &#9745;    | &#9745;|
+| 7.0.4    | &#9745;   | &#9745;     | &#9744;    | &#9745;   | &#9745;   | &#9745;  | &#9745;     | &#9745;   | &#9745; | &#9744;  | &#9745;    | &#9745;|
+| 7.0.6    | &#9745;   | &#9745;     | &#9744;    | &#9745;   | &#9745;   | &#9745;  | &#9745;     | &#9745;   | &#9745; | &#9744;  | &#9745;    | &#9745;|
+| 7.1      | &#9745;   | &#9745;     | &#9745;    | &#9745;   | &#9745;   | &#9745;  | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9745;    | &#9745;|
+| 7.1.1    | &#9745;   | &#9745;     | &#9745;    | &#9745;   | &#9745;   | &#9745;  | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9745;    | &#9745;|
+| 7.1.2    | &#9745;   | &#9745;     | &#9745;    | &#9745;   | &#9745;   | &#9745;  | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9745;    | &#9745;|
+| 8.0b4    | &#9745;   | &#9745;     | &#9745;    | &#9744;   | &#9745;   | &#9745;  | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9745;    | &#9745;|
 
 ## How do I use this?
 
@@ -36,33 +33,43 @@ to use this app, you need to downgrade to a supported version, and have a suppor
 
 `git clone --recursive https://github.com/y08wilm/Semaphorin && cd Semaphorin`
 
+## Support
+
+we now have a discord server where you can get help with this project
+
+you can join with this discord invite link https://discord.gg/WQWDBBYJTb
+
+if for some reason that invite link does not work, please contact [wilm271](https://t.me/wilm271) on telegram
+
+the discord server is strictly for semaphorin support only, do not bring personal issues into our server
+
 ## First run
 
 connect iphone in dfu mode
 
-`sudo ./script.sh <the version you are downgrading to> <your current ios version>`
+`sudo ./semaphorin.sh <the version you are downgrading to> --restore`
 
-for example you may write `sudo ./script.sh 7.1.2 12.5.7` if you are on ios 12.5.7 right now
-
-**if u are on 10.3.3, make sure you type 11.0 instead. this is bcz our amfi patch for the ramdisk does not work on ios 10.3.3 and the ramdisk will not boot properly
+for example you may write `sudo ./semaphorin.sh 7.1.2 --restore`
 
 the script has to backup important files from your current ios version before you can downgrade
 
-when the script asks `would you like to skip the ramdisk and boot ios $1?` type `no` and hit enter
+when the script asks `what ios version are you running right now?` type your current ios version and then hit the enter key on your keyboard
 
-then follow the on screen steps until it asks you `would you like to wipe this phone and install ios $1?` type `yes` and hit enter
+it should then begin the process of downgrading your device, please follow the on screen instructions
 
-it should then reboot your iphone and give you instructions to begin the process of downgrading your device
+your device will be jailbroken
+
+if you are on ios 7 please hit "go" in the wtfis app on your home screen to patch sandbox to allow cydia substrate to work properly
 
 ## Subsequent runs after downgrade is finished
 
 connect iphone in dfu mode
 
-`sudo ./script.sh <the version you downgraded to previously>`
+`sudo ./semaphorin.sh <the version you downgraded to previously> --boot`
 
-for example you may write `sudo ./script.sh 7.1.2` if you downgraded to ios 7.1.2 earlier
+for example you may write `sudo ./semaphorin.sh 7.1.2 --boot` if you downgraded to ios 7.1.2 earlier
 
-when the script asks `would you like to skip the ramdisk and boot ios $1?` type `yes` and hit enter
+it should then boot ios as normal and be jailbroken
 
 ## Setup.app bypass
 
@@ -109,6 +116,8 @@ respring does not work on ios 7.0.x properly, so in order to respring on those v
 in order for tweaks to work on ios 7.1.x, open the wtfis app on the home screen and hit "go" and it will patch the sandbox to allow tweaks to work
 
 when booting ios 8 you will find that you wont see any app icons on the home screen when you first slide to unlock. to fix this, slide up from the bottom of the screen and tap on calculator. once in the calculator app, press the home button and then you will be at the home screen and all your app icons will appear as normal
+
+ipads do not uicache cydia properly with this script, to launch cydia please open safari and type `cydia://` into the address bar
 
 ## Requirements
 

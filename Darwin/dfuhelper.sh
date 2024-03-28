@@ -74,6 +74,9 @@ get_device_mode() {
 }
 
 _dfuhelper() {
+    echo "[*] Press any key when ready for DFU mode"
+    read -n 1 -s
+    step 3 "Get ready"
     local cpid=$(_info recovery CPID)
     local step_one;
     deviceid=$( [ -z "$deviceid" ] && _info recovery ProductType || echo $deviceid )
@@ -82,9 +85,6 @@ _dfuhelper() {
     else
     step_one="Hold home + power button"
     fi
-    echo "[*] Press any key when ready for DFU mode"
-    read -n 1 -s
-    step 3 "Get ready"
     step 4 "$step_one" &
     sleep 3
     "$dir"/irecovery -c "reset" &
