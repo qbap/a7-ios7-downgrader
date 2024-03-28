@@ -237,7 +237,7 @@ _download_ramdisk_boot_files() {
             hdiutil detach /tmp/ramdisk
             "$bin"/img4 -i "$dir"/$1/ramdisk/$3/RestoreRamDisk.dmg -o "$dir"/$1/ramdisk/$3/ramdisk.img4 -M IM4M -A -T rdsk
             "$bin"/iBoot64Patcher "$dir"/$1/ramdisk/$3/iBSS.dec "$dir"/$1/ramdisk/$3/iBSS.patched
-            if [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* ]]; then
+            if [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* ]]; then
                 "$bin"/iBoot64Patcher "$dir"/$1/ramdisk/$3/iBEC.dec "$dir"/$1/ramdisk/$3/iBEC.patched -b "rd=md0 debug=0x2014e -v wdt=-1 `if [ "$check" = '0x8960' ] || [ "$check" = '0x7000' ] || [ "$check" = '0x7001' ]; then echo "-restore"; fi`"
             else
                 "$bin"/iBoot64Patcher "$dir"/$1/ramdisk/$3/iBEC.dec "$dir"/$1/ramdisk/$3/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 amfi_get_out_of_my_way=1 -restore -progress" -n
@@ -492,6 +492,36 @@ _download_root_fs() {
                 "$bin"/img4 -i kernelcache.release.j72 -o "$dir"/jb/kcache_12A4331d.raw -k 93c94a8186de108199771d504c753ecf397433be91c748045b026631d976ac6fe80a2c196db01e6eef506ce231a3fb44
                 "$bin"/img4 -i kernelcache.release.j72 -o "$dir"/jb/kernelcache_12A4331d.dec -k 93c94a8186de108199771d504c753ecf397433be91c748045b026631d976ac6fe80a2c196db01e6eef506ce231a3fb44 -D
                 cd ../../work/
+            elif [[ "$deviceid" == "iPad4,1" ]]; then
+                # https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.1%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
+                cd "$dir"/$1/$3
+                "$bin"/aria2c https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.1%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
+                "$bin"/7z x media_ipsw.rar
+                "$bin"/7z x $(find . -name '*.ipsw*')
+                "$bin"/dmg extract 058-01219-053.dmg OS.dmg -k c6017d6da64083eddbbf01c80f4dc6f84c1d935cec206d60116e7177255f2b677ac2d077
+                "$bin"/img4 -i kernelcache.release.j71 -o "$dir"/jb/kcache_12A4331d.raw -k 5ea29d371ad06c6e7fb0cd904779cd34f21385cc504f178fb5a9b2d4066703c816208e8f6d9479dd1b49d4d6a2460b02
+                "$bin"/img4 -i kernelcache.release.j71 -o "$dir"/jb/kernelcache_12A4331d.dec -k 5ea29d371ad06c6e7fb0cd904779cd34f21385cc504f178fb5a9b2d4066703c816208e8f6d9479dd1b49d4d6a2460b02 -D
+                cd ../../work/
+            elif [[ "$deviceid" == "iPad4,6" ]]; then
+                # https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.6%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
+                cd "$dir"/$1/$3
+                "$bin"/aria2c https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.6%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
+                "$bin"/7z x media_ipsw.rar
+                "$bin"/7z x $(find . -name '*.ipsw*')
+                "$bin"/dmg extract 058-01099-053.dmg OS.dmg -k 3746eef01500a81f45d7ceed3c35ed02ad7b9d7da26e7fa4a27a84a1a53a224e65ab8ba8
+                "$bin"/img4 -i kernelcache.release.j87 -o "$dir"/jb/kcache_12A4331d.raw -k c17906bdffdf40b6f9c0656c6b7d585449e6eb495439f9cae8faee3a466e75de248c2ce176cddc3a1ca4de73be0baeef
+                "$bin"/img4 -i kernelcache.release.j87 -o "$dir"/jb/kernelcache_12A4331d.dec -k c17906bdffdf40b6f9c0656c6b7d585449e6eb495439f9cae8faee3a466e75de248c2ce176cddc3a1ca4de73be0baeef -D
+                cd ../../work/
+            elif [[ "$deviceid" == "iPad4,3" ]]; then
+                # https://ia903400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.3%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
+                cd "$dir"/$1/$3
+                "$bin"/aria2c https://ia903400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.3%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
+                "$bin"/7z x media_ipsw.rar
+                "$bin"/7z x $(find . -name '*.ipsw*')
+                "$bin"/dmg extract 058-01287-053.dmg OS.dmg -k f593490d57e2c6a01bbfee212c83f711a8e80e6366107803ff3a933850b48ed68f495014
+                "$bin"/img4 -i kernelcache.release.j73 -o "$dir"/jb/kcache_12A4331d.raw -k fc44a450a05e812125e93ff45c820a90cd11f08347133cc03a9b4bed23a1ec16c509c58d3b0f3083640d62edc56eee10
+                "$bin"/img4 -i kernelcache.release.j73 -o "$dir"/jb/kernelcache_12A4331d.dec -k fc44a450a05e812125e93ff45c820a90cd11f08347133cc03a9b4bed23a1ec16c509c58d3b0f3083640d62edc56eee10 -D
+                cd ../../work/
             else
                 "$bin"/pzb -g BuildManifest.plist "$ipswurl"
                 "$bin"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
@@ -575,7 +605,7 @@ if [[ "$boot" == 1 ]]; then
     _download_boot_files $deviceid $replace $version
     if [ -e "$dir"/$deviceid/$version/iBSS.img4 ]; then
         cd "$dir"/$deviceid/$version
-        if [[ "$deviceid" == "iPhone6,2" || "$deviceid" == "iPhone6,1" || "$deviceid" == "iPad4,4" || "$deviceid" == "iPad4,5" ]]; then
+        if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
             "$bin"/ipwnder -p
         else
             "$bin"/gaster pwn
@@ -706,7 +736,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
     else
         cd "$dir"/$deviceid/ramdisk/11.4.1
     fi
-    if [[ "$deviceid" == "iPhone6,2" || "$deviceid" == "iPhone6,1" || "$deviceid" == "iPad4,4" || "$deviceid" == "iPad4,5" ]]; then
+    if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
         "$bin"/ipwnder -p
     else
         "$bin"/gaster pwn
@@ -803,12 +833,6 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
             echo "missing ./sep-firmware.img4, which is required in order to proceed. exiting.."
             exit
         fi
-        if [ ! -e "$dir"/$deviceid/0.0/Baseband ]; then
-            if [[ ! "$deviceid" == "iPad"* ]]; then
-                echo "missing ./Baseband, which is required in order to proceed. exiting.."
-                exit
-            fi
-        fi
         if [ ! -e "$dir"/$deviceid/0.0/keybags ]; then
             echo "missing ./keybags, which is required in order to proceed. exiting.."
             exit
@@ -828,7 +852,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
         else
             cd "$dir"/$deviceid/ramdisk/11.4.1
         fi
-        if [[ "$deviceid" == "iPhone6,2" || "$deviceid" == "iPhone6,1" || "$deviceid" == "iPad4,4" || "$deviceid" == "iPad4,5" ]]; then
+        if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
             "$bin"/ipwnder -p
         else
             "$bin"/gaster pwn
@@ -1048,7 +1072,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
             fi
             _wait_for_dfu
             cd "$dir"/$deviceid/$version
-            if [[ "$deviceid" == "iPhone6,2" || "$deviceid" == "iPhone6,1" || "$deviceid" == "iPad4,4" || "$deviceid" == "iPad4,5" || "$deviceid" == "iPad4,2" || "$deviceid" == "iPad4,8" ]]; then
+            if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
                 "$bin"/ipwnder -p
             else
                 "$bin"/gaster pwn
