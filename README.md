@@ -53,7 +53,7 @@ for example you may write `sudo ./semaphorin.sh 7.1.2 --restore`
 
 the script has to backup important files from your current ios version before you can downgrade
 
-when the script asks `what ios version are you running right now?` type your current ios version and hit enter
+when the script asks `what ios version are you running right now?` type your current ios version and then hit the enter key on your keyboard
 
 it should then begin the process of downgrading your device, please follow the on screen instructions
 
