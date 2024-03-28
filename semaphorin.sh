@@ -590,8 +590,8 @@ if [ ! -e java/bin/java ]; then
     cd java
     curl -k -SLO https://builds.openlogic.com/downloadJDK/openlogic-openjdk-jre/8u262-b10/openlogic-openjdk-jre-8u262-b10-mac-x64.zip
     "$bin"/7z x openlogic-openjdk-jre-8u262-b10-mac-x64.zip
-    sudo cp -rf openlogic-openjdk-jre-8u262-b10-mac-x64\jdk1.8.0_262.jre\Contents\Home\* .
-    sudo rm -rf openlogic-openjdk-jre-8u262-b10-mac-x64\
+    sudo cp -rf openlogic-openjdk-jre-8u262-b10-mac-x64/jdk1.8.0_262.jre/Contents/Home/* .
+    sudo rm -rf openlogic-openjdk-jre-8u262-b10-mac-x64/
     cd ..
 fi
 for cmd in curl unzip python3 git ssh scp killall sudo grep pgrep ${linux_cmds}; do
