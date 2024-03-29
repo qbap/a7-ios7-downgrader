@@ -442,7 +442,7 @@ _download_boot_files() {
             else
                 "$bin"/Kernel64Patcher2 "$dir"/$1/$3/kcache.patched "$dir"/$1/$3/kcache2.patched -a
             fi
-            "$bin"/oomfie "$dir"/$1/$3/kcache2.patched "$dir"/$1/$3/kcache3.patched
+            "$bin"/seprmvr643 "$dir"/$1/$3/kcache2.patched "$dir"/$1/$3/kcache3.patched
             if [ -e "$dir"/$1/$3/kpp.bin ]; then
                 pyimg4 im4p create -i "$dir"/$1/$3/kcache3.patched -o "$dir"/$1/$3/kernelcache.im4p.img4 --extra "$dir"/$1/$3/kpp.bin -f rkrn --lzss
                 pyimg4 im4p create -i "$dir"/$1/$3/kcache3.patched -o "$dir"/$1/$3/kernelcache.im4p --extra "$dir"/$1/$3/kpp.bin -f krnl --lzss
