@@ -280,7 +280,11 @@ _download_ramdisk_boot_files() {
             fi
             "$bin"/img4 -i "$dir"/$1/ramdisk/$3/iBSS.patched -o "$dir"/$1/ramdisk/$3/iBSS.img4 -M IM4M -A -T ibss
             "$bin"/img4 -i "$dir"/$1/ramdisk/$3/iBEC.patched -o "$dir"/$1/ramdisk/$3/iBEC.img4 -M IM4M -A -T ibec
-            "$bin"/Kernel64Patcher2 "$dir"/$1/ramdisk/$3/kcache.raw "$dir"/$1/ramdisk/$3/kcache2.patched -a
+            if [[ "$3" == "10.3"* ]]; then
+                "$bin"/KPlooshFinder "$dir"/$1/ramdisk/$3/kcache.raw "$dir"/$1/ramdisk/$3/kcache2.patched
+            else
+                "$bin"/Kernel64Patcher2 "$dir"/$1/ramdisk/$3/kcache.raw "$dir"/$1/ramdisk/$3/kcache2.patched -a
+            fi
             "$bin"/kerneldiff "$dir"/$1/ramdisk/$3/kcache.raw "$dir"/$1/ramdisk/$3/kcache2.patched "$dir"/$1/ramdisk/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/ramdisk/$3/kernelcache.dec -o "$dir"/$1/ramdisk/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/ramdisk/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/ramdisk/$3/kernelcache.dec -o "$dir"/$1/ramdisk/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/ramdisk/$3/kc.bpatch
@@ -433,7 +437,11 @@ _download_boot_files() {
             "$bin"/img4 -i "$dir"/$1/$3/iBSS.patched -o "$dir"/$1/$3/iBSS.img4 -M IM4M -A -T ibss
             "$bin"/img4 -i "$dir"/$1/$3/iBEC.patched -o "$dir"/$1/$3/iBEC.img4 -M IM4M -A -T ibec
             "$bin"/seprmvr64 "$dir"/$1/$3/kcache.raw "$dir"/$1/$3/kcache.patched
-            "$bin"/Kernel64Patcher2 "$dir"/$1/$3/kcache.patched "$dir"/$1/$3/kcache2.patched -a
+            if [[ "$3" == "10.3"* ]]; then
+                "$bin"/KPlooshFinder "$dir"/$1/$3/kcache.patched "$dir"/$1/$3/kcache2.patched
+            else
+                "$bin"/Kernel64Patcher2 "$dir"/$1/$3/kcache.patched "$dir"/$1/$3/kcache2.patched -a
+            fi
             if [ -e "$dir"/$1/$3/kpp.bin ]; then
                 pyimg4 im4p create -i "$dir"/$1/$3/kcache2.patched -o "$dir"/$1/$3/kernelcache.im4p.img4 --extra "$dir"/$1/$3/kpp.bin -f rkrn --lzss
                 pyimg4 im4p create -i "$dir"/$1/$3/kcache2.patched -o "$dir"/$1/$3/kernelcache.im4p --extra "$dir"/$1/$3/kpp.bin -f krnl --lzss
@@ -480,99 +488,107 @@ _download_root_fs() {
     mkdir work
     cd work
     "$bin"/img4tool -e -s "$dir"/other/shsh/"${check}".shsh -m IM4M
-    if [ ! -e "$dir"/$1/$3/OS.tar ]; then
-        if [ ! -e "$dir"/$1/$3/OS.dmg ]; then
-            if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" || ! "$3" == "8.0" ]]; then
-                "$bin"/pzb -g BuildManifest.plist "$ipswurl"
-                "$bin"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
-                fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
-                ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
-                "$bin"/dmg extract $fn "$dir"/$1/$3/OS.dmg -k $ivkey
-            elif [[ "$deviceid" == "iPhone6,1" || "$deviceid" == "iPhone6,2" ]]; then
-                # https://archive.org/download/Apple_iPhone_Firmware/Apple%20iPhone%206.1%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/
-                cd "$dir"/$1/$3
-                "$bin"/aria2c https://ia903400.us.archive.org/4/items/Apple_iPhone_Firmware/Apple%20iPhone%206.1%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
-                "$bin"/7z x media_ipsw.rar
-                "$bin"/7z x $(find . -name '*.ipsw*')
-                "$bin"/dmg extract 058-01244-053.dmg OS.dmg -k 5c8b481822b91861c1d19590e790b306daaab2230f89dd275c18356d28fdcd47436a0737
-                "$bin"/img4 -i kernelcache.release.n51 -o "$dir"/$1/$3/kcache_12A4331d.raw -k fdee9545abf38072bb54d6cc46aeb44cc0ab44308fdccce0a0adc4f2c02c531339c2acd2d7c1e099abb298a63730967a
-                "$bin"/img4 -i kernelcache.release.n51 -o "$dir"/$1/$3/kernelcache_12A4331d.dec -k fdee9545abf38072bb54d6cc46aeb44cc0ab44308fdccce0a0adc4f2c02c531339c2acd2d7c1e099abb298a63730967a -D
-                cd ../../work/
-            elif [[ "$deviceid" == "iPad4,4" ]]; then
-                # https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.4%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
-                cd "$dir"/$1/$3
-                "$bin"/aria2c https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.4%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
-                "$bin"/7z x media_ipsw.rar
-                "$bin"/7z x $(find . -name '*.ipsw*')
-                "$bin"/dmg extract 058-01149-054.dmg OS.dmg -k b62a823a1b5355e1e8211db6441e4384f92e8b47407837afadf24facab5c7b0320f61a4f
-                "$bin"/img4 -i kernelcache.release.j85 -o "$dir"/$1/$3/kcache_12A4331d.raw -k e64f85ed518a3747d5b04c9d703dd96b92df85410ace43dbed85b7fa66c186e002d59fd2812910e7326ef173cb1c5a8f
-                "$bin"/img4 -i kernelcache.release.j85 -o "$dir"/$1/$3/kernelcache_12A4331d.dec -k e64f85ed518a3747d5b04c9d703dd96b92df85410ace43dbed85b7fa66c186e002d59fd2812910e7326ef173cb1c5a8f -D
-                cd ../../work/
-            elif [[ "$deviceid" == "iPad4,5" ]]; then
-                # https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.5%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
-                cd "$dir"/$1/$3
-                "$bin"/aria2c https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.5%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
-                "$bin"/7z x media_ipsw.rar
-                "$bin"/7z x $(find . -name '*.ipsw*')
-                "$bin"/dmg extract 058-01282-053.dmg OS.dmg -k 67a958bddcc762e21702583b20b87caad97ed96433e9e7e8a57ef4ea53d71549f030c125
-                "$bin"/img4 -i kernelcache.release.j86 -o "$dir"/$1/$3/kcache_12A4331d.raw -k 4c70597be8d32ab7c7177e1b1e3f1ba00065ed0b2222d0c9c8484a7dada36f2165037fa3324ee5e8aa2bd198a56fd2d9
-                "$bin"/img4 -i kernelcache.release.j86 -o "$dir"/$1/$3/kernelcache_12A4331d.dec -k 4c70597be8d32ab7c7177e1b1e3f1ba00065ed0b2222d0c9c8484a7dada36f2165037fa3324ee5e8aa2bd198a56fd2d9 -D
-                cd ../../work/
-            elif [[ "$deviceid" == "iPad4,2" ]]; then
-                # https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.2%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
-                cd "$dir"/$1/$3
-                "$bin"/aria2c https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.2%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
-                "$bin"/7z x media_ipsw.rar
-                "$bin"/7z x $(find . -name '*.ipsw*')
-                "$bin"/dmg extract 058-01330-053.dmg OS.dmg -k 65e1ae6a877652010bcafd88c1b882494b66bd9c2dc3ebbe35d0ebc42466be1a3956c6cc
-                "$bin"/img4 -i kernelcache.release.j72 -o "$dir"/$1/$3/kcache_12A4331d.raw -k 93c94a8186de108199771d504c753ecf397433be91c748045b026631d976ac6fe80a2c196db01e6eef506ce231a3fb44
-                "$bin"/img4 -i kernelcache.release.j72 -o "$dir"/$1/$3/kernelcache_12A4331d.dec -k 93c94a8186de108199771d504c753ecf397433be91c748045b026631d976ac6fe80a2c196db01e6eef506ce231a3fb44 -D
-                cd ../../work/
-            elif [[ "$deviceid" == "iPad4,1" ]]; then
-                # https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.1%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
-                cd "$dir"/$1/$3
-                "$bin"/aria2c https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.1%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
-                "$bin"/7z x media_ipsw.rar
-                "$bin"/7z x $(find . -name '*.ipsw*')
-                "$bin"/dmg extract 058-01219-053.dmg OS.dmg -k c6017d6da64083eddbbf01c80f4dc6f84c1d935cec206d60116e7177255f2b677ac2d077
-                "$bin"/img4 -i kernelcache.release.j71 -o "$dir"/$1/$3/kcache_12A4331d.raw -k 5ea29d371ad06c6e7fb0cd904779cd34f21385cc504f178fb5a9b2d4066703c816208e8f6d9479dd1b49d4d6a2460b02
-                "$bin"/img4 -i kernelcache.release.j71 -o "$dir"/$1/$3/kernelcache_12A4331d.dec -k 5ea29d371ad06c6e7fb0cd904779cd34f21385cc504f178fb5a9b2d4066703c816208e8f6d9479dd1b49d4d6a2460b02 -D
-                cd ../../work/
-            elif [[ "$deviceid" == "iPad4,6" ]]; then
-                # https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.6%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
-                cd "$dir"/$1/$3
-                "$bin"/aria2c https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.6%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
-                "$bin"/7z x media_ipsw.rar
-                "$bin"/7z x $(find . -name '*.ipsw*')
-                "$bin"/dmg extract 058-01099-053.dmg OS.dmg -k 3746eef01500a81f45d7ceed3c35ed02ad7b9d7da26e7fa4a27a84a1a53a224e65ab8ba8
-                "$bin"/img4 -i kernelcache.release.j87 -o "$dir"/$1/$3/kcache_12A4331d.raw -k c17906bdffdf40b6f9c0656c6b7d585449e6eb495439f9cae8faee3a466e75de248c2ce176cddc3a1ca4de73be0baeef
-                "$bin"/img4 -i kernelcache.release.j87 -o "$dir"/$1/$3/kernelcache_12A4331d.dec -k c17906bdffdf40b6f9c0656c6b7d585449e6eb495439f9cae8faee3a466e75de248c2ce176cddc3a1ca4de73be0baeef -D
-                cd ../../work/
-            elif [[ "$deviceid" == "iPad4,3" ]]; then
-                # https://ia903400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.3%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
-                cd "$dir"/$1/$3
-                "$bin"/aria2c https://ia903400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.3%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
-                "$bin"/7z x media_ipsw.rar
-                "$bin"/7z x $(find . -name '*.ipsw*')
-                "$bin"/dmg extract 058-01287-053.dmg OS.dmg -k f593490d57e2c6a01bbfee212c83f711a8e80e6366107803ff3a933850b48ed68f495014
-                "$bin"/img4 -i kernelcache.release.j73 -o "$dir"/$1/$3/kcache_12A4331d.raw -k fc44a450a05e812125e93ff45c820a90cd11f08347133cc03a9b4bed23a1ec16c509c58d3b0f3083640d62edc56eee10
-                "$bin"/img4 -i kernelcache.release.j73 -o "$dir"/$1/$3/kernelcache_12A4331d.dec -k fc44a450a05e812125e93ff45c820a90cd11f08347133cc03a9b4bed23a1ec16c509c58d3b0f3083640d62edc56eee10 -D
-                cd ../../work/
-            else
-                "$bin"/pzb -g BuildManifest.plist "$ipswurl"
-                "$bin"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
-                fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
-                ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
-                "$bin"/dmg extract $fn "$dir"/$1/$3/OS.dmg -k $ivkey
-            fi
-        fi
-        "$bin"/dmg build "$dir"/$1/$3/OS.dmg "$dir"/$1/$3/rw.dmg
-        hdiutil attach -mountpoint /tmp/ios "$dir"/$1/$3/rw.dmg
-        sudo diskutil enableOwnership /tmp/ios
-        sudo "$bin"/gnutar -cvf "$dir"/$1/$3/OS.tar -C /tmp/ios .
-        hdiutil detach /tmp/ios
-        rm -rf /tmp/ios
+    if [["$3" == "10.3"* || "$3" == "11."* || "$3" == "12."* ]]; then
+        "$bin"/pzb -g BuildManifest.plist "$ipswurl"
+        "$bin"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
+        fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
+        asr -source $fn -target "$dir"/$1/$3/OS.dmg --embed -erase -noprompt --chunkchecksum --puppetstrings
         "$bin"/irecovery -f /dev/null
+    else
+        if [ ! -e "$dir"/$1/$3/OS.tar ]; then
+            if [ ! -e "$dir"/$1/$3/OS.dmg ]; then
+                if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" || ! "$3" == "8.0" ]]; then
+                    "$bin"/pzb -g BuildManifest.plist "$ipswurl"
+                    "$bin"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
+                    fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
+                    ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
+                    "$bin"/dmg extract $fn "$dir"/$1/$3/OS.dmg -k $ivkey
+                elif [[ "$deviceid" == "iPhone6,1" || "$deviceid" == "iPhone6,2" ]]; then
+                    # https://archive.org/download/Apple_iPhone_Firmware/Apple%20iPhone%206.1%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/
+                    cd "$dir"/$1/$3
+                    "$bin"/aria2c https://ia903400.us.archive.org/4/items/Apple_iPhone_Firmware/Apple%20iPhone%206.1%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
+                    "$bin"/7z x media_ipsw.rar
+                    "$bin"/7z x $(find . -name '*.ipsw*')
+                    "$bin"/dmg extract 058-01244-053.dmg OS.dmg -k 5c8b481822b91861c1d19590e790b306daaab2230f89dd275c18356d28fdcd47436a0737
+                    "$bin"/img4 -i kernelcache.release.n51 -o "$dir"/$1/$3/kcache_12A4331d.raw -k fdee9545abf38072bb54d6cc46aeb44cc0ab44308fdccce0a0adc4f2c02c531339c2acd2d7c1e099abb298a63730967a
+                    "$bin"/img4 -i kernelcache.release.n51 -o "$dir"/$1/$3/kernelcache_12A4331d.dec -k fdee9545abf38072bb54d6cc46aeb44cc0ab44308fdccce0a0adc4f2c02c531339c2acd2d7c1e099abb298a63730967a -D
+                    cd ../../work/
+                elif [[ "$deviceid" == "iPad4,4" ]]; then
+                    # https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.4%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
+                    cd "$dir"/$1/$3
+                    "$bin"/aria2c https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.4%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
+                    "$bin"/7z x media_ipsw.rar
+                    "$bin"/7z x $(find . -name '*.ipsw*')
+                    "$bin"/dmg extract 058-01149-054.dmg OS.dmg -k b62a823a1b5355e1e8211db6441e4384f92e8b47407837afadf24facab5c7b0320f61a4f
+                    "$bin"/img4 -i kernelcache.release.j85 -o "$dir"/$1/$3/kcache_12A4331d.raw -k e64f85ed518a3747d5b04c9d703dd96b92df85410ace43dbed85b7fa66c186e002d59fd2812910e7326ef173cb1c5a8f
+                    "$bin"/img4 -i kernelcache.release.j85 -o "$dir"/$1/$3/kernelcache_12A4331d.dec -k e64f85ed518a3747d5b04c9d703dd96b92df85410ace43dbed85b7fa66c186e002d59fd2812910e7326ef173cb1c5a8f -D
+                    cd ../../work/
+                elif [[ "$deviceid" == "iPad4,5" ]]; then
+                    # https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.5%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
+                    cd "$dir"/$1/$3
+                    "$bin"/aria2c https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.5%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
+                    "$bin"/7z x media_ipsw.rar
+                    "$bin"/7z x $(find . -name '*.ipsw*')
+                    "$bin"/dmg extract 058-01282-053.dmg OS.dmg -k 67a958bddcc762e21702583b20b87caad97ed96433e9e7e8a57ef4ea53d71549f030c125
+                    "$bin"/img4 -i kernelcache.release.j86 -o "$dir"/$1/$3/kcache_12A4331d.raw -k 4c70597be8d32ab7c7177e1b1e3f1ba00065ed0b2222d0c9c8484a7dada36f2165037fa3324ee5e8aa2bd198a56fd2d9
+                    "$bin"/img4 -i kernelcache.release.j86 -o "$dir"/$1/$3/kernelcache_12A4331d.dec -k 4c70597be8d32ab7c7177e1b1e3f1ba00065ed0b2222d0c9c8484a7dada36f2165037fa3324ee5e8aa2bd198a56fd2d9 -D
+                    cd ../../work/
+                elif [[ "$deviceid" == "iPad4,2" ]]; then
+                    # https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.2%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
+                    cd "$dir"/$1/$3
+                    "$bin"/aria2c https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.2%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
+                    "$bin"/7z x media_ipsw.rar
+                    "$bin"/7z x $(find . -name '*.ipsw*')
+                    "$bin"/dmg extract 058-01330-053.dmg OS.dmg -k 65e1ae6a877652010bcafd88c1b882494b66bd9c2dc3ebbe35d0ebc42466be1a3956c6cc
+                    "$bin"/img4 -i kernelcache.release.j72 -o "$dir"/$1/$3/kcache_12A4331d.raw -k 93c94a8186de108199771d504c753ecf397433be91c748045b026631d976ac6fe80a2c196db01e6eef506ce231a3fb44
+                    "$bin"/img4 -i kernelcache.release.j72 -o "$dir"/$1/$3/kernelcache_12A4331d.dec -k 93c94a8186de108199771d504c753ecf397433be91c748045b026631d976ac6fe80a2c196db01e6eef506ce231a3fb44 -D
+                    cd ../../work/
+                elif [[ "$deviceid" == "iPad4,1" ]]; then
+                    # https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.1%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
+                    cd "$dir"/$1/$3
+                    "$bin"/aria2c https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.1%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
+                    "$bin"/7z x media_ipsw.rar
+                    "$bin"/7z x $(find . -name '*.ipsw*')
+                    "$bin"/dmg extract 058-01219-053.dmg OS.dmg -k c6017d6da64083eddbbf01c80f4dc6f84c1d935cec206d60116e7177255f2b677ac2d077
+                    "$bin"/img4 -i kernelcache.release.j71 -o "$dir"/$1/$3/kcache_12A4331d.raw -k 5ea29d371ad06c6e7fb0cd904779cd34f21385cc504f178fb5a9b2d4066703c816208e8f6d9479dd1b49d4d6a2460b02
+                    "$bin"/img4 -i kernelcache.release.j71 -o "$dir"/$1/$3/kernelcache_12A4331d.dec -k 5ea29d371ad06c6e7fb0cd904779cd34f21385cc504f178fb5a9b2d4066703c816208e8f6d9479dd1b49d4d6a2460b02 -D
+                    cd ../../work/
+                elif [[ "$deviceid" == "iPad4,6" ]]; then
+                    # https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.6%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
+                    cd "$dir"/$1/$3
+                    "$bin"/aria2c https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.6%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
+                    "$bin"/7z x media_ipsw.rar
+                    "$bin"/7z x $(find . -name '*.ipsw*')
+                    "$bin"/dmg extract 058-01099-053.dmg OS.dmg -k 3746eef01500a81f45d7ceed3c35ed02ad7b9d7da26e7fa4a27a84a1a53a224e65ab8ba8
+                    "$bin"/img4 -i kernelcache.release.j87 -o "$dir"/$1/$3/kcache_12A4331d.raw -k c17906bdffdf40b6f9c0656c6b7d585449e6eb495439f9cae8faee3a466e75de248c2ce176cddc3a1ca4de73be0baeef
+                    "$bin"/img4 -i kernelcache.release.j87 -o "$dir"/$1/$3/kernelcache_12A4331d.dec -k c17906bdffdf40b6f9c0656c6b7d585449e6eb495439f9cae8faee3a466e75de248c2ce176cddc3a1ca4de73be0baeef -D
+                    cd ../../work/
+                elif [[ "$deviceid" == "iPad4,3" ]]; then
+                    # https://ia903400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.3%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
+                    cd "$dir"/$1/$3
+                    "$bin"/aria2c https://ia903400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.3%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
+                    "$bin"/7z x media_ipsw.rar
+                    "$bin"/7z x $(find . -name '*.ipsw*')
+                    "$bin"/dmg extract 058-01287-053.dmg OS.dmg -k f593490d57e2c6a01bbfee212c83f711a8e80e6366107803ff3a933850b48ed68f495014
+                    "$bin"/img4 -i kernelcache.release.j73 -o "$dir"/$1/$3/kcache_12A4331d.raw -k fc44a450a05e812125e93ff45c820a90cd11f08347133cc03a9b4bed23a1ec16c509c58d3b0f3083640d62edc56eee10
+                    "$bin"/img4 -i kernelcache.release.j73 -o "$dir"/$1/$3/kernelcache_12A4331d.dec -k fc44a450a05e812125e93ff45c820a90cd11f08347133cc03a9b4bed23a1ec16c509c58d3b0f3083640d62edc56eee10 -D
+                    cd ../../work/
+                else
+                    "$bin"/pzb -g BuildManifest.plist "$ipswurl"
+                    "$bin"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
+                    fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
+                    ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
+                    "$bin"/dmg extract $fn "$dir"/$1/$3/OS.dmg -k $ivkey
+                fi
+            fi
+            "$bin"/dmg build "$dir"/$1/$3/OS.dmg "$dir"/$1/$3/rw.dmg
+            hdiutil attach -mountpoint /tmp/ios "$dir"/$1/$3/rw.dmg
+            sudo diskutil enableOwnership /tmp/ios
+            sudo "$bin"/gnutar -cvf "$dir"/$1/$3/OS.tar -C /tmp/ios .
+            hdiutil detach /tmp/ios
+            rm -rf /tmp/ios
+            "$bin"/irecovery -f /dev/null
+        fi
     fi
     cd ..
     rm -rf work
@@ -627,6 +643,7 @@ if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (D
 fi
 _wait_for_dfu
 check=$("$bin"/irecovery -q | grep CPID | sed 's/CPID: //')
+cpid=$("$bin"/irecovery -q | grep CPID | sed 's/CPID: //')
 replace=$("$bin"/irecovery -q | grep MODEL | sed 's/MODEL: //')
 deviceid=$("$bin"/irecovery -q | grep PRODUCT | sed 's/PRODUCT: //')
 echo $deviceid
@@ -691,6 +708,10 @@ fi
 if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
     if [[ "$version" == "7."* || "$version" == "8."* ]]; then
         _download_ramdisk_boot_files $deviceid $replace 8.4.1
+    elif [[ "$version" == "10.3"* ]]; then
+        _download_ramdisk_boot_files $deviceid $replace 10.3.3
+    elif [[ "$version" == "11."* || "$version" == "12."* ]]; then
+        _download_ramdisk_boot_files $deviceid $replace 14.3
     else
         _download_ramdisk_boot_files $deviceid $replace 11.4.1
     fi
@@ -822,7 +843,36 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
             echo "missing ./keybags, which is required in order to proceed. exiting.."
             exit
         fi
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "lwvm init" 2> /dev/null
+        if [[ "$version" == "10.3"* || "$version" == "11."* || "$version" == "12."* ]]; then
+            echo "[*] Testing for baseband presence"
+            disk=8
+            if [ "$(remote_cmd "/usr/bin/mgask HasBaseband | grep -E 'true|false'")" = "true" ] && [[ "${cpid}" == *"0x700"* ]]; then
+                disk=7
+            elif [ "$(remote_cmd "/usr/bin/mgask HasBaseband | grep -E 'true|false'")" = "false" ]; then
+                if [[ "${cpid}" == *"0x700"* ]]; then
+                    disk=6
+                else
+                    disk=7
+                fi
+            fi
+            fs=disk0s1s$disk
+            echo "[*] Creating fakefs"
+            remote_cmd "/sbin/newfs_apfs -o role=i -A -v SystemX /dev/disk0s1" && {
+                sleep 2
+                remote_cmd "/sbin/newfs_apfs -o role=0 -A -v DataX /dev/disk0s1"
+                remote_cmd "/sbin/mount_apfs /dev/$fs /mnt8"
+                remote_cmd "/sbin/mount_apfs /dev/$fs /mnt9"
+                sleep 1
+                echo "[*] fakefs created, continuing..."
+            } || {
+                remote_cmd "/sbin/mount_apfs /dev/$fs /mnt8"
+                remote_cmd "/sbin/mount_apfs /dev/$fs /mnt9"
+                echo "[*] Using the old fakefs, run --restorerootfs if you need to clean it"
+            }
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir /mnt2/keybags" 2> /dev/null
+        else
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "lwvm init" 2> /dev/null
+        fi
         sleep 1
         echo "[*] Wiped the device"
         $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
@@ -862,21 +912,27 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
         cd ../../../
         read -p "pls press the enter key on your keyboard once device is in the ramdisk " r1
         "$bin"/iproxy 2222 22 &
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat /gpt.txt | gptfdisk /dev/rdisk0s1" 2> /dev/null
-        sleep 2
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync" 2> /dev/null
-        sleep 1
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync" 2> /dev/null
-        sleep 1
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync" 2> /dev/null
-        sleep 1
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_hfs -s -v System -J -b 4096 -n a=4096,c=4096,e=4096 /dev/disk0s1s1"
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_hfs -s -v Data -J -b 4096 -n a=4096,c=4096,e=4096 /dev/disk0s1s2"
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_hfs /dev/disk0s1s1 /mnt1" 2> /dev/null
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs -o suid,dev /dev/disk0s1s2 /mnt2" 2> /dev/null
-        echo "[*] Uploading $dir/$deviceid/$version/OS.tar, this may take up to 10 minutes.."
-        "$bin"/sshpass -p 'alpine' scp -P 2222 "$dir"/$deviceid/$version/OS.tar root@localhost:/mnt2 2> /dev/null
-        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/OS.tar -C /mnt1"
+        if [[ "$version" == "10.3"* || "$version" == "11."* || "$version" == "12."* ]]; then
+            echo "[*] Uploading $dir/$deviceid/$version/OS.dmg, this may take up to 10 minutes.."
+            "$bin"/sshpass -p 'alpine' scp -P 2222 "$dir"/$deviceid/$version/OS.dmg root@localhost:/mnt2 2> /dev/null
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/System/Library/Filesystems/apfs.fs/apfs_invert -d /dev/disk0s1 -s 8 -n /mnt2/OS.dmg"
+        else
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat /gpt.txt | gptfdisk /dev/rdisk0s1" 2> /dev/null
+            sleep 2
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync" 2> /dev/null
+            sleep 1
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync" 2> /dev/null
+            sleep 1
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync" 2> /dev/null
+            sleep 1
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_hfs -s -v System -J -b 4096 -n a=4096,c=4096,e=4096 /dev/disk0s1s1"
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_hfs -s -v Data -J -b 4096 -n a=4096,c=4096,e=4096 /dev/disk0s1s2"
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_hfs /dev/disk0s1s1 /mnt1" 2> /dev/null
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs -o suid,dev /dev/disk0s1s2 /mnt2" 2> /dev/null
+            echo "[*] Uploading $dir/$deviceid/$version/OS.tar, this may take up to 10 minutes.."
+            "$bin"/sshpass -p 'alpine' scp -P 2222 "$dir"/$deviceid/$version/OS.tar root@localhost:/mnt2 2> /dev/null
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/OS.tar -C /mnt1"
+        fi
         if [[ "$version" == "7."* ]]; then
             "$bin"/sshpass -p 'alpine' scp -P 2222 "$dir"/jb/cydia_ios7.tar root@localhost:/mnt2 2> /dev/null
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/cydia_ios7.tar -C /mnt1"
