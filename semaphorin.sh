@@ -438,10 +438,11 @@ _download_boot_files() {
             "$bin"/img4 -i "$dir"/$1/$3/iBEC.patched -o "$dir"/$1/$3/iBEC.img4 -M IM4M -A -T ibec
             "$bin"/seprmvr64 "$dir"/$1/$3/kcache.raw "$dir"/$1/$3/kcache.patched
             if [[ "$3" == "10.3"* ]]; then
-                "$bin"/KPlooshFinder "$dir"/$1/$3/kcache.raw "$dir"/$1/$3/kcache2.patched
+                "$bin"/KPlooshFinder "$dir"/$1/$3/kcache.patched "$dir"/$1/$3/kcache3.patched
             else
-                "$bin"/Kernel64Patcher2 "$dir"/$1/$3/kcache.raw "$dir"/$1/$3/kcache2.patched -a
+                "$bin"/Kernel64Patcher2 "$dir"/$1/$3/kcache.patched "$dir"/$1/$3/kcache3.patched -a
             fi
+            "$bin"/oomfie "$dir"/$1/$3/kcache3.patched "$dir"/$1/$3/kcache2.patched
             if [ -e "$dir"/$1/$3/kpp.bin ]; then
                 pyimg4 im4p create -i "$dir"/$1/$3/kcache2.patched -o "$dir"/$1/$3/kernelcache.im4p.img4 --extra "$dir"/$1/$3/kpp.bin -f rkrn --lzss
                 pyimg4 im4p create -i "$dir"/$1/$3/kcache2.patched -o "$dir"/$1/$3/kernelcache.im4p --extra "$dir"/$1/$3/kpp.bin -f krnl --lzss
