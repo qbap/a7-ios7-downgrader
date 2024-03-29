@@ -489,11 +489,13 @@ _download_root_fs() {
     cd work
     "$bin"/img4tool -e -s "$dir"/other/shsh/"${check}".shsh -m IM4M
     if [[ "$3" == "10.3"* || "$3" == "11."* || "$3" == "12."* ]]; then
-        "$bin"/pzb -g BuildManifest.plist "$ipswurl"
-        "$bin"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
-        fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
-        asr -source $fn -target "$dir"/$1/$3/OS.dmg --embed -erase -noprompt --chunkchecksum --puppetstrings
-        "$bin"/irecovery -f /dev/null
+        if [ ! -e "$dir"/$1/$3/OS.dmg ]; then
+            "$bin"/pzb -g BuildManifest.plist "$ipswurl"
+            "$bin"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
+            fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
+            asr -source $fn -target "$dir"/$1/$3/OS.dmg --embed -erase -noprompt --chunkchecksum --puppetstrings
+            "$bin"/irecovery -f /dev/null
+        fi
     else
         if [ ! -e "$dir"/$1/$3/OS.tar ]; then
             if [ ! -e "$dir"/$1/$3/OS.dmg ]; then
