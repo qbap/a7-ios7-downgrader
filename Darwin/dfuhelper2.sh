@@ -80,8 +80,6 @@ _dfuhelper() {
     step_one="Hold volume down + side button"
     step 4 "$step_one" &
     sleep 3
-    "$dir"/irecovery -c "reset" &
-    wait
     step 10 'Release side button, but keep holding volume down'
     sleep 1
     
