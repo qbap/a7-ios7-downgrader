@@ -641,7 +641,11 @@ if [ "$cmd_not_found" = "1" ]; then
     exit 1
 fi
 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-    "$bin"/dfuhelper.sh
+    if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPhone7"* || "$deviceid" == "iPhone8"* || "$deviceid" == "iPad4"* ]]; then
+        "$bin"/dfuhelper.sh
+    else
+        "$bin"/dfuhelper2.sh
+    fi
 fi
 _wait_for_dfu
 check=$("$bin"/irecovery -q | grep CPID | sed 's/CPID: //')
@@ -733,7 +737,11 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
     _download_boot_files $deviceid $replace $version
     sleep 1
     if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-        "$bin"/dfuhelper.sh
+        if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPhone7"* || "$deviceid" == "iPhone8"* || "$deviceid" == "iPad4"* ]]; then
+            "$bin"/dfuhelper.sh
+        else
+            "$bin"/dfuhelper2.sh
+        fi
     fi
     _wait_for_dfu
     if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
@@ -857,7 +865,11 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
                 _kill_if_running iproxy
                 echo "device should now reboot into recovery, pls wait"
                 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                    "$bin"/dfuhelper.sh
+                    if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPhone7"* || "$deviceid" == "iPhone8"* || "$deviceid" == "iPad4"* ]]; then
+                        "$bin"/dfuhelper.sh
+                    else
+                        "$bin"/dfuhelper2.sh
+                    fi
                 fi
                 _wait_for_dfu
                 if [[ "$version" == "7."* || "$version" == "8."* ]]; then
@@ -918,19 +930,67 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
                 sleep 1
                 echo "[*] fakefs created, continuing..."
             } || {
-                echo "[*] Using the old fakefs, run --restorerootfs if you need to clean it"
+                sleep 2
+                remote_cmd "/sbin/apfs_deletefs /dev/$systemdisk"
+                sleep 1
+                remote_cmd "/sbin/apfs_deletefs /dev/$datafs"
+                sleep 1
+                remote_cmd "/sbin/newfs_apfs -A -v SystemX /dev/disk0s1"
+                sleep 2
+                remote_cmd "/sbin/newfs_apfs -A -v DataX /dev/disk0s1"
+                sleep 1
+                echo "[*] fakefs created, continuing..."
             }
-            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir /mnt2/keybags" 2> /dev/null
+            ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$bin"/jq '.firmwares | .[] | select(.version=="'$version'")' | "$bin"/jq -s '.[0] | .url' --raw-output)
+            rm -rf BuildManifest.plist
+            mkdir -p "$dir"/$deviceid/$version
+            rm -rf work
+            mkdir work
+            cd work
+            "$bin"/img4tool -e -s "$dir"/other/shsh/"${check}".shsh -m IM4M
+            if [[ "$version" == "10.0"* || "$version" == "10.1"* || "$version" == "10.2"* ]]; then
+                ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$bin"/jq '.firmwares | .[] | select(.version=="'10.3'")' | "$bin"/jq -s '.[0] | .url' --raw-output)
+            fi
+            rm -rf "$dir"/$deviceid/$version/iBSS*
+            rm -rf "$dir"/$deviceid/$version/iBEC*
+            "$bin"/pzb -g BuildManifest.plist "$ipswurl"
+            "$bin"/pzb -g $(awk "/""$2""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
+            fn="$(awk "/""$2""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')"
+            if [[ "$version" == "10.0"* || "$version" == "10.1"* || "$version" == "10.2"* ]]; then
+                ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn 10.3 $deviceid)"
+            else
+                ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $version $deviceid)"
+            fi
+            "$bin"/img4 -i $fn -o "$dir"/$deviceid/$version/iBSS.dec -k $ivkey
+            "$bin"/pzb -g $(awk "/""$2""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
+            fn="$(awk "/""$2""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')"
+            if [[ "$version" == "10.0"* || "$version" == "10.1"* || "$version" == "10.2"* ]]; then
+                ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn 10.3 $deviceid)"
+            else
+                ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $version $deviceid)"
+            fi
+            "$bin"/img4 -i $fn -o "$dir"/$deviceid/$version/iBEC.dec -k $ivkey
+            rm -rf BuildManifest.plist
+            "$bin"/iBoot64Patcher "$dir"/$deviceid/$version/iBSS.dec "$dir"/$deviceid/$version/iBSS.patched
+            "$bin"/iBoot64Patcher "$dir"/$deviceid/$version/iBEC.dec "$dir"/$deviceid/$version/iBEC.patched -b "-v rd=$systemfs amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1 amfi_get_out_of_my_way=1 amfi_allow_any_signature=1" -n
+            "$bin"/img4 -i "$dir"/$deviceid/$version/iBSS.patched -o "$dir"/$deviceid/$version/iBSS.img4 -M IM4M -A -T ibss
+            "$bin"/img4 -i "$dir"/$deviceid/$version/iBEC.patched -o "$dir"/$deviceid/$version/iBEC.img4 -M IM4M -A -T ibec
+            cd ..
+            rm -rf work
         else
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "lwvm init" 2> /dev/null
+            sleep 1
+            echo "[*] Wiped the device"
         fi
-        sleep 1
-        echo "[*] Wiped the device"
         $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
         _kill_if_running iproxy
         echo "device should now reboot into recovery, pls wait"
         if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-            "$bin"/dfuhelper.sh
+            if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPhone7"* || "$deviceid" == "iPhone8"* || "$deviceid" == "iPad4"* ]]; then
+                "$bin"/dfuhelper.sh
+            else
+                "$bin"/dfuhelper2.sh
+            fi
         fi
         _wait_for_dfu
         if [[ "$version" == "7."* || "$version" == "8."* ]]; then
@@ -1215,7 +1275,11 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
         $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
         if [ -e "$dir"/$deviceid/$version/iBSS.img4 ]; then
             if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                "$bin"/dfuhelper.sh
+                if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPhone7"* || "$deviceid" == "iPhone8"* || "$deviceid" == "iPad4"* ]]; then
+                    "$bin"/dfuhelper.sh
+                else
+                    "$bin"/dfuhelper2.sh
+                fi
             fi
             _wait_for_dfu
             cd "$dir"/$deviceid/$version
