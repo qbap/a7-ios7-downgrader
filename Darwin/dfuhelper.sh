@@ -74,11 +74,11 @@ get_device_mode() {
 }
 
 _dfuhelper() {
+    local cpid=$(_info recovery CPID)
+    local step_one;
     echo "[*] Press any key when ready for DFU mode"
     read -n 1 -s
     step 3 "Get ready"
-    local cpid=$(_info recovery CPID)
-    local step_one;
     deviceid=$( [ -z "$deviceid" ] && _info recovery ProductType || echo $deviceid )
     if [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
     step_one="Hold volume down + side button"
