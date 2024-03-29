@@ -1092,9 +1092,11 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
             "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/data_ark.plist_ios8.tar root@localhost:/mnt5/
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt5/data_ark.plist_ios8.tar -C /mnt5"
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt5/data_ark.plist_ios8.tar"
-            "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt4/usr/libexec/mobileactivationd "$dir"/$deviceid/$version/mobactivationd.raw
-            "$bin"/mobactivationd64patcher "$dir"/$deviceid/$version/mobactivationd.raw "$dir"/$deviceid/$version/mobactivationd.patched -b -c -d
-            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/$version/mobactivationd.patched root@localhost:/mnt4/usr/libexec/mobileactivationd
+            #patching anything in /usr/libexec requires vm_fault_enter patch
+            #we do not have vm_fault_enter patch for ios 10 or 11 yet, but will soon
+            #"$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt4/usr/libexec/mobileactivationd "$dir"/$deviceid/$version/mobactivationd.raw
+            #"$bin"/mobactivationd64patcher "$dir"/$deviceid/$version/mobactivationd.raw "$dir"/$deviceid/$version/mobactivationd.patched -b -c -d
+            #"$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/$version/mobactivationd.patched root@localhost:/mnt4/usr/libexec/mobileactivationd
             "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/com.saurik.Cydia.Startup.plist root@localhost:/mnt4/System/Library/LaunchDaemons
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/chown root:wheel /mnt4/System/Library/LaunchDaemons/com.saurik.Cydia.Startup.plist"
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt5/log/asl/SweepStore"
@@ -1106,8 +1108,16 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/chown root:wheel /mnt4/.cydia_no_stash"
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chmod 777 /mnt4/.cydia_no_stash"
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt4/usr/lib/libmis.dylib"
-            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt4/usr/standalone/firmware/FUD/AOP.img4"
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram -c"
+            if [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPhone8"* && ! "$deviceid" == "iPad4"* ]]; then
+                # home button does not work on haptic devices yet
+                # this is just a temp fix to get to the home screen until we get to get home button working
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt4/Applications/Setup.app"
+            fi
+            # fix kernel panic during boot
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt4/usr/standalone/firmware/FUD/AOP.img4"
+            # fix lag
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt4/System/Library/LaunchDaemons/com.apple.CommCenter.plist"
         else
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat /gpt.txt | gptfdisk /dev/rdisk0s1" 2> /dev/null
             sleep 2
