@@ -912,9 +912,9 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
             systemfs=disk0s1s$systemdisk
             datafs=disk0s1s$datadisk
             echo "[*] Creating fakefs"
-            remote_cmd "/sbin/newfs_apfs -o role=i -A -v SystemX /dev/disk0s1" && {
+            remote_cmd "/sbin/newfs_apfs -A -v SystemX /dev/disk0s1" && {
                 sleep 2
-                remote_cmd "/sbin/newfs_apfs -o role=0 -A -v DataX /dev/disk0s1"
+                remote_cmd "/sbin/newfs_apfs -A -v DataX /dev/disk0s1"
                 sleep 1
                 echo "[*] fakefs created, continuing..."
             } || {
