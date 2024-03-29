@@ -951,6 +951,10 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
             if [ -e "$dir"/$deviceid/0.0/com.apple.factorydata ]; then
                 "$bin"/sshpass -p "alpine" scp -r -P 2222 "$dir"/$deviceid/0.0/com.apple.factorydata root@localhost:/mnt8/System/Library/Caches 2> /dev/null
             fi
+            cp "$dir"/jb/fstab_apfs "$dir"/$deviceid/$version/fstab
+            sed -i -e "s/mnt8/$systemdisk/g" "$dir"/$deviceid/$version/fstab
+            sed -i -e "s/mnt9/$datadisk/g" "$dir"/$deviceid/$version/fstab
+            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/$version/fstab root@localhost:/mnt8/etc/fstab 2> /dev/null
             "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/data_ark.plist_ios7.tar root@localhost:/mnt9/ 2> /dev/null
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt9/data_ark.plist_ios7.tar -C /mnt9" 2> /dev/null
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt9/data_ark.plist_ios7.tar" 2> /dev/null
