@@ -79,7 +79,7 @@ _dfuhelper() {
     step 3 "Get ready"
     step_one="Hold volume down + side button"
     step 8 "$step_one" &
-    sleep 3
+    sleep 8
     step 10 'Release side button, but keep holding volume down'
     sleep 1
     
