@@ -953,13 +953,13 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
                 echo "[*] fakefs created, continuing..."
             } || {
                 sleep 2
-                remote_cmd "/sbin/apfs_deletefs /dev/$systemdisk"
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/apfs_deletefs /dev/$systemdisk"
                 sleep 1
-                remote_cmd "/sbin/apfs_deletefs /dev/$datafs"
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/apfs_deletefs /dev/$datafs"
                 sleep 1
-                remote_cmd "/sbin/newfs_apfs -A -v SystemX /dev/disk0s1"
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -v SystemX /dev/disk0s1"
                 sleep 2
-                remote_cmd "/sbin/newfs_apfs -A -v DataX /dev/disk0s1"
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -v DataX /dev/disk0s1"
                 sleep 1
                 echo "[*] fakefs created, continuing..."
             }
