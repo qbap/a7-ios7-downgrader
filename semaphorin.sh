@@ -443,7 +443,8 @@ _download_boot_files() {
                 "$bin"/Kernel64Patcher2 "$dir"/$1/$3/kcache.patched "$dir"/$1/$3/kcache2.patched -a
             fi
             "$bin"/seprmvr643 "$dir"/$1/$3/kcache2.patched "$dir"/$1/$3/kcache3.patched
-            "$bin"/Kernel64Patcher "$dir"/$1/$3/kcache3.patched "$dir"/$1/$3/kcache4.patched -f
+            #"$bin"/Kernel64Patcher "$dir"/$1/$3/kcache3.patched "$dir"/$1/$3/kcache4.patched -f
+            cp "$dir"/$1/$3/kcache3.patched "$dir"/$1/$3/kcache4.patched
             if [ -e "$dir"/$1/$3/kpp.bin ]; then
                 pyimg4 im4p create -i "$dir"/$1/$3/kcache4.patched -o "$dir"/$1/$3/kernelcache.im4p.img4 --extra "$dir"/$1/$3/kpp.bin -f rkrn --lzss
                 pyimg4 im4p create -i "$dir"/$1/$3/kcache4.patched -o "$dir"/$1/$3/kernelcache.im4p --extra "$dir"/$1/$3/kpp.bin -f krnl --lzss
@@ -943,19 +944,19 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
             fi
             systemfs=disk0s1s$systemdisk
             datafs=disk0s1s$datadisk
-            echo "[*] Creating /dev/disk0s1s$systemdisk"
-            sleep 2
+            echo "[*] Deleting /dev/disk0s1s$systemdisk"
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/apfs_deletefs /dev/$systemfs"
             sleep 1
+            echo "[*] Creating /dev/disk0s1s$systemdisk"
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -v SystemX /dev/disk0s1"
-            sleep 1
-            echo "[*] /dev/disk0s1s$systemdisk created, continuing..."
-            echo "[*] Creating /dev/disk0s1s$datadisk"
             sleep 2
+            echo "[*] /dev/disk0s1s$systemdisk created, continuing..."
+            echo "[*] Deleting /dev/disk0s1s$datadisk"
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/apfs_deletefs /dev/$datafs"
             sleep 1
+            echo "[*] Creating /dev/disk0s1s$datadisk"
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -v DataX /dev/disk0s1"
-            sleep 1
+            sleep 2
             echo "[*] /dev/disk0s1s$datadisk created, continuing..."
             echo "[*] Uploading $dir/$deviceid/$version/OS.dmg, this may take up to 10 minutes.."
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt4"
@@ -1089,9 +1090,9 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
             "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/data_ark.plist_ios8.tar root@localhost:/mnt5/
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt5/data_ark.plist_ios8.tar -C /mnt5"
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt5/data_ark.plist_ios8.tar"
-            "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt4/usr/libexec/mobileactivationd "$dir"/$deviceid/$version/mobactivationd.raw
-            "$bin"/mobactivationd64patcher "$dir"/$deviceid/$version/mobactivationd.raw "$dir"/$deviceid/$version/mobactivationd.patched -b -c -d
-            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/$version/mobactivationd.patched root@localhost:/mnt4/usr/libexec/mobileactivationd
+            #"$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt4/usr/libexec/mobileactivationd "$dir"/$deviceid/$version/mobactivationd.raw
+            #"$bin"/mobactivationd64patcher "$dir"/$deviceid/$version/mobactivationd.raw "$dir"/$deviceid/$version/mobactivationd.patched -b -c -d
+            #"$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/$version/mobactivationd.patched root@localhost:/mnt4/usr/libexec/mobileactivationd
             "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/com.saurik.Cydia.Startup.plist root@localhost:/mnt4/System/Library/LaunchDaemons
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/chown root:wheel /mnt4/System/Library/LaunchDaemons/com.saurik.Cydia.Startup.plist"
             #"$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt5/log/asl/SweepStore"
