@@ -25,7 +25,7 @@ else
         echo "What operating system are you even using..."
         exit 1
 fi
-        
+
 
 if [[ $os_vers =~ ^10\.1[3-5]\.* ]]; then
         echo "You are running macOS $os_vers. Continuing..."
@@ -45,8 +45,6 @@ iOS 7.0.1-9.2.1 seprmvr64, downgrade& jailbreak tool for checkm8 devices
 Examples:
     $0 7.1.2 --restore
     $0 7.1.2 --boot
-
-
 
 Main operation mode:
     --help              Print this help
