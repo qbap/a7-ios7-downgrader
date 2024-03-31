@@ -4,7 +4,6 @@ verbose=1
 {
 echo "[*] Command ran:`if [ $EUID = 0 ]; then echo " sudo"; fi` ./semaphorin.sh $@"
 os=$(uname)
-oscheck=$(uname)
 os_ver=$(sw_vers -productVersion)
 maj_ver=$(echo "$os_ver" | awk -F. '{print $1}')
 dir="$(pwd)"
@@ -16,9 +15,9 @@ echo ""
 max_args=1
 arg_count=0
 
-if [[ $oscheck =~ Darwin ]]; then
+if [[ $os =~ Darwin ]]; then
         echo "Running on Darwin..."
-elif [[ $oscheck =~ Linux ]]; then
+elif [[ $os =~ Linux ]]; then
         echo "This tool is not meant to run on Linux. Please use macOS High Sierra, Mojave, or Catalina to continue."
         exit 1
 else
