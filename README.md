@@ -88,7 +88,7 @@ But in order to get to the home screen you must first delete `/Applications/Setu
       
       1. Add [this repo](julioverne.github.io) to Cydia after setup
       
-      2. Search the tweak `Fiona`
+      2. Search for the tweak Fiona
       
       3. Install it
       
@@ -110,31 +110,31 @@ do not abuse this option of being able to contact me, or i will take it away
  
 ## iOS 9.3 Support
 
-keybags do not unlock on ios <=9.2.1 but they do on ios 9.3
+Keybags do not unlock on iOS <=9.2.1 but they do on iOS 9.3
 
-the issue we are having with ios 9.3 atm is a ton of sandbox errors during boot
+The issue we are having with iOS 9.3 currently is that there's a ton of sandbox errors during the boot process.
 
-see https://files.catbox.moe/wn83g9.mp4 for a video example of why we need sandbox patches for ios 9
+See [here](https://files.catbox.moe/wn83g9.mp4) for a video example of why we need sandbox patches for iOS 9
 
-once we have sandbox patched out properly on ios 9.3 we should be good to go
+Once we have sandbox patched out properly on iOS 9.3 downgrading to it should work properly.
 
 ## Quirks
 
-passcode& touch id does not work, if the device ever asks you for a passcode it will accept anything as the passcode
+Passcode & TouchID do not work. If the device ever asks you for a passcode, it will normally accept anything as the passcode due to an unfixable issue.
 
-if you lock the screen while the phone is on, it will cause a deep sleep bug which causes the phone to be frozen at a black screen until you force reboot the device
+If you lock the screen while the phone is on, it will cause a deep sleep bug which causes the phone to be frozen at a black screen until you force reboot the device. Check the Troubleshooting section for more information.
 
-app store does not work on ios 8 or 9
+The App Store is broken on iOS 8 and 9
 
-wifi does not work unless you connect to an open wifi network, in other words the wifi network must not have a password
+Encrypted WiFi networks do **not** work when tether downgrading with this tool. This is caused by an issue with SEP. Check the Troubleshooting section for more information
 
-respring does not work on ios 7.0.x properly, so in order to respring on those versions you should open the wtfis app on the home screen and hit "go"
+Respringing is currently broken on iOS 7.0.x. In order to respring on those versions you should open the wtfis app on the home screen and hit "go".
 
-in order for tweaks to work on ios 7.1.x, open the wtfis app on the home screen and hit "go" and it will patch the sandbox to allow tweaks to work
+In order for tweaks to work on ios 7.1.x, you need to open the wtfis app on the home screen and hit "go". This patches the sandbox, allowing for tweak injection to work correctly.
 
-when booting ios 8 you will find that you wont see any app icons on the home screen when you first slide to unlock. to fix this, slide up from the bottom of the screen and tap on calculator. once in the calculator app, press the home button and then you will be at the home screen and all your app icons will appear as normal
+~~when booting ios 8 you will find that you wont see any app icons on the home screen when you first slide to unlock. to fix this, slide up from the bottom of the screen and tap on calculator. once in the calculator app, press the home button and then you will be at the home screen and all your app icons will appear as normal~~
 
-ipads do not uicache cydia properly with this script, to launch cydia please open safari and type `cydia://` into the address bar
+~~ipads do not uicache cydia properly with this script, to launch cydia please open safari and type `cydia://` into the address bar~~
 
 ## Requirements
 
@@ -142,7 +142,8 @@ macOS High Sierra to Catalina. The script only officially supports these version
 
 Java 8 https://builds.openlogic.com/downloadJDK/openlogic-openjdk/8u262-b10/openlogic-openjdk-8u262-b10-mac-x64.pkg
 
-Python. You can download it for macos high sierra from https://www.python.org/ftp/python/3.7.6/python-3.7.6-macosx10.6.pkg
+Python. You can download it for macOS High Sierra from https://www.python.org/ftp/python/3.7.6/python-3.7.6-macosx10.6.pkg 
+
 *Note: This should automatically be installed by the script.
 
 pyimg4 just run `pip3 install pyimg4` before running the script. The script should do this automatically too
