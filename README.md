@@ -67,9 +67,9 @@ Connect device in DFU mode
 
 `sudo ./semaphorin.sh <the version you downgraded to previously> --boot`
 
-for example you may write `sudo ./semaphorin.sh 7.1.2 --boot` if you downgraded to ios 7.1.2 earlier
+For example, if you downgraded to iOS 7.1.2, you would use `sudo ./semaphorin.sh 7.1.2 --boot`.
 
-it should then boot ios as normal and be jailbroken
+It should boot to your requested iOS version normally and jailbroken.
 
 ## Setup.app bypass
 
@@ -98,15 +98,21 @@ But in order to get to the home screen you must first delete `/Applications/Setu
    ### Unsupported version/OS
    The script only officially works on macOS 10.13 up to 10.15 (High Sierra to Catalina) due to some limitations on the developer's end. You have to install one of those versions to use the script. Please do not ask us about this.
 
-Linux support is not planned either, do not ask about this.
+Linux support is not planned either, do not ask about this either.
 
-## Contact
+   ### Unable to connect to WiFi networks, incorrect password.
+   This is caused by an issue that's *impossible* to fix. You need to connect to an open WiFi network
 
-if you need to reach me for any reason, you can msg me on telegram at [wilm271](https://t.me/wilm271)
+   You can create one using the Internet Sharing feature on macOS or [linux-wifi-hotspot](https://github.com/lakinduakash/linux-wifi-hotspot) on, you guessed it, Linux if you prefer using another computer for it. 
 
-use this option if you need to contact me for issues with this script
+   ### No apps on the Home Screen (iOS 8.0)
+   This is a weird issue with older versions, the workaround is easy, however.
 
-do not abuse this option of being able to contact me, or i will take it away
+   After the first unlock after setup, when the apps are absent, open the Control Center (swipe up) and press the calculator icon. Once open, you can exit out of Calculator. This should fix the icons.
+
+   ### Cydia isn't there (on iPads)
+   iPads have issues with uicache with this script. To open Cydia, enter `cydia://` in the address bar. 
+
  
 ## iOS 9.3 Support
 
@@ -132,9 +138,6 @@ Respringing is currently broken on iOS 7.0.x. In order to respring on those vers
 
 In order for tweaks to work on ios 7.1.x, you need to open the wtfis app on the home screen and hit "go". This patches the sandbox, allowing for tweak injection to work correctly.
 
-~~when booting ios 8 you will find that you wont see any app icons on the home screen when you first slide to unlock. to fix this, slide up from the bottom of the screen and tap on calculator. once in the calculator app, press the home button and then you will be at the home screen and all your app icons will appear as normal~~
-
-~~ipads do not uicache cydia properly with this script, to launch cydia please open safari and type `cydia://` into the address bar~~
 
 ## Requirements
 
