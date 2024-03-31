@@ -1,7 +1,7 @@
 <div align="center">
 <img src="https://files.catbox.moe/x7b0e2.png" height="128" width="128" style="border-radius:25%">
    <h1> Semaphorin 
-      <br/> seprmvr64, downgrade& jailbreak utility
+      <br/> Downgrade & Jailbreak Utility using seprmvr64
    </h1>
 </div>
 
@@ -25,9 +25,9 @@
 
 ## How do I use this?
 
-this script deletes everything on your phone, including the main os. pls backup all your data before using this script, as it will be unrecoverable after. use this script at your own risk, we are not responsible for any damages caused by you using this script
+This script deletes everything on your phone, including the main os. Make sure to backup all of your data before using this script, as it will be unrecoverable after. Use this script at your own risk, we are not responsible for any damages caused by you using this script.
 
-to use this app, you need to downgrade to a supported version, and have a supported device
+To use this app, you need to downgrade to a supported version, and have a supported device.
 
 `xcode-select install` to install `git` on macos
 
@@ -35,35 +35,35 @@ to use this app, you need to downgrade to a supported version, and have a suppor
 
 ## Support
 
-we now have a discord server where you can get help with this project
+We now have a Discord server where you can get help with this project
 
-you can join with this discord invite link https://discord.gg/WQWDBBYJTb
+You can join with this discord invite link https://discord.gg/WQWDBBYJTb
 
-if for some reason that invite link does not work, please contact [wilm271](https://t.me/wilm271) on telegram
+If for some reason that invite link does not work, please contact [wilm271](https://t.me/wilm271) on telegram
 
-the discord server is strictly for semaphorin support only, do not bring personal issues into our server
+The Discord server is strictly for semaphorin support only, do not bring personal issues into our server
 
 ## First run
 
-connect iphone in dfu mode
+Connect device in DFU mode
 
 `sudo ./semaphorin.sh <the version you are downgrading to> --restore`
 
-for example you may write `sudo ./semaphorin.sh 7.1.2 --restore`
+For example you may write `sudo ./semaphorin.sh 7.1.2 --restore`
 
-the script has to backup important files from your current ios version before you can downgrade
+The script has to backup important files from your current iOS version before you can downgrade.
 
-when the script asks `what ios version are you running right now?` type your current ios version and then hit the enter key on your keyboard
+When the script asks `what ios version are you running right now?` type your current ios version and then hit the enter key on your keyboard
 
-it should then begin the process of downgrading your device, please follow the on screen instructions
+It should then begin the process of downgrading your device, please follow the on screen instructions
 
-your device will be jailbroken
+Your device will be jailbroken automatically.
 
-if you are on ios 7 please hit "go" in the wtfis app on your home screen to patch sandbox to allow cydia substrate to work properly
+If you are on ios 7 please hit "go" in the wtfis app on your home screen to patch sandbox to allow cydia substrate to work properly.
 
 ## Subsequent runs after downgrade is finished
 
-connect iphone in dfu mode
+Connect device in DFU mode
 
 `sudo ./semaphorin.sh <the version you downgraded to previously> --boot`
 
@@ -73,15 +73,13 @@ it should then boot ios as normal and be jailbroken
 
 ## Setup.app bypass
 
-we will not be providing any support for any method of deleting `/Applications/Setup.app` with our script
+We will not be providing any support for any method of deleting `/Applications/Setup.app` with our script
 
-this is only to comply with [r/jailbreak](https://www.reddit.com/r/jailbreak/) and [r/LegacyJailbreak](https://www.reddit.com/r/LegacyJailbreak/) rules and guidelines
+This is only to comply with [r/jailbreak](https://www.reddit.com/r/jailbreak/) and [r/LegacyJailbreak](https://www.reddit.com/r/LegacyJailbreak/) rules and guidelines
 
-the script will downgrade your ios version and jailbreak the downgraded os very easily
+The script will downgrade your ios version and jailbreak the downgraded os very easily
 
-but in order to get to the home screen you must first delete `/Applications/Setup.app` on ios
-
-which we will not be providing any support for at this time
+But in order to get to the home screen you must first delete `/Applications/Setup.app` on iOS to which we will not be providing any support for at this time.
 
 ## Troubleshooting
 
@@ -140,23 +138,25 @@ ipads do not uicache cydia properly with this script, to launch cydia please ope
 
 ## Requirements
 
-mac os high sierra 10.13** catalina should work but anything newer then that may not work
+macOS High Sierra to Catalina. The script only officially supports these versions.
 
-java 8** https://builds.openlogic.com/downloadJDK/openlogic-openjdk/8u262-b10/openlogic-openjdk-8u262-b10-mac-x64.pkg
+Java 8 https://builds.openlogic.com/downloadJDK/openlogic-openjdk/8u262-b10/openlogic-openjdk-8u262-b10-mac-x64.pkg
 
-python3** you can download it for macos high sierra from https://www.python.org/ftp/python/3.7.6/python-3.7.6-macosx10.6.pkg
+Python. You can download it for macos high sierra from https://www.python.org/ftp/python/3.7.6/python-3.7.6-macosx10.6.pkg
+*Note: This should automatically be installed by the script.
 
-pyimg4** just run `pip3 install pyimg4` before running the script
+pyimg4 just run `pip3 install pyimg4` before running the script. The script should do this automatically too
 
-intel mac** amd is NOT supported
+Intel Mac. Hackintoshes with AMD CPUs will **NOT** work with this.
 
-stable internet connection
+Stable internet connection. Please don't try using this with dial up...
 
-at least 20gb free space on hdd
+At least 20GB free on your device
 
-usb type A port** usb-c is NOT supported
+USB Type-A port and Lightning cable. USB Type-C ports will **NOT** work with this.
 
-working iphone** cause the script has to backup `apticket.der`, `sep-firmware.img4`, `Baseband`, and `keybags` from your device before you can downgrade to older ios
+
+Working iDevice: The script has to backup `apticket.der`, `sep-firmware.img4`, `Baseband`, and `keybags` from your device before you can downgrade to an older iOS version.
 
 ## Credits
 
