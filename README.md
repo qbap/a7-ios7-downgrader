@@ -83,6 +83,20 @@ but in order to get to the home screen you must first delete `/Applications/Setu
 
 which we will not be providing any support for at this time
 
+## Troubleshooting
+
+   ### Deep sleep, device won't turn on after locking it, have to reboot.
+   The issue that causes deep sleep is unfortunately **unfixable**. There is, however, a workaround to this:
+      
+      1. Add [this repo](julioverne.github.io) to Cydia after setup
+      
+      2. Search the tweak `Fiona`
+      
+      3. Install it
+      
+      4. Profit
+   *Note: This does slightly affect battery life due to the way it works.
+
 ## Contact
 
 if you need to reach me for any reason, you can msg me on telegram at [wilm271](https://t.me/wilm271)
