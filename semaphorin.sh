@@ -5,6 +5,8 @@ verbose=1
 echo "[*] Command ran:`if [ $EUID = 0 ]; then echo " sudo"; fi` ./semaphorin.sh $@"
 os=$(uname)
 oscheck=$(uname)
+os_ver=$(sw_vers -productVersion)
+maj_ver=$(echo "$os_ver" | awk -F. '{print $1}')
 dir="$(pwd)"
 bin="$(pwd)/$(uname)"
 sshtars="$(pwd)/sshtars"
@@ -13,6 +15,29 @@ echo "Written by y08wilm and Mineek | Some code and ramdisk from Nathan"
 echo ""
 max_args=1
 arg_count=0
+
+if [[ $oscheck =~ Darwin ]]; then
+        echo "Running on Darwin..."
+elif [[ $oscheck =~ Linux ]]; then
+        echo "This tool is not meant to run on Linux. Please use macOS High Sierra, Mojave, or Catalina to continue."
+        exit 1
+else
+        echo "What operating system are you even using..."
+        exit 1
+fi
+        
+
+if [[ $os_vers =~ ^10\.1[3-5]\.* ]]; then
+        echo "You are running macOS $os_vers. Continuing..."
+elif (( $maj_ver >= 11 )); then
+        echo "macOS $os_ver is too new for this script. Please install macOS High Sierra, Mojave, or Catalina to continue if possible."
+        exit 1 
+else    
+        echo "What macOS version are you even using..."
+        exit 1
+fi
+
+
 print_help() {
     cat << EOF
 Usage: $0 [VERSION...] [OPTION...]
@@ -20,6 +45,8 @@ iOS 7.0.1-9.2.1 seprmvr64, downgrade& jailbreak tool for checkm8 devices
 Examples:
     $0 7.1.2 --restore
     $0 7.1.2 --boot
+
+
 
 Main operation mode:
     --help              Print this help
