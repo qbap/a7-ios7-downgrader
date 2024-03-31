@@ -31,7 +31,7 @@ To use this app, you need to downgrade to a supported version, and have a suppor
 
 `xcode-select install` to install `git` on macos
 
-`git clone --recursive https://github.com/y08wilm/Semaphorin && cd Semaphorin`
+`git clone https://github.com/y08wilm/Semaphorin && cd Semaphorin`
 
 ## Support
 
