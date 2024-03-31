@@ -16,23 +16,23 @@ max_args=1
 arg_count=0
 
 if [[ $os =~ Darwin ]]; then
-        echo "Running on Darwin..."
+        echo "[*] Running on Darwin..."
 elif [[ $os =~ Linux ]]; then
-        echo "This tool is not meant to run on Linux. Please use macOS High Sierra, Mojave, or Catalina to continue."
+        echo "[!] This tool is not meant to run on Linux. Please use macOS High Sierra, Mojave, or Catalina to continue."
         exit 1
 else
-        echo "What operating system are you even using..."
+        echo "[!] What operating system are you even using..."
         exit 1
 fi
 
 
 if [[ $os_vers =~ ^10\.1[3-5]\.* ]]; then
-        echo "You are running macOS $os_vers. Continuing..."
+        echo "[*] You are running macOS $os_vers. Continuing..."
 elif (( $maj_ver >= 11 )); then
-        echo "macOS $os_ver is too new for this script. Please install macOS High Sierra, Mojave, or Catalina to continue if possible."
+        echo "[!] macOS $os_ver is too new for this script. Please install macOS High Sierra, Mojave, or Catalina to continue if possible."
         exit 1 
 else    
-        echo "What macOS version are you even using..."
+        echo "[!] What macOS version are you even using..."
         exit 1
 fi
 
@@ -719,7 +719,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
         _download_ramdisk_boot_files $deviceid $replace 11.4.1
     fi
     if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
-        read -p "what ios version are you running right now? " r
+        read -p "[*] Please enter the iOS version that is currently installed on your device  " r
         if [[ "$r" == "10.3"* ]]; then
             r="11.0"
         fi
