@@ -770,7 +770,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
     "$bin"/irecovery -f kernelcache.img4
     "$bin"/irecovery -c bootx &
     cd ../../../
-    read -p "pls press the enter key on your keyboard once device is in the ramdisk " r1
+    read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk " r1
     "$bin"/iproxy 2222 22 &
     sleep 2
     if [[ "$restore" == 1 ]]; then
