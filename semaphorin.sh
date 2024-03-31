@@ -851,7 +851,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
         echo "[*] Wiped the device"
         $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
         _kill_if_running iproxy
-        echo "device should now reboot into recovery, pls wait"
+        echo "[*] Device should boot to Recovery mode. Please wait..."
         if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
             "$bin"/dfuhelper.sh
         fi
@@ -884,7 +884,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
         "$bin"/irecovery -f kernelcache.img4
         "$bin"/irecovery -c bootx &
         cd ../../../
-        read -p "pls press the enter key on your keyboard once device is in the ramdisk " r1
+        read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk. " r1
         "$bin"/iproxy 2222 22 &
         "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat /gpt.txt | gptfdisk /dev/rdisk0s1" 2> /dev/null
         sleep 2
