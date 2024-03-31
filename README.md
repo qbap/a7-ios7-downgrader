@@ -97,6 +97,11 @@ which we will not be providing any support for at this time
       4. Profit
    *Note: This does slightly affect battery life due to the way it works.
 
+   ### Unsupported version/OS
+   The script only officially works on macOS 10.13 up to 10.15 (High Sierra to Catalina) due to some limitations on the developer's end. You have to install one of those versions to use the script. Please do not ask us about this.
+
+Linux support is not planned either, do not ask about this.
+
 ## Contact
 
 if you need to reach me for any reason, you can msg me on telegram at [wilm271](https://t.me/wilm271)
