@@ -41,7 +41,7 @@ You can join with this discord invite link https://discord.gg/WQWDBBYJTb
 
 If for some reason that invite link does not work, please contact [wilm271](https://t.me/wilm271) on telegram
 
-The Discord server is strictly for semaphorin support only, do not bring personal issues into our server
+The Discord server is strictly for Semaphorin support only. Please don't bring personal issues into our server.
 
 ## First run
 
