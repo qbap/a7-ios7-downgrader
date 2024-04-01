@@ -77,9 +77,9 @@ We will not be providing any support for any method of deleting `/Applications/S
 
 This is only to comply with [r/jailbreak](https://www.reddit.com/r/jailbreak/) and [r/LegacyJailbreak](https://www.reddit.com/r/LegacyJailbreak/) rules and guidelines
 
-The script will downgrade your ios version and jailbreak the downgraded os very easily
+The script will downgrade your iOS version and jailbreak the downgraded OS very easily
 
-But in order to get to the home screen you must first delete `/Applications/Setup.app` on iOS to which we will not be providing any support for at this time.
+But in order to get to the Home Screen, you must first delete `/Applications/Setup.app`, which we will not be providing any support for.
 
 ## Troubleshooting
 
@@ -105,13 +105,15 @@ Linux support is not planned either, do not ask about this either.
 
    You can create one using the Internet Sharing feature on macOS or [linux-wifi-hotspot](https://github.com/lakinduakash/linux-wifi-hotspot) on, you guessed it, Linux if you prefer using another computer for it. 
 
-   ### No apps on the Home Screen (iOS 8.0)
-   This is a weird issue with older versions, the workaround is easy, however.
+   Be careful when doing this since *anyone* can connect to the open network you created. We are not responsible for **any** damages caused by doing this.
 
-   After the first unlock after setup, when the apps are absent, open the Control Center (swipe up) and press the calculator icon. Once open, you can exit out of Calculator. This should fix the icons.
+   ### No apps on the Home Screen (iOS 8.0)
+   This is a weird issue with iOS 8. The workaround is easy, however.
+
+   After you unlock your device for the first time after setup, there will be no apps on the Home Screen. The workaround is, once you're on the Home Screen, to open the Control Center (swipe up) and press the calculator icon. Once open, you can exit out of Calculator. This should fix the icons.
 
    ### Cydia is absent (on iPads)
-   iPads have uicache issues with most jailbreaking tools. To open Cydia, enter `cydia://` in the address bar. 
+   iPads have uicache issues with most jailbreaking tools. To open Cydia, enter `cydia://` in Safari's address bar and press Enter.  
 
  
 ## iOS 9.3 Support
