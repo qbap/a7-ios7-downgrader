@@ -11,7 +11,7 @@
 
 # Chart of compatibility
 
-| iOS      | iPhone 5s | iPad Mini 2 | iPad Air 1 | App Store | Home btn  | Vol keys | Root fs r/w | Cydia     | Tweaks  | Respring | Sideloadly | iTunes |
+| iOS      | iPhone 5s | iPad Mini 2 | iPad Air 1 | App Store | Home button  | Volume keys | Rootfs r/w | Cydia     | Tweaks  | Respring | Sideloadly | iTunes |
 |----------|-----------|-------------|------------|-----------|-----------|----------|-------------|-----------|---------|----------|------------|--------|
 | 7.0.1    | &#9745;   | &#9744;     | &#9744;    | &#9745;   | &#9744;   | &#9744;  | &#9745;     | &#9745;   | &#9745; | &#9744;  | &#9745;    | &#9745;|
 | 7.0.2    | &#9745;   | &#9744;     | &#9744;    | &#9745;   | &#9744;   | &#9745;  | &#9745;     | &#9745;   | &#9745; | &#9744;  | &#9745;    | &#9745;|
