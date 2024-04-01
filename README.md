@@ -122,7 +122,7 @@ The issue we are having with iOS 9.3 currently is that there's a ton of sandbox 
 
 See [here](https://files.catbox.moe/wn83g9.mp4) for a video example of why we need sandbox patches for iOS 9
 
-Once we have sandbox patched out properly on iOS 9.3 downgrading to it should work properly.
+Once we have sandbox patched out properly on iOS 9.3, downgrading to it should work properly.
 
 ## Quirks
 
