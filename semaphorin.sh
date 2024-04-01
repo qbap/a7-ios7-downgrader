@@ -1414,6 +1414,93 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
             fi
         fi
         $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
+        if [[ "$version" == "10.3"* || "$version" == "11."* || "$version" == "12."* ]]; then
+            if [ -e "$dir"/$deviceid/$version/iBSS.img4 ]; then
+                if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+                    if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPhone7"* || "$deviceid" == "iPhone8"* || "$deviceid" == "iPad4"* ]]; then
+                        "$bin"/dfuhelper.sh
+                    else
+                        "$bin"/dfuhelper2.sh
+                    fi
+                fi
+                _wait_for_dfu
+                cd "$dir"/$deviceid/$version
+                if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
+                    "$bin"/ipwnder -p
+                else
+                    "$bin"/gaster pwn
+                fi
+                "$bin"/irecovery -f iBSS.img4
+                "$bin"/irecovery -f iBSS.img4
+                "$bin"/irecovery -f iBEC.img4
+                if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
+                    sleep 1
+                    "$bin"/irecovery -c go
+                fi
+                "$bin"/irecovery -f devicetree.img4
+                "$bin"/irecovery -c devicetree
+                if [ -e ./trustcache.img4 ]; then
+                    "$bin"/irecovery -f trustcache.img4
+                    "$bin"/irecovery -c firmware
+                fi
+                "$bin"/irecovery -f kernelcache.img4
+                "$bin"/irecovery -c bootx &
+                cd ../../
+            fi
+            _kill_if_running iproxy
+            echo "[*] Step 1 of downwgrading to iOS $version is now done"
+            echo "[*] The device should now boot without any issue and show a progress bar"
+            echo "[-] You are NOT done!!"
+            echo "[-] You are NOT done!! Do NOT exit out of the script!!!"
+            echo "[*] When your device gets to the setup screen, put the device back into dfu mode"
+            echo "[*] We will then finish patching your device to allow you to navigate to the lock screen"
+            _wait_for_dfu
+            if [[ "$version" == "7."* || "$version" == "8."* ]]; then
+                cd "$dir"/$deviceid/ramdisk/8.4.1
+            elif [[ "$version" == "10.3"* ]]; then
+                cd "$dir"/$deviceid/ramdisk/10.3.3
+            elif [[ "$version" == "11."* || "$version" == "12."* ]]; then
+                if [[ "$(./java/bin/java -jar ./Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e 14.3 $deviceid)" == "true" ]]; then
+                    cd "$dir"/$deviceid/ramdisk/14.3
+                else
+                    cd "$dir"/$deviceid/ramdisk/12.5.4
+                fi
+            else
+                cd "$dir"/$deviceid/ramdisk/11.4.1
+            fi
+            if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
+                "$bin"/ipwnder -p
+            else
+                "$bin"/gaster pwn
+            fi
+            "$bin"/irecovery -f iBSS.img4
+            "$bin"/irecovery -f iBSS.img4
+            "$bin"/irecovery -f iBEC.img4
+            if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
+                sleep 1
+                "$bin"/irecovery -c go
+            fi
+            "$bin"/irecovery -f ramdisk.img4
+            "$bin"/irecovery -c ramdisk
+            "$bin"/irecovery -f devicetree.img4
+            "$bin"/irecovery -c devicetree
+            if [ -e ./trustcache.img4 ]; then
+                "$bin"/irecovery -f trustcache.img4
+                "$bin"/irecovery -c firmware
+            fi
+            "$bin"/irecovery -f kernelcache.img4
+            "$bin"/irecovery -c bootx &
+            cd ../../../
+            read -p "pls press the enter key on your keyboard once device is in the ramdisk " r1
+            "$bin"/iproxy 2222 22 &
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s$systemdisk /mnt4"
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s$datadisk /mnt5"
+            # /mnt5/containers/Data/System/58954F59-3AA2-4005-9C5B-172BE4ADEC98/Library/internal/data_ark.plist
+            dataarkplist=$(remote_cmd "/usr/bin/find /mnt5/containers/Data/System -name 'data_ark.plist'" 2> /dev/null)
+            echo $dataarkplist
+            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/data_ark.plist root@localhost:$dataarkplist
+            $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
+        fi
         if [ -e "$dir"/$deviceid/$version/iBSS.img4 ]; then
             if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
                 if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPhone7"* || "$deviceid" == "iPhone8"* || "$deviceid" == "iPad4"* ]]; then
