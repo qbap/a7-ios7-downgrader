@@ -155,7 +155,7 @@ Intel Mac. Hackintoshes with AMD CPUs will **NOT** work with this.
 
 Stable internet connection. Please don't try using this with dial up...
 
-At least 20GB free on your device
+At least 20GB of free space on your computer
 
 USB Type-A port and Lightning cable. USB Type-C ports will **NOT** work with this script. If you're using a Mac that only has a USB-C port (such as 12" MacBooks, and late Intel MacBook Airs) a dongle/dock with a USB-A port should work just fine with a standard USB-A to Lightning cable.
 
