@@ -935,6 +935,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
                 "$bin"/irecovery -c bootx &
                 cd ../../../
                 read -p "pls press the enter key on your keyboard once device is in the ramdisk " r1
+                "$bin"/iproxy 2222 22 &
             fi
             echo "[*] Testing for baseband presence"
             systemdisk=8
