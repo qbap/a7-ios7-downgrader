@@ -20,7 +20,7 @@ arg_count=0
 if [[ $os =~ Darwin ]]; then
         echo "[*] Running on Darwin..."
 elif [[ $os =~ Linux ]]; then
-        echo "[!] This tool is not meant to run on Linux. Please use macOS High Sierra, Mojave, or Catalina to continue."
+        echo "[!] This tool does not support Linux. Please use this with macOS High Sierra, Mojave, or Catalina to continue."
         exit 1
 else
         echo "[!] What operating system are you even using..."
