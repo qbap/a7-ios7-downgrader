@@ -1,2 +1,3 @@
 /dev/disk0s1smnt4 / apfs ro 0 1
-/dev/disk0s1smnt5 /private/var apfs rw,nosuid,nodev 0 2
+/dev/disk0s1smnt5 /private/var apfs rw 0 2
+/dev/disk0s1s3 /private/var/wireless/baseband_data hfs rw 0 2
