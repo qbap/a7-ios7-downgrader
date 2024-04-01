@@ -453,7 +453,7 @@ _download_boot_files() {
                 "$bin"/Kernel64Patcher2 "$dir"/$1/$3/kcache.patched "$dir"/$1/$3/kcache2.patched -a
             fi
             "$bin"/seprmvr643 "$dir"/$1/$3/kcache2.patched "$dir"/$1/$3/kcache3.patched
-            "$bin"/Kernel64Patcher "$dir"/$1/$3/kcache3.patched "$dir"/$1/$3/kcache4.patched -f
+            "$bin"/Kernel64Patcher "$dir"/$1/$3/kcache3.patched "$dir"/$1/$3/kcache4.patched -f -e -l -m -a
             if [ -e "$dir"/$1/$3/kpp.bin ]; then
                 pyimg4 im4p create -i "$dir"/$1/$3/kcache4.patched -o "$dir"/$1/$3/kernelcache.im4p.img4 --extra "$dir"/$1/$3/kpp.bin -f rkrn --lzss
                 pyimg4 im4p create -i "$dir"/$1/$3/kcache4.patched -o "$dir"/$1/$3/kernelcache.im4p --extra "$dir"/$1/$3/kpp.bin -f krnl --lzss
@@ -1153,7 +1153,11 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
             if [ -e "$dir"/$deviceid/0.0/com.apple.factorydata ]; then
                 "$bin"/sshpass -p "alpine" scp -r -P 2222 "$dir"/$deviceid/0.0/com.apple.factorydata root@localhost:/mnt4/System/Library/Caches
             fi
-            cp "$dir"/jb/fstab_apfs "$dir"/$deviceid/$version/fstab.patched
+            if [[ "$version" == "10."* ]]; then
+                cp "$dir"/jb/fstab_apfs_rw "$dir"/$deviceid/$version/fstab.patched
+            else
+                cp "$dir"/jb/fstab_apfs "$dir"/$deviceid/$version/fstab.patched
+            fi
             sed -i -e "s/mnt4/$systemdisk/g" "$dir"/$deviceid/$version/fstab.patched
             sed -i -e "s/mnt5/$datadisk/g" "$dir"/$deviceid/$version/fstab.patched
             "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/$version/fstab.patched root@localhost:/mnt4/etc/fstab
