@@ -28,13 +28,13 @@ else
 fi
 
 
-if [[ $os_vers =~ ^10\.1[3-5]\.* ]]; then
-        echo "[*] You are running macOS $os_vers. Continuing..."
+if [[ $os_ver =~ ^10\.1[3-5]\.* ]]; then
+        echo "[*] You are running macOS $os_ver. Continuing..."
 elif (( $maj_ver >= 11 )); then
         echo "[!] macOS $os_ver is too new for this script. Please install macOS High Sierra, Mojave, or Catalina to continue if possible."
         exit 1 
 else    
-        echo "[!] What macOS version are you even using..."
+        echo "[!] macOS/OS X $os_ver is not supported by this script. Please install macOS High Sierra, Mojave, or Catalina to continue if possible." 
         exit 1
 fi
 
