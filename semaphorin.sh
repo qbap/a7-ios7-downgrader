@@ -346,6 +346,7 @@ _download_boot_files() {
             else
                 "$bin"/img4 -i $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) -o "$dir"/$1/$3/kcache.raw
                 "$bin"/img4 -i $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) -o "$dir"/$1/$3/kernelcache.dec -D
+                pyimg4 im4p extract -i $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) -o "$dir"/$1/$3/kernelcache_pyimg4.dec --extra "$dir"/$1/$3/kpp.bin
             fi
         fi
         if [ ! -e "$dir"/$1/$3/DeviceTree.dec ]; then
@@ -1154,7 +1155,9 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
                 "$bin"/sshpass -p "alpine" scp -r -P 2222 "$dir"/$deviceid/0.0/com.apple.factorydata root@localhost:/mnt4/System/Library/Caches
             fi
             if [[ "$version" == "10."* ]]; then
-                cp "$dir"/jb/fstab_apfs_rw "$dir"/$deviceid/$version/fstab.patched
+                #mount_common patch does not work on apfs partitions
+                #cp "$dir"/jb/fstab_apfs_rw "$dir"/$deviceid/$version/fstab.patched
+                cp "$dir"/jb/fstab_apfs "$dir"/$deviceid/$version/fstab.patched
             else
                 cp "$dir"/jb/fstab_apfs "$dir"/$deviceid/$version/fstab.patched
             fi
