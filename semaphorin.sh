@@ -15,6 +15,8 @@ echo ""
 max_args=1
 arg_count=0
 
+# This would probably go better somewhere else, but I'm not sure where to put it since most of the script is just in functions.
+
 if [[ $os =~ Darwin ]]; then
         echo "[*] Running on Darwin..."
 elif [[ $os =~ Linux ]]; then
