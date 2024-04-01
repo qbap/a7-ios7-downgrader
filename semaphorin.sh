@@ -960,49 +960,51 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/apfs_deletefs /dev/$systemfs"
             sleep 1
             echo "[*] Creating /dev/disk0s1s$systemdisk"
-            remote_cmd "/sbin/newfs_apfs -A -v SystemA /dev/disk0s1" && {
-                sleep 1
-            } || {
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -v SystemH /dev/disk0s1"
-            }
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -v SystemX /dev/disk0s1"
             sleep 2
             remote_cmd "/sbin/apfs_deletefs /dev/$systemfs" && {
                 sleep 1
-                remote_cmd "/sbin/newfs_apfs -A -v SystemB /dev/disk0s1" && {
-                    sleep 1
-                } || {
-                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -v SystemI /dev/disk0s1"
-                }
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -v SystemX /dev/disk0s1"
                 sleep 2
             } || {
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -v SystemX /dev/disk0s1"
+                sleep 2
                 remote_cmd "/sbin/apfs_deletefs /dev/$systemfs" && {
                     sleep 1
-                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -v SystemC /dev/disk0s1"
+                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -v SystemX /dev/disk0s1"
                     sleep 2
                 } || {
+                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -v SystemX /dev/disk0s1"
+                    sleep 2
                     remote_cmd "/sbin/apfs_deletefs /dev/$systemfs" && {
                         sleep 1
-                        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -v SystemD /dev/disk0s1"
+                        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -v SystemX /dev/disk0s1"
                         sleep 2
                     } || {
+                        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -v SystemX /dev/disk0s1"
+                        sleep 2
                         remote_cmd "/sbin/apfs_deletefs /dev/$systemfs" && {
                             sleep 1
-                            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -v SystemE /dev/disk0s1"
+                            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -v SystemX /dev/disk0s1"
                             sleep 2
                         } || {
+                            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -v SystemX /dev/disk0s1"
+                            sleep 2
                             remote_cmd "/sbin/apfs_deletefs /dev/$systemfs" && {
                                 sleep 1
-                                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -v SystemF /dev/disk0s1"
+                                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -v SystemX /dev/disk0s1"
                                 sleep 2
                             } || {
+                                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "ls /dev/"
+                                sleep 2
                                 remote_cmd "/sbin/apfs_deletefs /dev/$systemfs" && {
                                     sleep 1
-                                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -v SystemG /dev/disk0s1"
+                                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -v SystemX /dev/disk0s1"
                                     sleep 2
-                                } || {
-                                    echo "yay"
                                     "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "ls /dev/"
-                                    sleep 2
+                                } || {
+                                    echo "[*] An error occured while trying to create /dev/disk0s1s8"
+                                    exit
                                 }
                             }
                         }
