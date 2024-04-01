@@ -984,7 +984,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
         fi
         if [ -e "$dir"/jb/Evermusic_Free.app.tar ]; then
             if [[ "$version" == "9."* || "$version" == "8."* ]]; then
-                read -p "would you like to also install Evermusic_Free.app? " r
+                read -p "[*] Would you like to also install Evermusic_Free.app? " r
                 if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
                     "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/Evermusic_Free.app.tar root@localhost:/mnt1/
                     "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt1/Evermusic_Free.app.tar -C /mnt1/Applications/"
