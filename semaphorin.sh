@@ -953,12 +953,53 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
             fi
             systemfs=disk0s1s$systemdisk
             datafs=disk0s1s$datadisk
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt4" 2> /dev/null
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt5" 2> /dev/null
             echo "[*] Deleting /dev/disk0s1s$systemdisk"
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/apfs_deletefs /dev/$systemfs"
             sleep 1
             echo "[*] Creating /dev/disk0s1s$systemdisk"
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -v SystemX /dev/disk0s1"
             sleep 2
+            remote_cmd "/sbin/apfs_deletefs /dev/$systemfs" && {
+                sleep 1
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -v SystemX /dev/disk0s1"
+                sleep 2
+            } || {
+                remote_cmd "/sbin/apfs_deletefs /dev/$systemfs" && {
+                    sleep 1
+                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -v SystemX /dev/disk0s1"
+                    sleep 2
+                } || {
+                    remote_cmd "/sbin/apfs_deletefs /dev/$systemfs" && {
+                        sleep 1
+                        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -v SystemX /dev/disk0s1"
+                        sleep 2
+                    } || {
+                        remote_cmd "/sbin/apfs_deletefs /dev/$systemfs" && {
+                            sleep 1
+                            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -v SystemX /dev/disk0s1"
+                            sleep 2
+                        } || {
+                            remote_cmd "/sbin/apfs_deletefs /dev/$systemfs" && {
+                                sleep 1
+                                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -v SystemX /dev/disk0s1"
+                                sleep 2
+                            } || {
+                                remote_cmd "/sbin/apfs_deletefs /dev/$systemfs" && {
+                                    sleep 1
+                                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -v SystemX /dev/disk0s1"
+                                    sleep 2
+                                } || {
+                                    echo "yay"
+                                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "ls /dev/"
+                                    sleep 2
+                                }
+                            }
+                        }
+                    }
+                }
+            }
             echo "[*] /dev/disk0s1s$systemdisk created, continuing..."
             echo "[*] Deleting /dev/disk0s1s$datadisk"
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/apfs_deletefs /dev/$datafs"
@@ -968,8 +1009,6 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
             sleep 2
             echo "[*] /dev/disk0s1s$datadisk created, continuing..."
             echo "[*] Uploading $dir/$deviceid/$version/OS.dmg, this may take up to 10 minutes.."
-            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt4" 2> /dev/null
-            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt5" 2> /dev/null
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/$systemfs /mnt4"
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/$datafs /mnt5"
             "$bin"/sshpass -p 'alpine' scp -P 2222 "$dir"/$deviceid/$version/OS.dmg root@localhost:/mnt4
