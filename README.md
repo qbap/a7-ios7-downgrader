@@ -110,8 +110,8 @@ Linux support is not planned either, do not ask about this either.
 
    After the first unlock after setup, when the apps are absent, open the Control Center (swipe up) and press the calculator icon. Once open, you can exit out of Calculator. This should fix the icons.
 
-   ### Cydia isn't there (on iPads)
-   iPads have issues with uicache with this script. To open Cydia, enter `cydia://` in the address bar. 
+   ### Cydia is absent (on iPads)
+   iPads have uicache issues with most jailbreaking tools. To open Cydia, enter `cydia://` in the address bar. 
 
  
 ## iOS 9.3 Support
