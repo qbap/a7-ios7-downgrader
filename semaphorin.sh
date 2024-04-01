@@ -964,6 +964,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
             sleep 2
             remote_cmd "/sbin/apfs_deletefs /dev/$systemfs" && {
                 sleep 1
+                echo "[*] Creating /dev/disk0s1s$systemdisk"
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -v SystemX /dev/disk0s1"
                 sleep 2
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "ls /dev/"
