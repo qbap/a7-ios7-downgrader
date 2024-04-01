@@ -960,11 +960,19 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/apfs_deletefs /dev/$systemfs"
             sleep 1
             echo "[*] Creating /dev/disk0s1s$systemdisk"
-            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -v SystemA /dev/disk0s1"
+            remote_cmd "/sbin/newfs_apfs -A -v SystemA /dev/disk0s1" && {
+                sleep 1
+            } || {
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -v SystemH /dev/disk0s1"
+            }
             sleep 2
             remote_cmd "/sbin/apfs_deletefs /dev/$systemfs" && {
                 sleep 1
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -v SystemB /dev/disk0s1"
+                remote_cmd "/sbin/newfs_apfs -A -v SystemB /dev/disk0s1" && {
+                    sleep 1
+                } || {
+                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -v SystemI /dev/disk0s1"
+                }
                 sleep 2
             } || {
                 remote_cmd "/sbin/apfs_deletefs /dev/$systemfs" && {
