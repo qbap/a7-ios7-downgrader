@@ -54,4 +54,4 @@ securityd.*
 SystemVersion.plist*
 kcache_12A4331d.raw
 kernelcache_12A4331d.dec
-.semaphorin.sh.swp
+*.swp
