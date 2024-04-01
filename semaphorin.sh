@@ -346,6 +346,7 @@ _download_boot_files() {
             else
                 "$bin"/img4 -i $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) -o "$dir"/$1/$3/kcache.raw
                 "$bin"/img4 -i $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) -o "$dir"/$1/$3/kernelcache.dec -D
+                pyimg4 im4p extract -i $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) -o "$dir"/$1/$3/kernelcache_pyimg4.dec --extra "$dir"/$1/$3/kpp.bin
             fi
         fi
         if [ ! -e "$dir"/$1/$3/DeviceTree.dec ]; then
