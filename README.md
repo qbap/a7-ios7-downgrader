@@ -25,7 +25,7 @@
 
 ## How do I use this?
 
-This script deletes everything on your phone, including the main os. Make sure to backup all of your data before using this script, as it will be unrecoverable after. Use this script at your own risk, we are not responsible for any damages caused by you using this script.
+This script deletes everything on your phone, including the main OS. Make sure to backup all of your data before using this script as **anything on the device prior to running this script will be UNRECOVERABLE afterwards**. Use this script at your own risk. We are not responsible for any damages caused by you using this script.
 
 To use this app, you need to downgrade to a supported version, and have a supported device.
 
@@ -35,11 +35,9 @@ To use this app, you need to downgrade to a supported version, and have a suppor
 
 ## Support
 
-We now have a Discord server where you can get help with this project
+We now have a [Discord server](https://discord.gg/WQWDBBYJTb) where you can get help with this project.
 
-You can join with this discord invite link https://discord.gg/WQWDBBYJTb
-
-If for some reason that invite link does not work, please contact [wilm271](https://t.me/wilm271) on telegram
+If, for whatever reason, that invite link does not work, please contact [wilm271](https://t.me/wilm271) on Telegram.
 
 The Discord server is strictly for Semaphorin support only. Please don't bring personal issues into our server.
 
@@ -53,13 +51,13 @@ For example you may write `sudo ./semaphorin.sh 7.1.2 --restore`
 
 The script has to backup important files from your current iOS version before you can downgrade.
 
-When the script asks `what ios version are you running right now?` type your current ios version and then hit the enter key on your keyboard
+When the script asks `[*] Please enter the iOS version that is currently installed on your device.`, type your current iOS version and then hit the Enter key to continue.
 
-It should then begin the process of downgrading your device, please follow the on screen instructions
+It should then begin the process of downgrading your device. Please follow the on screen instructions. This might take a while. Your device will reboot multiple times.
 
 Your device will be jailbroken automatically.
 
-If you are on ios 7 please hit "go" in the wtfis app on your home screen to patch sandbox to allow cydia substrate to work properly.
+If you are on iOS, 7 please hit "go" in the wtfis app on your home screen to patch sandbox to allow Cydia Substrate (tweak injection) to work properly.
 
 ## Subsequent runs after downgrade is finished
 
@@ -67,19 +65,17 @@ Connect device in DFU mode
 
 `sudo ./semaphorin.sh <the version you downgraded to previously> --boot`
 
-For example, if you downgraded to iOS 7.1.2, you would use `sudo ./semaphorin.sh 7.1.2 --boot`.
+For example, if you downgraded to iOS 7.1.2, you would run `sudo ./semaphorin.sh 7.1.2 --boot`.
 
-It should boot to your requested iOS version normally and jailbroken.
+It should just boot to your requested iOS version normally.
 
 ## Setup.app bypass
 
-We will not be providing any support for any method of deleting `/Applications/Setup.app` with our script
+We will not be providing any support for any method of deleting `/Applications/Setup.app` with our script.
 
-This is only to comply with [r/jailbreak](https://www.reddit.com/r/jailbreak/) and [r/LegacyJailbreak](https://www.reddit.com/r/LegacyJailbreak/) rules and guidelines
+This is only to comply with [r/jailbreak](https://www.reddit.com/r/jailbreak/) and [r/LegacyJailbreak](https://www.reddit.com/r/LegacyJailbreak/) rules and guidelines.
 
-The script will downgrade your iOS version and jailbreak the downgraded OS very easily
-
-But in order to get to the Home Screen, you must first delete `/Applications/Setup.app`, which we will not be providing any support for.
+The script will downgrade your iOS version and jailbreak the downgraded OS very easily, but will not allow for bypassing **any** sort of Activation Lock.
 
 ## Troubleshooting
 
@@ -93,9 +89,10 @@ But in order to get to the Home Screen, you must first delete `/Applications/Set
       3. Install it
       
       4. Profit
-   *Note: This does slightly affect battery life due to the way it works.
+      
+   *Note: This does slightly affect battery life due to the way it works. You probably aren't using this script for battery life though, are you.
 
-   ### Unsupported version/OS
+   ### Unsupported OS
    The script only officially works on macOS 10.13 up to 10.15 (High Sierra to Catalina) due to some limitations on the developer's end. You have to install one of those versions to use the script. Please do not ask us about this.
 
 Linux support is not planned either, do not ask about this either.
@@ -103,14 +100,14 @@ Linux support is not planned either, do not ask about this either.
    ### Unable to connect to WiFi networks, incorrect password.
    This is caused by an issue that's *impossible* to fix. You need to connect to an open WiFi network
 
-   You can create one using the Internet Sharing feature on macOS or [linux-wifi-hotspot](https://github.com/lakinduakash/linux-wifi-hotspot) on, you guessed it, Linux if you prefer using another computer for it. 
+   You can create one using the Internet Sharing feature on macOS or [linux-wifi-hotspot](https://github.com/lakinduakash/linux-wifi-hotspot) on, you guessed it, Linux if you prefer using another computer for this. 
 
    Be careful when doing this since *anyone* can connect to the open network you created. We are not responsible for **any** damages caused by doing this.
 
    ### No apps on the Home Screen (iOS 8.0)
    This is a weird issue with iOS 8. The workaround is easy, however.
 
-   After you unlock your device for the first time after setup, there will be no apps on the Home Screen. The workaround is, once you're on the Home Screen, to open the Control Center (swipe up) and press the calculator icon. Once open, you can exit out of Calculator. This should fix the icons.
+   After you unlock your device for the first time post setup, there will be no apps on the Home Screen. The workaround is, once you're on the Home Screen, to open the Control Center (swipe up) and press the Calculator icon. Once open, you can exit out of Calculator. This should make all icons appear.
 
    ### Cydia is absent (on iPads)
    iPads have uicache issues with most jailbreaking tools. To open Cydia, enter `cydia://` in Safari's address bar and press Enter.  
@@ -159,8 +156,7 @@ Stable internet connection. Please don't try using this with dial up...
 
 At least 20GB free on your device
 
-USB Type-A port and Lightning cable. USB Type-C ports will **NOT** work with this.
-
+USB Type-A port and Lightning cable. USB Type-C ports will **NOT** work with this script. If you're using a Mac that only has a USB-C port (such as 12" MacBooks, and late Intel MacBook Airs) a dongle/dock with a USB-A port should work just fine with a standard USB-A to Lightning cable.
 
 Working iDevice: The script has to backup `apticket.der`, `sep-firmware.img4`, `Baseband`, and `keybags` from your device before you can downgrade to an older iOS version.
 
@@ -168,9 +164,9 @@ Working iDevice: The script has to backup `apticket.der`, `sep-firmware.img4`, `
 
 - [johndoe123](https://twitter.com/iarchiveml) for the a7 ios 7 [downgrade guide](https://ios7.iarchive.app/downgrade/) which made this entire project possible
 - [LukeZGD](https://github.com/LukeZGD/) for the updated [cydia.tar](https://github.com/LukeZGD/Legacy-iOS-Kit/raw/main/resources/jailbreak/freeze.tar) for jailbreaking older ios versions
-- [TheRealClarity](https://github.com/TheRealClarity) for ios 7& 8 semi untethered sandbox patches to enable tweaks to work
+- [TheRealClarity](https://github.com/TheRealClarity) for ios 7 & 8 semi untethered sandbox patches to enable tweaks to work
 - [Nathan](https://github.com/verygenericname) for the ssh ramdisk and [iBoot64Patcher fork](https://github.com/verygenericname/iBoot64Patcher)
-- [Mineek](https://github.com/mineek) for [seprmvr64](https://github.com/mineek/seprmvr64) and other patches** i want to give a very special thanks to [Mineek](https://github.com/mineek), if it werent for them this entire project would have not been possible. you are amazing and i appreciate all that you do, thank you so much
+- [Mineek](https://github.com/mineek) for [seprmvr64](https://github.com/mineek/seprmvr64) and other patches. I want to give a very special thanks to [Mineek](https://github.com/mineek), if it werent for them this entire project would have not been possible. you are amazing and i appreciate all that you do, thank you so much
 - [nyuszika7h](https://github.com/nyuszika7h) for the script to help get into DFU
 - [tihmstar](https://github.com/tihmstar) for [pzb](https://github.com/tihmstar/partialZipBrowser)/original [iBoot64Patcher](https://github.com/tihmstar/iBoot64Patcher)/original [liboffsetfinder64](https://github.com/tihmstar/liboffsetfinder64)/[img4tool](https://github.com/tihmstar/img4tool)
 - [Tom](https://github.com/guacaplushy) for a couple patches and bugfixes
