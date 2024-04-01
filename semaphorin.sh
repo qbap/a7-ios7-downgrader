@@ -1154,7 +1154,9 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
                 "$bin"/sshpass -p "alpine" scp -r -P 2222 "$dir"/$deviceid/0.0/com.apple.factorydata root@localhost:/mnt4/System/Library/Caches
             fi
             if [[ "$version" == "10."* ]]; then
-                cp "$dir"/jb/fstab_apfs_rw "$dir"/$deviceid/$version/fstab.patched
+                #mount_common patch does not work on apfs partitions
+                #cp "$dir"/jb/fstab_apfs_rw "$dir"/$deviceid/$version/fstab.patched
+                cp "$dir"/jb/fstab_apfs "$dir"/$deviceid/$version/fstab.patched
             else
                 cp "$dir"/jb/fstab_apfs "$dir"/$deviceid/$version/fstab.patched
             fi
