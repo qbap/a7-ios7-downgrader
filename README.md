@@ -5,7 +5,7 @@
    </h1>
 </div>
 
-<h6 align="center"> Should Support iOS/iPadOS 7.0.1 - 8.0b4  </h6>
+<h6 align="center"> Supports* iOS 7.0.1-7.1.2/8.0 Beta 4  </h6>
 
 # IF YOUR DEVICE SUPPORTS [LEGACY-IOS-KIT](https://github.com/LukeZGD/Legacy-iOS-Kit), YOU SHOULD REALLY USE THAT OVER THIS.
 
