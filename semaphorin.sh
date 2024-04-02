@@ -92,20 +92,32 @@ parse_arg() {
             if [[ "$version" == "8.0b4" ]]; then
                 version="8.0"
             fi
-            #if [[ "$version" == "8."* && ! "$version" == "8.0" ]]; then
-            #    echo "[-] Downgrading to that version is not yet feasible"
-            #    exit
-            #fi
+            if [[ "$version" == "8."* && ! "$version" == "8.0" ]]; then
+                echo "[-] Downgrading to that version is not yet feasible"
+                exit
+            fi
             if [[ "$version" == "9."* && "$version" == "9.3"* ]]; then
                 echo "[-] Downgrading to that version is not yet feasible"
                 exit
             fi
-            #if [[ "$version" == "8.0" ]]; then
-            #    if [[ ! "$deviceid" == "iPhone6,2" && ! "$deviceid" == "iPhone6,1" && ! "$deviceid" == "iPad4,4" && ! "$deviceid" == "iPad4,5" && ! "$deviceid" == "iPad4,2" && ! "$deviceid" == "iPad4,8" ]]; then
-            #        echo "[-] Downgrading to that version is not yet feasible on your device"
-            #        exit
-            #    fi
-            #fi
+            if [[ "$version" == "11."* && "$version" == "11.2"* ]]; then
+                echo "[-] Downgrading to that version is not yet feasible"
+                exit
+            fi
+            if [[ "$version" == "11."* && "$version" == "11.3"* ]]; then
+                echo "[-] Downgrading to that version is not yet feasible"
+                exit
+            fi
+            if [[ "$version" == "11."* && "$version" == "11.4"* ]]; then
+                echo "[-] Downgrading to that version is not yet feasible"
+                exit
+            fi
+            if [[ "$version" == "8.0" ]]; then
+                if [[ ! "$deviceid" == "iPhone6,2" && ! "$deviceid" == "iPhone6,1" && ! "$deviceid" == "iPad4,4" && ! "$deviceid" == "iPad4,5" && ! "$deviceid" == "iPad4,2" && ! "$deviceid" == "iPad4,8" ]]; then
+                    echo "[-] Downgrading to that version is not yet feasible on your device"
+                    exit
+                fi
+            fi
             ;;
     esac
 }
@@ -459,7 +471,8 @@ _download_boot_files() {
             "$bin"/img4 -i "$dir"/$1/$3/iBEC.patched -o "$dir"/$1/$3/iBEC.img4 -M IM4M -A -T ibec
             "$bin"/seprmvr64 "$dir"/$1/$3/kcache.raw "$dir"/$1/$3/kcache.patched
             "$bin"/Kernel64Patcher2 "$dir"/$1/$3/kcache.patched "$dir"/$1/$3/kcache2.patched -a
-            "$bin"/kerneldiff "$dir"/$1/$3/kcache.raw "$dir"/$1/$3/kcache2.patched "$dir"/$1/$3/kc.bpatch
+            "$bin"/Kernel64Patcher "$dir"/$1/$3/kcache2.patched "$dir"/$1/$3/kcache3.patched -e -l -m -a -f
+            "$bin"/kerneldiff "$dir"/$1/$3/kcache.raw "$dir"/$1/$3/kcache3.patched "$dir"/$1/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/$3/kernelcache.dec -o "$dir"/$1/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/$3/kernelcache.dec -o "$dir"/$1/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$3/kc.bpatch
             if [ -e "$dir"/$1/$3/trustcache.im4p ]; then
@@ -619,10 +632,10 @@ if [ "$cmd_not_found" = "1" ]; then
     exit 1
 fi
 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-    if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPhone7"* || "$deviceid" == "iPhone8"* || "$deviceid" == "iPad4"* ]]; then
-        "$bin"/dfuhelper.sh
-    else
+    if [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
         "$bin"/dfuhelper2.sh
+    else
+        "$bin"/dfuhelper3.sh
     fi
 fi
 _wait_for_dfu
@@ -724,10 +737,10 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
     _download_boot_files $deviceid $replace $version
     sleep 1
     if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-        if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPhone7"* || "$deviceid" == "iPhone8"* || "$deviceid" == "iPad4"* ]]; then
-            "$bin"/dfuhelper.sh
-        else
+        if [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
             "$bin"/dfuhelper2.sh
+        else
+            "$bin"/dfuhelper3.sh
         fi
     fi
     _wait_for_dfu
@@ -812,10 +825,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
             if [[ ! -e "$dir"/$deviceid/0.0/apticket.der ]]; then
                 has_active=$(remote_cmd "ls /mnt6/active" 2> /dev/null)
                 if [ ! "$has_active" = "/mnt6/active" ]; then
-                    echo "[!] Active file does not exist! Please use SSH to create it"
-                    echo "    /mnt6/active should contain the name of the UUID in /mnt6"
-                    echo "    When done, type reboot in the SSH session, then rerun the script"
-                    echo "    ssh root@localhost -p 2222"
+                    echo "[*] An error occured while trying to back up the required files required to downgrade"
                     $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
                     exit
                 fi
@@ -856,10 +866,10 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
                 _kill_if_running iproxy
                 echo "device should now reboot into recovery, pls wait"
                 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                    if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPhone7"* || "$deviceid" == "iPhone8"* || "$deviceid" == "iPad4"* ]]; then
-                        "$bin"/dfuhelper.sh
-                    else
+                    if [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
                         "$bin"/dfuhelper2.sh
+                    else
+                        "$bin"/dfuhelper3.sh
                     fi
                 fi
                 _wait_for_dfu
@@ -1048,10 +1058,10 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
         _kill_if_running iproxy
         echo "device should now reboot into recovery, pls wait"
         if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-            if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPhone7"* || "$deviceid" == "iPhone8"* || "$deviceid" == "iPad4"* ]]; then
-                "$bin"/dfuhelper.sh
-            else
+            if [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
                 "$bin"/dfuhelper2.sh
+            else
+                "$bin"/dfuhelper3.sh
             fi
         fi
         _wait_for_dfu
@@ -1090,14 +1100,15 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
         if [[ "$version" == "10.3"* || "$version" == "11."* || "$version" == "12."* ]]; then
             echo "[*] /System/Library/Filesystems/apfs.fs/apfs_invert -d /dev/disk0s1 -s $systemdisk -n OS.dmg"
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/System/Library/Filesystems/apfs.fs/apfs_invert -d /dev/disk0s1 -s $systemdisk -n OS.dmg"
-            #"$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "bash -c mount_filesystems"
-            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt4" 2> /dev/null
-            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt5" 2> /dev/null
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/$systemfs /mnt4"
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/$datafs /mnt5"
-            "$bin"/sshpass -p 'alpine' scp -P 2222 "$dir"/jb/cydia.tar root@localhost:/mnt5
-            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt5/cydia.tar -C /mnt4"
-            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt5/cydia.tar"
+            #"$bin"/sshpass -p 'alpine' scp -P 2222 "$dir"/jb/cydia.tar root@localhost:/mnt5
+            #"$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt5/cydia.tar -C /mnt4"
+            #"$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt5/cydia.tar"
+            #"$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/untether_ios9.tar root@localhost:/mnt4/ 2> /dev/null
+            #"$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xvf /mnt4/untether_ios9.tar -C /mnt4/' 2> /dev/null
+            #"$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'cp /mnt4/usr/libexec/CrashHousekeeping /mnt4/usr/libexec/CrashHousekeeping_o' 2> /dev/null
+            #"$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/startup_ios9.sh root@localhost:/mnt4/usr/libexec/CrashHousekeeping 2> /dev/null
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mv -v /mnt4/private/var/* /mnt5"
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt4/usr/local/standalone/firmware/Baseband"
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir /mnt5/keybags"
@@ -1115,7 +1126,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
             if [ -e "$dir"/$deviceid/0.0/com.apple.factorydata ]; then
                 "$bin"/sshpass -p "alpine" scp -r -P 2222 "$dir"/$deviceid/0.0/com.apple.factorydata root@localhost:/mnt4/System/Library/Caches
             fi
-            if [[ "$version" == "10."* ]]; then
+            if [[ "$version" == "10."* || "$version" == "11."* ]]; then
                 cp "$dir"/jb/fstab_apfs_rw "$dir"/$deviceid/$version/fstab.patched
             else
                 cp "$dir"/jb/fstab_apfs "$dir"/$deviceid/$version/fstab.patched
@@ -1376,10 +1387,10 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
         if [[ "$version" == "10.3"* || "$version" == "11."* || "$version" == "12."* ]]; then
             if [ -e "$dir"/$deviceid/$version/iBSS.img4 ]; then
                 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                    if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPhone7"* || "$deviceid" == "iPhone8"* || "$deviceid" == "iPad4"* ]]; then
-                        "$bin"/dfuhelper.sh
-                    else
+                    if [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
                         "$bin"/dfuhelper2.sh
+                    else
+                        "$bin"/dfuhelper3.sh
                     fi
                 fi
                 _wait_for_dfu
@@ -1462,10 +1473,10 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
         fi
         if [ -e "$dir"/$deviceid/$version/iBSS.img4 ]; then
             if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPhone7"* || "$deviceid" == "iPhone8"* || "$deviceid" == "iPad4"* ]]; then
-                    "$bin"/dfuhelper.sh
-                else
+                if [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
                     "$bin"/dfuhelper2.sh
+                else
+                    "$bin"/dfuhelper3.sh
                 fi
             fi
             _wait_for_dfu
