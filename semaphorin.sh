@@ -468,7 +468,8 @@ _download_boot_files() {
             if [ -e "$dir"/$1/$3/trustcache.im4p ]; then
                 "$bin"/img4 -i "$dir"/$1/$3/trustcache.im4p -o "$dir"/$1/$3/trustcache.img4 -M IM4M -T rtsc
             fi
-            "$bin"/img4 -i "$dir"/$1/$3/devicetree.dec -o "$dir"/$1/$3/devicetree.img4 -M IM4M -T rdtr
+            "$bin"/dtree_patcher "$dir"/$1/$3/devicetree.dec "$dir"/$1/$3/DeviceTree.patched -n
+            "$bin"/img4 -i "$dir"/$1/$3/DeviceTree.patched -o "$dir"/$1/$3/devicetree.img4 -M IM4M -T rdtr
         elif [[ "$3" == "11."* ]]; then
             "$bin"/img4 -i "$dir"/$1/$3/iBSS.patched -o "$dir"/$1/$3/iBSS.img4 -M IM4M -A -T ibss
             "$bin"/img4 -i "$dir"/$1/$3/iBEC.patched -o "$dir"/$1/$3/iBEC.img4 -M IM4M -A -T ibec
@@ -487,7 +488,8 @@ _download_boot_files() {
             if [ -e "$dir"/$1/$3/trustcache.im4p ]; then
                 "$bin"/img4 -i "$dir"/$1/$3/trustcache.im4p -o "$dir"/$1/$3/trustcache.img4 -M IM4M -T rtsc
             fi
-            "$bin"/img4 -i "$dir"/$1/$3/devicetree.dec -o "$dir"/$1/$3/devicetree.img4 -M IM4M -T rdtr
+            "$bin"/dtree_patcher "$dir"/$1/$3/devicetree.dec "$dir"/$1/$3/DeviceTree.patched -n
+            "$bin"/img4 -i "$dir"/$1/$3/DeviceTree.patched -o "$dir"/$1/$3/devicetree.img4 -M IM4M -T rdtr
         fi
     fi
     cd ..
@@ -745,10 +747,13 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
     fi
     if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
         read -p "what ios version are you running right now? " r
-        if [[ "$r" == "10.3"* ]]; then
-            r="11.0"
-        fi
         _download_ramdisk_boot_files $deviceid $replace $r
+    fi
+    if [[ "$version" == "10.3"* || "$version" == "11."* || "$version" == "12."* ]]; then
+        if [ -z "$r" ]; then
+            read -p "what ios version was installed on this device prior to downgrade? " r
+            _download_ramdisk_boot_files $deviceid $replace $r
+        fi
     fi
     if [[ "$restore" == 1 ]]; then
         _download_root_fs $deviceid $replace $version
@@ -1093,11 +1098,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
         if [[ "$version" == "7."* || "$version" == "8."* ]]; then
             cd "$dir"/$deviceid/ramdisk/8.4.1
         elif [[ "$version" == "10.3"* || "$version" == "11."* ||  "$version" == "12."* ]]; then
-            if [[ "$(./java/bin/java -jar ./Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e 14.3 $deviceid)" == "true" ]]; then
-                cd "$dir"/$deviceid/ramdisk/14.3
-            else
-                cd "$dir"/$deviceid/ramdisk/12.5.4
-            fi
+            cd "$dir"/$deviceid/ramdisk/$r
         else
             cd "$dir"/$deviceid/ramdisk/11.4.1
         fi
