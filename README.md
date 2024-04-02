@@ -58,7 +58,7 @@ It should then begin the process of downgrading your device. Please follow the o
 
 Your device will be jailbroken automatically.
 
-If you are on iOS, 7 please hit "go" in the wtfis app on your home screen to patch sandbox to allow Cydia Substrate (tweak injection) to work properly.
+If you are on iOS 7 please hit "go" in the wtfis app on your home screen to patch sandbox to allow Cydia Substrate (tweak injection) to work properly.
 
 ## Subsequent runs after downgrade is finished
 
