@@ -1,4 +1,6 @@
-*.ipsw
+iPhone6,1_7.1.2_11D257_Restore.ipsw
+iPhone6,1_8.4.1_12H321_Restore.ipsw
+fstab.*
 java/
 logs
 trustcache.*
@@ -34,6 +36,7 @@ kcache.patched
 kcache.patched2
 kcache2.patched
 kcache3.patched
+kcache4.patched
 beta2*
 full*
 NoMoreSIGABRT*

@@ -1,4 +1,0 @@
-#/bin/bash
-echo "Untether script started!"
-/usr/libexec/keybagd_o "$@" &
-/pguntether_91 &
