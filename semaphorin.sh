@@ -4,19 +4,45 @@ verbose=1
 {
 echo "[*] Command ran:`if [ $EUID = 0 ]; then echo " sudo"; fi` ./semaphorin.sh $@"
 os=$(uname)
-oscheck=$(uname)
+os_ver=$(sw_vers -productVersion)
+maj_ver=$(echo "$os_ver" | awk -F. '{print $1}')
 dir="$(pwd)"
 bin="$(pwd)/$(uname)"
 sshtars="$(pwd)/sshtars"
-echo "semaphorin | Version 1.0"
+echo "Semaphorin | Version 1.0"
 echo "Written by y08wilm and Mineek | Some code and ramdisk from Nathan"
 echo ""
 max_args=1
 arg_count=0
+
+# This would probably go better somewhere else, but I'm not sure where to put it since most of the script is just in functions.
+
+if [[ $os =~ Darwin ]]; then
+        echo "[*] Running on Darwin..."
+elif [[ $os =~ Linux ]]; then
+        echo "[!] This tool does not support Linux. Please use this with macOS High Sierra, Mojave, or Catalina to continue."
+        exit 1
+else
+        echo "[!] What operating system are you even using..."
+        exit 1
+fi
+
+
+if [[ $os_ver =~ ^10\.1[3-5]\.* ]]; then
+        echo "[*] You are running macOS $os_ver. Continuing..."
+elif (( $maj_ver >= 11 )); then
+        echo "[!] macOS $os_ver is too new for this script. Please install macOS High Sierra, Mojave, or Catalina to continue if possible."
+        exit 1 
+else    
+        echo "[!] macOS/OS X $os_ver is not supported by this script. Please install macOS High Sierra, Mojave, or Catalina to continue if possible." 
+        exit 1
+fi
+
+
 print_help() {
     cat << EOF
 Usage: $0 [VERSION...] [OPTION...]
-iOS 7.0.1-9.2.1 seprmvr64, downgrade& jailbreak tool for checkm8 devices
+iOS 7.0.1-9.2.1 Downgrade & Jailbreak tool for older checkm8 devices using seprmvr64
 Examples:
     $0 7.1.2 --restore
     $0 7.1.2 --boot
@@ -586,9 +612,6 @@ _kill_if_running() {
         fi
     fi
 }
-if [ "$os" = 'Linux' ]; then
-    linux_cmds='lsusb'
-fi
 if [ ! -e java/bin/java ]; then
     mkdir java
     cd java
@@ -598,7 +621,7 @@ if [ ! -e java/bin/java ]; then
     sudo rm -rf openlogic-openjdk-jre-8u262-b10-mac-x64/
     cd ..
 fi
-for cmd in curl unzip python3 git ssh scp killall sudo grep pgrep ${linux_cmds}; do
+for cmd in curl unzip python3 git ssh scp killall sudo grep pgrep; do
     if ! command -v "${cmd}" > /dev/null; then
         if [ "$cmd" = "python3" ]; then
             echo "[-] Command '${cmd}' not installed, please install it!";
@@ -695,7 +718,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
         _download_ramdisk_boot_files $deviceid $replace 11.4.1
     fi
     if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
-        read -p "what ios version are you running right now? " r
+        read -p "[*] Please enter the iOS version that is currently installed on your device  " r
         if [[ "$r" == "10.3"* ]]; then
             r="11.0"
         fi
@@ -743,7 +766,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
     "$bin"/irecovery -f kernelcache.img4
     "$bin"/irecovery -c bootx &
     cd ../../../
-    read -p "pls press the enter key on your keyboard once device is in the ramdisk " r1
+    read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk " r1
     "$bin"/iproxy 2222 22 &
     sleep 2
     if [[ "$restore" == 1 ]]; then
@@ -827,7 +850,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
         echo "[*] Wiped the device"
         $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
         _kill_if_running iproxy
-        echo "device should now reboot into recovery, pls wait"
+        echo "[*] Device should boot to Recovery mode. Please wait..."
         if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
             "$bin"/dfuhelper.sh
         fi
@@ -860,7 +883,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
         "$bin"/irecovery -f kernelcache.img4
         "$bin"/irecovery -c bootx &
         cd ../../../
-        read -p "pls press the enter key on your keyboard once device is in the ramdisk " r1
+        read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk. " r1
         "$bin"/iproxy 2222 22 &
         "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat /gpt.txt | gptfdisk /dev/rdisk0s1" 2> /dev/null
         sleep 2
@@ -963,7 +986,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
         fi
         if [ -e "$dir"/jb/Evermusic_Free.app.tar ]; then
             if [[ "$version" == "9."* || "$version" == "8."* ]]; then
-                read -p "would you like to also install Evermusic_Free.app? " r
+                read -p "[*] Would you like to also install Evermusic_Free.app? " r
                 if [[ "$r" = 'yes' || "$r" = 'y' ]]; then
                     "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/Evermusic_Free.app.tar root@localhost:/mnt1/
                     "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt1/Evermusic_Free.app.tar -C /mnt1/Applications/"
