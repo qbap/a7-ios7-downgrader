@@ -468,8 +468,9 @@ _download_boot_files() {
             if [ -e "$dir"/$1/$3/trustcache.im4p ]; then
                 "$bin"/img4 -i "$dir"/$1/$3/trustcache.im4p -o "$dir"/$1/$3/trustcache.img4 -M IM4M -T rtsc
             fi
-            "$bin"/dtree_patcher "$dir"/$1/$3/devicetree.dec "$dir"/$1/$3/DeviceTree.patched -n
-            "$bin"/img4 -i "$dir"/$1/$3/DeviceTree.patched -o "$dir"/$1/$3/devicetree.img4 -M IM4M -T rdtr
+            "$bin"/img4tool -e -o "$dir"/$1/$3/devicetree.out "$dir"/$1/$3/devicetree.dec
+            "$bin"/dtree_patcher "$dir"/$1/$3/devicetree.out "$dir"/$1/$3/DeviceTree.patched -n
+            "$bin"/img4 -i "$dir"/$1/$3/DeviceTree.patched -o "$dir"/$1/$3/devicetree.img4 -A -M IM4M -T rdtr
         elif [[ "$3" == "11."* ]]; then
             "$bin"/img4 -i "$dir"/$1/$3/iBSS.patched -o "$dir"/$1/$3/iBSS.img4 -M IM4M -A -T ibss
             "$bin"/img4 -i "$dir"/$1/$3/iBEC.patched -o "$dir"/$1/$3/iBEC.img4 -M IM4M -A -T ibec
@@ -488,8 +489,9 @@ _download_boot_files() {
             if [ -e "$dir"/$1/$3/trustcache.im4p ]; then
                 "$bin"/img4 -i "$dir"/$1/$3/trustcache.im4p -o "$dir"/$1/$3/trustcache.img4 -M IM4M -T rtsc
             fi
-            "$bin"/dtree_patcher "$dir"/$1/$3/devicetree.dec "$dir"/$1/$3/DeviceTree.patched -n
-            "$bin"/img4 -i "$dir"/$1/$3/DeviceTree.patched -o "$dir"/$1/$3/devicetree.img4 -M IM4M -T rdtr
+            "$bin"/img4tool -e -o "$dir"/$1/$3/devicetree.out "$dir"/$1/$3/devicetree.dec
+            "$bin"/dtree_patcher "$dir"/$1/$3/devicetree.out "$dir"/$1/$3/DeviceTree.patched -n
+            "$bin"/img4 -i "$dir"/$1/$3/DeviceTree.patched -o "$dir"/$1/$3/devicetree.img4 -A -M IM4M -T rdtr
         fi
     fi
     cd ..
