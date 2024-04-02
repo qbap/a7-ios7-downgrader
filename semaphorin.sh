@@ -92,20 +92,32 @@ parse_arg() {
             if [[ "$version" == "8.0b4" ]]; then
                 version="8.0"
             fi
-            #if [[ "$version" == "8."* && ! "$version" == "8.0" ]]; then
-            #    echo "[-] Downgrading to that version is not yet feasible"
-            #    exit
-            #fi
+            if [[ "$version" == "8."* && ! "$version" == "8.0" ]]; then
+                echo "[-] Downgrading to that version is not yet feasible"
+                exit
+            fi
             if [[ "$version" == "9."* && "$version" == "9.3"* ]]; then
                 echo "[-] Downgrading to that version is not yet feasible"
                 exit
             fi
-            #if [[ "$version" == "8.0" ]]; then
-            #    if [[ ! "$deviceid" == "iPhone6,2" && ! "$deviceid" == "iPhone6,1" && ! "$deviceid" == "iPad4,4" && ! "$deviceid" == "iPad4,5" && ! "$deviceid" == "iPad4,2" && ! "$deviceid" == "iPad4,8" ]]; then
-            #        echo "[-] Downgrading to that version is not yet feasible on your device"
-            #        exit
-            #    fi
-            #fi
+            if [[ "$version" == "11."* && "$version" == "11.2"* ]]; then
+                echo "[-] Downgrading to that version is not yet feasible"
+                exit
+            fi
+            if [[ "$version" == "11."* && "$version" == "11.3"* ]]; then
+                echo "[-] Downgrading to that version is not yet feasible"
+                exit
+            fi
+            if [[ "$version" == "11."* && "$version" == "11.4"* ]]; then
+                echo "[-] Downgrading to that version is not yet feasible"
+                exit
+            fi
+            if [[ "$version" == "8.0" ]]; then
+                if [[ ! "$deviceid" == "iPhone6,2" && ! "$deviceid" == "iPhone6,1" && ! "$deviceid" == "iPad4,4" && ! "$deviceid" == "iPad4,5" && ! "$deviceid" == "iPad4,2" && ! "$deviceid" == "iPad4,8" ]]; then
+                    echo "[-] Downgrading to that version is not yet feasible on your device"
+                    exit
+                fi
+            fi
             ;;
     esac
 }
