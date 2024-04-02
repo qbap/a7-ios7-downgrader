@@ -619,7 +619,7 @@ if [ "$cmd_not_found" = "1" ]; then
     exit 1
 fi
 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-    if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPhone7"* || "$deviceid" == "iPhone8"* || "$deviceid" == "iPad4"* ]]; then
+    if [[ ! "$version" == "10.3"* && ! "$version" == "11."* && ! "$version" == "12."* ]]; then
         "$bin"/dfuhelper.sh
     else
         "$bin"/dfuhelper2.sh
@@ -724,7 +724,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
     _download_boot_files $deviceid $replace $version
     sleep 1
     if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-        if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPhone7"* || "$deviceid" == "iPhone8"* || "$deviceid" == "iPad4"* ]]; then
+        if [[ ! "$version" == "10.3"* && ! "$version" == "11."* && ! "$version" == "12."* ]]; then
             "$bin"/dfuhelper.sh
         else
             "$bin"/dfuhelper2.sh
@@ -812,10 +812,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
             if [[ ! -e "$dir"/$deviceid/0.0/apticket.der ]]; then
                 has_active=$(remote_cmd "ls /mnt6/active" 2> /dev/null)
                 if [ ! "$has_active" = "/mnt6/active" ]; then
-                    echo "[!] Active file does not exist! Please use SSH to create it"
-                    echo "    /mnt6/active should contain the name of the UUID in /mnt6"
-                    echo "    When done, type reboot in the SSH session, then rerun the script"
-                    echo "    ssh root@localhost -p 2222"
+                    echo "[*] An error occured while trying to back up the required files required to downgrade"
                     $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
                     exit
                 fi
@@ -856,11 +853,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
                 _kill_if_running iproxy
                 echo "device should now reboot into recovery, pls wait"
                 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                    if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPhone7"* || "$deviceid" == "iPhone8"* || "$deviceid" == "iPad4"* ]]; then
-                        "$bin"/dfuhelper.sh
-                    else
-                        "$bin"/dfuhelper2.sh
-                    fi
+                    "$bin"/dfuhelper2.sh
                 fi
                 _wait_for_dfu
                 if [[ "$version" == "7."* || "$version" == "8."* ]]; then
@@ -1048,7 +1041,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
         _kill_if_running iproxy
         echo "device should now reboot into recovery, pls wait"
         if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-            if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPhone7"* || "$deviceid" == "iPhone8"* || "$deviceid" == "iPad4"* ]]; then
+            if [[ ! "$version" == "10.3"* && ! "$version" == "11."* && ! "$version" == "12."* ]]; then
                 "$bin"/dfuhelper.sh
             else
                 "$bin"/dfuhelper2.sh
@@ -1376,11 +1369,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
         if [[ "$version" == "10.3"* || "$version" == "11."* || "$version" == "12."* ]]; then
             if [ -e "$dir"/$deviceid/$version/iBSS.img4 ]; then
                 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                    if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPhone7"* || "$deviceid" == "iPhone8"* || "$deviceid" == "iPad4"* ]]; then
-                        "$bin"/dfuhelper.sh
-                    else
-                        "$bin"/dfuhelper2.sh
-                    fi
+                    "$bin"/dfuhelper2.sh
                 fi
                 _wait_for_dfu
                 cd "$dir"/$deviceid/$version
@@ -1462,7 +1451,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
         fi
         if [ -e "$dir"/$deviceid/$version/iBSS.img4 ]; then
             if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPhone7"* || "$deviceid" == "iPhone8"* || "$deviceid" == "iPad4"* ]]; then
+                if [[ ! "$version" == "10.3"* && ! "$version" == "11."* && ! "$version" == "12."* ]]; then
                     "$bin"/dfuhelper.sh
                 else
                     "$bin"/dfuhelper2.sh
