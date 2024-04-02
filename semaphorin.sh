@@ -189,7 +189,6 @@ _download_ramdisk_boot_files() {
                 ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
                 "$bin"/img4 -i $fn -o "$dir"/$1/ramdisk/$3/kcache.raw -k $ivkey
                 "$bin"/img4 -i $fn -o "$dir"/$1/ramdisk/$3/kernelcache.dec -k $ivkey -D
-                pyimg4 im4p extract -i $fn -o "$dir"/$1/ramdisk/$3/kernelcache_pyimg4.dec --iv ${ivkey:0:32} --key ${ivkey:32} --extra "$dir"/$1/ramdisk/$3/kpp.bin
             else
                 "$bin"/img4 -i $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) -o "$dir"/$1/ramdisk/$3/kcache.raw
                 "$bin"/img4 -i $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) -o "$dir"/$1/ramdisk/$3/kernelcache.dec -D
@@ -342,11 +341,9 @@ _download_boot_files() {
                 ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
                 "$bin"/img4 -i $fn -o "$dir"/$1/$3/kcache.raw -k $ivkey
                 "$bin"/img4 -i $fn -o "$dir"/$1/$3/kernelcache.dec -k $ivkey -D
-                pyimg4 im4p extract -i $fn -o "$dir"/$1/$3/kernelcache_pyimg4.dec --iv ${ivkey:0:32} --key ${ivkey:32} --extra "$dir"/$1/$3/kpp.bin
             else
                 "$bin"/img4 -i $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) -o "$dir"/$1/$3/kcache.raw
                 "$bin"/img4 -i $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) -o "$dir"/$1/$3/kernelcache.dec -D
-                pyimg4 im4p extract -i $(awk "/""$2""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) -o "$dir"/$1/$3/kernelcache_pyimg4.dec --extra "$dir"/$1/$3/kpp.bin
             fi
         fi
         if [ ! -e "$dir"/$1/$3/DeviceTree.dec ]; then
@@ -387,7 +384,7 @@ _download_boot_files() {
             "$bin"/iBoot64Patcher "$dir"/$1/$3/iBEC.dec "$dir"/$1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1 amfi_get_out_of_my_way=1 amfi_allow_any_signature=1"
         else
             "$bin"/iBoot64Patcher "$dir"/$1/$3/iBSS.dec "$dir"/$1/$3/iBSS.patched
-            "$bin"/iBoot64Patcher "$dir"/$1/$3/iBEC.dec "$dir"/$1/$3/iBEC.patched -b "-v rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1 amfi_get_out_of_my_way=1 amfi_allow_any_signature=1" -n
+            "$bin"/iBoot64Patcher "$dir"/$1/$3/iBEC.dec "$dir"/$1/$3/iBEC.patched -b "-v rd=disk0s1s8 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1 amfi_get_out_of_my_way=1 amfi_allow_any_signature=1" -n
         fi
         if [[ "$3" == "8.0" ]]; then
             "$bin"/img4 -i "$dir"/$1/$3/iBSS.patched -o "$dir"/$1/$3/iBSS.img4 -M IM4M -A -T ibss
@@ -422,16 +419,9 @@ _download_boot_files() {
             "$bin"/img4 -i "$dir"/$1/$3/iBEC.patched -o "$dir"/$1/$3/iBEC.img4 -M IM4M -A -T ibec
             "$bin"/seprmvr64lite "$dir"/$1/$3/kcache.raw "$dir"/$1/$3/kcache.patched
             "$bin"/Kernel64Patcher "$dir"/$1/$3/kcache.patched "$dir"/$1/$3/kcache2.patched -e -l -f -t -m -a -s -p -v -g
-            if [ -e "$dir"/$1/$3/kpp.bin ]; then
-                pyimg4 im4p create -i "$dir"/$1/$3/kcache2.patched -o "$dir"/$1/$3/kernelcache.im4p.img4 --extra "$dir"/$1/$3/kpp.bin -f rkrn --lzss
-                pyimg4 im4p create -i "$dir"/$1/$3/kcache2.patched -o "$dir"/$1/$3/kernelcache.im4p --extra "$dir"/$1/$3/kpp.bin -f krnl --lzss
-                pyimg4 img4 create -p "$dir"/$1/$3/kernelcache.im4p.img4 -o "$dir"/$1/$3/kernelcache.img4 -m IM4M
-                pyimg4 img4 create -p "$dir"/$1/$3/kernelcache.im4p -o "$dir"/$1/$3/kernelcache -m IM4M
-            else
-                "$bin"/kerneldiff "$dir"/$1/$3/kcache.raw "$dir"/$1/$3/kcache2.patched "$dir"/$1/$3/kc.bpatch
-                "$bin"/img4 -i "$dir"/$1/$3/kernelcache.dec -o "$dir"/$1/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$3/kc.bpatch
-                "$bin"/img4 -i "$dir"/$1/$3/kernelcache.dec -o "$dir"/$1/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$3/kc.bpatch
-            fi
+            "$bin"/kerneldiff "$dir"/$1/$3/kcache.raw "$dir"/$1/$3/kcache2.patched "$dir"/$1/$3/kc.bpatch
+            "$bin"/img4 -i "$dir"/$1/$3/kernelcache.dec -o "$dir"/$1/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$3/kc.bpatch
+            "$bin"/img4 -i "$dir"/$1/$3/kernelcache.dec -o "$dir"/$1/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$3/kc.bpatch
             "$bin"/dtree_patcher "$dir"/$1/$3/devicetree.dec "$dir"/$1/$3/DeviceTree.patched -n
             "$bin"/img4 -i "$dir"/$1/$3/DeviceTree.patched -o "$dir"/$1/$3/devicetree.img4 -A -M IM4M -T rdtr
         elif [[ "$3" == "7."* ]]; then
@@ -455,39 +445,29 @@ _download_boot_files() {
             fi
             "$bin"/seprmvr643 "$dir"/$1/$3/kcache2.patched "$dir"/$1/$3/kcache3.patched
             "$bin"/Kernel64Patcher "$dir"/$1/$3/kcache3.patched "$dir"/$1/$3/kcache4.patched -e -l -m -a -f
-            if [ -e "$dir"/$1/$3/kpp.bin ]; then
-                pyimg4 im4p create -i "$dir"/$1/$3/kcache4.patched -o "$dir"/$1/$3/kernelcache.im4p.img4 --extra "$dir"/$1/$3/kpp.bin -f rkrn --lzss
-                pyimg4 im4p create -i "$dir"/$1/$3/kcache4.patched -o "$dir"/$1/$3/kernelcache.im4p --extra "$dir"/$1/$3/kpp.bin -f krnl --lzss
-                pyimg4 img4 create -p "$dir"/$1/$3/kernelcache.im4p.img4 -o "$dir"/$1/$3/kernelcache.img4 -m IM4M
-                pyimg4 img4 create -p "$dir"/$1/$3/kernelcache.im4p -o "$dir"/$1/$3/kernelcache -m IM4M
-            else
-                "$bin"/kerneldiff "$dir"/$1/$3/kcache.raw "$dir"/$1/$3/kcache4.patched "$dir"/$1/$3/kc.bpatch
-                "$bin"/img4 -i "$dir"/$1/$3/kernelcache.dec -o "$dir"/$1/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$3/kc.bpatch
-                "$bin"/img4 -i "$dir"/$1/$3/kernelcache.dec -o "$dir"/$1/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$3/kc.bpatch
-            fi
+            "$bin"/kerneldiff "$dir"/$1/$3/kcache.raw "$dir"/$1/$3/kcache4.patched "$dir"/$1/$3/kc.bpatch
+            "$bin"/img4 -i "$dir"/$1/$3/kernelcache.dec -o "$dir"/$1/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$3/kc.bpatch
+            "$bin"/img4 -i "$dir"/$1/$3/kernelcache.dec -o "$dir"/$1/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$3/kc.bpatch
             if [ -e "$dir"/$1/$3/trustcache.im4p ]; then
                 "$bin"/img4 -i "$dir"/$1/$3/trustcache.im4p -o "$dir"/$1/$3/trustcache.img4 -M IM4M -T rtsc
             fi
-            "$bin"/img4 -i "$dir"/$1/$3/devicetree.dec -o "$dir"/$1/$3/devicetree.img4 -M IM4M -T rdtr
+            "$bin"/img4tool -e -o "$dir"/$1/$3/devicetree.out "$dir"/$1/$3/devicetree.dec
+            "$bin"/dtree_patcher "$dir"/$1/$3/devicetree.out "$dir"/$1/$3/DeviceTree.patched -n
+            "$bin"/img4 -i "$dir"/$1/$3/DeviceTree.patched -o "$dir"/$1/$3/devicetree.img4 -A -M IM4M -T rdtr
         elif [[ "$3" == "11."* ]]; then
             "$bin"/img4 -i "$dir"/$1/$3/iBSS.patched -o "$dir"/$1/$3/iBSS.img4 -M IM4M -A -T ibss
             "$bin"/img4 -i "$dir"/$1/$3/iBEC.patched -o "$dir"/$1/$3/iBEC.img4 -M IM4M -A -T ibec
             "$bin"/seprmvr64 "$dir"/$1/$3/kcache.raw "$dir"/$1/$3/kcache.patched
             "$bin"/Kernel64Patcher2 "$dir"/$1/$3/kcache.patched "$dir"/$1/$3/kcache2.patched -a
-            if [ -e "$dir"/$1/$3/kpp.bin ]; then
-                pyimg4 im4p create -i "$dir"/$1/$3/kcache2.patched -o "$dir"/$1/$3/kernelcache.im4p.img4 --extra "$dir"/$1/$3/kpp.bin -f rkrn --lzss
-                pyimg4 im4p create -i "$dir"/$1/$3/kcache2.patched -o "$dir"/$1/$3/kernelcache.im4p --extra "$dir"/$1/$3/kpp.bin -f krnl --lzss
-                pyimg4 img4 create -p "$dir"/$1/$3/kernelcache.im4p.img4 -o "$dir"/$1/$3/kernelcache.img4 -m IM4M
-                pyimg4 img4 create -p "$dir"/$1/$3/kernelcache.im4p -o "$dir"/$1/$3/kernelcache -m IM4M
-            else
-                "$bin"/kerneldiff "$dir"/$1/$3/kcache.raw "$dir"/$1/$3/kcache2.patched "$dir"/$1/$3/kc.bpatch
-                "$bin"/img4 -i "$dir"/$1/$3/kernelcache.dec -o "$dir"/$1/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$3/kc.bpatch
-                "$bin"/img4 -i "$dir"/$1/$3/kernelcache.dec -o "$dir"/$1/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$3/kc.bpatch
-            fi
+            "$bin"/kerneldiff "$dir"/$1/$3/kcache.raw "$dir"/$1/$3/kcache2.patched "$dir"/$1/$3/kc.bpatch
+            "$bin"/img4 -i "$dir"/$1/$3/kernelcache.dec -o "$dir"/$1/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$3/kc.bpatch
+            "$bin"/img4 -i "$dir"/$1/$3/kernelcache.dec -o "$dir"/$1/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$3/kc.bpatch
             if [ -e "$dir"/$1/$3/trustcache.im4p ]; then
                 "$bin"/img4 -i "$dir"/$1/$3/trustcache.im4p -o "$dir"/$1/$3/trustcache.img4 -M IM4M -T rtsc
             fi
-            "$bin"/img4 -i "$dir"/$1/$3/devicetree.dec -o "$dir"/$1/$3/devicetree.img4 -M IM4M -T rdtr
+            "$bin"/img4tool -e -o "$dir"/$1/$3/devicetree.out "$dir"/$1/$3/devicetree.dec
+            "$bin"/dtree_patcher "$dir"/$1/$3/devicetree.out "$dir"/$1/$3/DeviceTree.patched -n
+            "$bin"/img4 -i "$dir"/$1/$3/DeviceTree.patched -o "$dir"/$1/$3/devicetree.img4 -A -M IM4M -T rdtr
         fi
     fi
     cd ..
@@ -629,25 +609,10 @@ if [ ! -e java/bin/java ]; then
     sudo rm -rf openlogic-openjdk-jre-8u262-b10-mac-x64/
     cd ..
 fi
-for cmd in curl unzip python3 git ssh scp killall sudo grep pgrep ${linux_cmds}; do
+for cmd in curl unzip git ssh scp killall sudo grep pgrep ${linux_cmds}; do
     if ! command -v "${cmd}" > /dev/null; then
-        if [ "$cmd" = "python3" ]; then
-            echo "[-] Command '${cmd}' not installed, please install it!";
-            if [ "$os" = 'Darwin' ]; then
-                if [ ! -e python-3.7.6-macosx10.6.pkg ]; then
-                    curl -k https://www.python.org/ftp/python/3.7.6/python-3.7.6-macosx10.6.pkg -o python-3.7.6-macosx10.6.pkg
-                fi
-                open -W python-3.7.6-macosx10.6.pkg
-            fi
-            if ! command -v "${cmd}" > /dev/null; then
-                cmd_not_found=1
-            fi
-        else
-            if ! command -v "${cmd}" > /dev/null; then
-                echo "[-] Command '${cmd}' not installed, please install it!";
-                cmd_not_found=1
-            fi
-        fi
+        echo "[-] Command '${cmd}' not installed, please install it!";
+        cmd_not_found=1
     fi
 done
 if [ "$cmd_not_found" = "1" ]; then
@@ -667,9 +632,6 @@ replace=$("$bin"/irecovery -q | grep MODEL | sed 's/MODEL: //')
 deviceid=$("$bin"/irecovery -q | grep PRODUCT | sed 's/PRODUCT: //')
 echo $deviceid
 parse_cmdline "$@"
-if ! python3 -c 'import pkgutil; exit(not pkgutil.find_loader("pyimg4"))'; then
-    python3 -m pip install pyimg4
-fi
 _wait_for_dfu
 if [[ "$clean" == 1 ]]; then
     rm -rf "$dir"/$deviceid/$version/iBSS*
@@ -745,10 +707,13 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
     fi
     if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
         read -p "what ios version are you running right now? " r
-        if [[ "$r" == "10.3"* ]]; then
-            r="11.0"
-        fi
         _download_ramdisk_boot_files $deviceid $replace $r
+    fi
+    if [[ "$version" == "10.3"* || "$version" == "11."* || "$version" == "12."* ]]; then
+        if [ -z "$r" ]; then
+            read -p "what ios version was installed on this device prior to downgrade? " r
+            _download_ramdisk_boot_files $deviceid $replace $r
+        fi
     fi
     if [[ "$restore" == 1 ]]; then
         _download_root_fs $deviceid $replace $version
@@ -1093,11 +1058,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
         if [[ "$version" == "7."* || "$version" == "8."* ]]; then
             cd "$dir"/$deviceid/ramdisk/8.4.1
         elif [[ "$version" == "10.3"* || "$version" == "11."* ||  "$version" == "12."* ]]; then
-            if [[ "$(./java/bin/java -jar ./Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e 14.3 $deviceid)" == "true" ]]; then
-                cd "$dir"/$deviceid/ramdisk/14.3
-            else
-                cd "$dir"/$deviceid/ramdisk/12.5.4
-            fi
+            cd "$dir"/$deviceid/ramdisk/$r
         else
             cd "$dir"/$deviceid/ramdisk/11.4.1
         fi
@@ -1183,8 +1144,6 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chmod 777 /mnt4/.cydia_no_stash"
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt4/usr/lib/libmis.dylib"
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt4/usr/standalone/firmware/FUD/AOP.img4"
-            #"$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt4/System/Library/LaunchDaemons/com.apple.CommCenter.plist"
-            #"$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt4/Applications/Setup.app"
             if [[ "$version" == "10."* ]]; then
                 "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/AppleInternal.tar root@localhost:/mnt4/
                 "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/PrototypeTools.framework_ios10.tar root@localhost:/mnt4/
@@ -1562,9 +1521,9 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
             fi
             systemfs=disk0s1s$systemdisk
             datafs=disk0s1s$datadisk
-            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "bash -c mount_filesystems" 2> /dev/null
-            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt4" 2> /dev/null
-            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt5" 2> /dev/null
+            #"$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "bash -c mount_filesystems" 2> /dev/null
+            #"$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt4" 2> /dev/null
+            #"$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt5" 2> /dev/null
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s$systemdisk /mnt4"
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s$datadisk /mnt5"
         fi
