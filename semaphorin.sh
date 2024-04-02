@@ -620,10 +620,10 @@ if [ "$cmd_not_found" = "1" ]; then
     exit 1
 fi
 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-    if [[ ! "$version" == "10.3"* && ! "$version" == "11."* && ! "$version" == "12."* ]]; then
-        "$bin"/dfuhelper.sh
-    else
+    if [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
         "$bin"/dfuhelper2.sh
+    else
+        "$bin"/dfuhelper3.sh
     fi
 fi
 _wait_for_dfu
@@ -725,10 +725,10 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
     _download_boot_files $deviceid $replace $version
     sleep 1
     if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-        if [[ ! "$version" == "10.3"* && ! "$version" == "11."* && ! "$version" == "12."* ]]; then
-            "$bin"/dfuhelper.sh
-        else
+        if [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
             "$bin"/dfuhelper2.sh
+        else
+            "$bin"/dfuhelper3.sh
         fi
     fi
     _wait_for_dfu
@@ -854,7 +854,11 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
                 _kill_if_running iproxy
                 echo "device should now reboot into recovery, pls wait"
                 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                    "$bin"/dfuhelper2.sh
+                    if [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                        "$bin"/dfuhelper2.sh
+                    else
+                        "$bin"/dfuhelper3.sh
+                    fi
                 fi
                 _wait_for_dfu
                 if [[ "$version" == "7."* || "$version" == "8."* ]]; then
@@ -1042,10 +1046,10 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
         _kill_if_running iproxy
         echo "device should now reboot into recovery, pls wait"
         if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-            if [[ ! "$version" == "10.3"* && ! "$version" == "11."* && ! "$version" == "12."* ]]; then
-                "$bin"/dfuhelper.sh
-            else
+            if [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
                 "$bin"/dfuhelper2.sh
+            else
+                "$bin"/dfuhelper3.sh
             fi
         fi
         _wait_for_dfu
@@ -1371,7 +1375,11 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
         if [[ "$version" == "10.3"* || "$version" == "11."* || "$version" == "12."* ]]; then
             if [ -e "$dir"/$deviceid/$version/iBSS.img4 ]; then
                 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                    "$bin"/dfuhelper2.sh
+                    if [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                        "$bin"/dfuhelper2.sh
+                    else
+                        "$bin"/dfuhelper3.sh
+                    fi
                 fi
                 _wait_for_dfu
                 cd "$dir"/$deviceid/$version
@@ -1453,10 +1461,10 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
         fi
         if [ -e "$dir"/$deviceid/$version/iBSS.img4 ]; then
             if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                if [[ ! "$version" == "10.3"* && ! "$version" == "11."* && ! "$version" == "12."* ]]; then
-                    "$bin"/dfuhelper.sh
-                else
+                if [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
                     "$bin"/dfuhelper2.sh
+                else
+                    "$bin"/dfuhelper3.sh
                 fi
             fi
             _wait_for_dfu
