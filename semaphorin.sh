@@ -459,7 +459,8 @@ _download_boot_files() {
             "$bin"/img4 -i "$dir"/$1/$3/iBEC.patched -o "$dir"/$1/$3/iBEC.img4 -M IM4M -A -T ibec
             "$bin"/seprmvr64 "$dir"/$1/$3/kcache.raw "$dir"/$1/$3/kcache.patched
             "$bin"/Kernel64Patcher2 "$dir"/$1/$3/kcache.patched "$dir"/$1/$3/kcache2.patched -a
-            "$bin"/kerneldiff "$dir"/$1/$3/kcache.raw "$dir"/$1/$3/kcache2.patched "$dir"/$1/$3/kc.bpatch
+            "$bin"/Kernel64Patcher "$dir"/$1/$3/kcache2.patched "$dir"/$1/$3/kcache3.patched -e -l -m -a -f
+            "$bin"/kerneldiff "$dir"/$1/$3/kcache.raw "$dir"/$1/$3/kcache3.patched "$dir"/$1/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/$3/kernelcache.dec -o "$dir"/$1/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/$3/kernelcache.dec -o "$dir"/$1/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$3/kc.bpatch
             if [ -e "$dir"/$1/$3/trustcache.im4p ]; then
@@ -1083,9 +1084,6 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
         if [[ "$version" == "10.3"* || "$version" == "11."* || "$version" == "12."* ]]; then
             echo "[*] /System/Library/Filesystems/apfs.fs/apfs_invert -d /dev/disk0s1 -s $systemdisk -n OS.dmg"
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/System/Library/Filesystems/apfs.fs/apfs_invert -d /dev/disk0s1 -s $systemdisk -n OS.dmg"
-            #"$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "bash -c mount_filesystems"
-            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt4" 2> /dev/null
-            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt5" 2> /dev/null
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/$systemfs /mnt4"
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/$datafs /mnt5"
             "$bin"/sshpass -p 'alpine' scp -P 2222 "$dir"/jb/cydia.tar root@localhost:/mnt5
@@ -1108,7 +1106,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
             if [ -e "$dir"/$deviceid/0.0/com.apple.factorydata ]; then
                 "$bin"/sshpass -p "alpine" scp -r -P 2222 "$dir"/$deviceid/0.0/com.apple.factorydata root@localhost:/mnt4/System/Library/Caches
             fi
-            if [[ "$version" == "10."* ]]; then
+            if [[ "$version" == "10."* || "$version" == "11."* ]]; then
                 cp "$dir"/jb/fstab_apfs_rw "$dir"/$deviceid/$version/fstab.patched
             else
                 cp "$dir"/jb/fstab_apfs "$dir"/$deviceid/$version/fstab.patched
