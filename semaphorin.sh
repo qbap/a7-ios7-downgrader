@@ -32,10 +32,10 @@ if [[ $os_ver =~ ^10\.1[3-5]\.* ]]; then
         echo "[*] You are running macOS $os_ver. Continuing..."
 elif (( $maj_ver >= 11 )); then
         echo "[!] macOS $os_ver is too new for this script. Please install macOS High Sierra, Mojave, or Catalina to continue if possible."
-        exit 1 
+        read -p "[*] You can press the enter key on your keyboard to skip this warning  " r1
 else    
         echo "[!] macOS/OS X $os_ver is not supported by this script. Please install macOS High Sierra, Mojave, or Catalina to continue if possible." 
-        exit 1
+        read -p "[*] You can press the enter key on your keyboard to skip this warning  " r1
 fi
 
 
