@@ -55,6 +55,7 @@ Main operation mode:
     --restore           Wipe device and downgrade ios
     --boot              Don't enter ramdisk or wipe device, just boot
     --clean             Delete all the created boot files for your device
+    --fix-activation    Fixes activation on iOS 10.3.3-11.1 so you can navigate through Setup.app
 
 The iOS version argument should be the iOS version you are downgrading to.
 EOF
@@ -72,6 +73,9 @@ parse_opt() {
             ;;
         --dump-blobs)
             dump_blobs=1
+            ;;
+        --fix-activation)
+            fix_activation=1
             ;;
         --ssh)
             _kill_if_running iproxy
@@ -722,7 +726,7 @@ if [[ "$boot" == 1 ]]; then
     fi
     exit 0
 fi
-if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
+if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activation" == 1 ]]; then
     if [[ "$version" == "7."* || "$version" == "8."* ]]; then
         _download_ramdisk_boot_files $deviceid $replace 8.4.1
     elif [[ "$version" == "10.3"* ]]; then
@@ -1570,6 +1574,46 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 ]]; then
                 echo "$dir"/$deviceid/0.0/apticket.der
             fi
             $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
+            exit
+        if [[ "$fix_activation" == 1 ]]; then
+            # /mnt5/containers/Data/System/58954F59-3AA2-4005-9C5B-172BE4ADEC98/Library/internal/data_ark.plist
+            dataarkplist=$(remote_cmd "/usr/bin/find /mnt5/containers/Data/System -name 'data_ark.plist'" 2> /dev/null)
+            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/data_ark.plist root@localhost:$dataarkplist
+            $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
+            if [ -e "$dir"/$deviceid/$version/iBSS.img4 ]; then
+                if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+                    if [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                        "$bin"/dfuhelper2.sh
+                    else
+                        "$bin"/dfuhelper3.sh
+                    fi
+                fi
+                _wait_for_dfu
+                cd "$dir"/$deviceid/$version
+                if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
+                    "$bin"/ipwnder -p
+                else
+                    "$bin"/gaster pwn
+                fi
+                "$bin"/irecovery -f iBSS.img4
+                "$bin"/irecovery -f iBSS.img4
+                "$bin"/irecovery -f iBEC.img4
+                if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
+                    sleep 1
+                    "$bin"/irecovery -c go
+                fi
+                "$bin"/irecovery -f devicetree.img4
+                "$bin"/irecovery -c devicetree
+                if [ -e ./trustcache.img4 ]; then
+                    "$bin"/irecovery -f trustcache.img4
+                    "$bin"/irecovery -c firmware
+                fi
+                "$bin"/irecovery -f kernelcache.img4
+                "$bin"/irecovery -c bootx &
+                cd ../../
+            fi
+            _kill_if_running iproxy
+            echo "done"
             exit
         fi
         ssh -p2222 root@localhost
