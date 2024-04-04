@@ -56,6 +56,7 @@ Main operation mode:
     --boot              Don't enter ramdisk or wipe device, just boot
     --clean             Delete all the created boot files for your device
     --fix-activation    Fixes activation on iOS 10.3.3-11.1 so you can navigate through Setup.app
+    --fix-auto-boot     Fixes booting into the main OS on A11 devices such as the iPhone X
 
 The iOS version argument should be the iOS version you are downgrading to.
 EOF
@@ -91,6 +92,12 @@ parse_opt() {
             ;;
         --clean)
             clean=1
+            ;;
+        --fix-auto-boot)
+            "$dir"/irecovery -c "setenv auto-boot true"
+            "$dir"/irecovery -c "saveenv"
+            "$dir"/irecovery -c "reset"
+            exit 0
             ;;
         --help)
             print_help
@@ -530,7 +537,7 @@ _download_root_fs() {
             "$bin"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
             fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
             asr -source $fn -target "$dir"/$1/$3/OS.dmg --embed -erase -noprompt --chunkchecksum --puppetstrings
-            "$bin"/irecovery -f /dev/null
+            #"$bin"/irecovery -f /dev/null
         fi
     else
         if [ ! -e "$dir"/$1/$3/OS.tar ]; then
@@ -659,7 +666,9 @@ if [ "$cmd_not_found" = "1" ]; then
     exit 1
 fi
 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-    if [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+    if [[ "$deviceid" == "iPhone10,3"* || "$deviceid" == "iPhone10,6"* ]]; then
+        "$bin"/dfuhelper.sh
+    elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
         "$bin"/dfuhelper2.sh
     else
         "$bin"/dfuhelper3.sh
@@ -764,7 +773,9 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
     _download_boot_files $deviceid $replace $version
     sleep 1
     if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-        if [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+        if [[ "$deviceid" == "iPhone10,3"* || "$deviceid" == "iPhone10,6"* ]]; then
+            "$bin"/dfuhelper.sh
+        elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
             "$bin"/dfuhelper2.sh
         else
             "$bin"/dfuhelper3.sh
@@ -813,6 +824,9 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
     "$bin"/iproxy 2222 22 &
     sleep 2
     if [[ "$restore" == 1 ]]; then
+        if [[ "$deviceid" == "iPhone10,3"* || "$deviceid" == "iPhone10,6"* ]]; then
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram auto-boot=false" 2> /dev/null
+        fi
         mkdir -p "$dir"/$deviceid/0.0/
         hit=0
         if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
@@ -1105,7 +1119,9 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
         _kill_if_running iproxy
         echo "[*] Device should boot to Recovery mode. Please wait..."
         if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-            if [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+            if [[ "$deviceid" == "iPhone10,3"* || "$deviceid" == "iPhone10,6"* ]]; then
+                "$bin"/dfuhelper.sh
+            elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
                 "$bin"/dfuhelper2.sh
             else
                 "$bin"/dfuhelper3.sh
@@ -1453,7 +1469,9 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
         if [[ "$version" == "10.3"* || "$version" == "11."* || "$version" == "12."* ]]; then
             if [ -e "$dir"/$deviceid/$version/iBSS.img4 ]; then
                 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                    if [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                    if [[ "$deviceid" == "iPhone10,3"* || "$deviceid" == "iPhone10,6"* ]]; then
+                        "$bin"/dfuhelper.sh
+                    elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
                         "$bin"/dfuhelper2.sh
                     else
                         "$bin"/dfuhelper3.sh
@@ -1556,7 +1574,9 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
         fi
         if [ -e "$dir"/$deviceid/$version/iBSS.img4 ]; then
             if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                if [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                if [[ "$deviceid" == "iPhone10,3"* || "$deviceid" == "iPhone10,6"* ]]; then
+                    "$bin"/dfuhelper.sh
+                elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
                     "$bin"/dfuhelper2.sh
                 else
                     "$bin"/dfuhelper3.sh
@@ -1656,7 +1676,9 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
             if [ -e "$dir"/$deviceid/$version/iBSS.img4 ]; then
                 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                    if [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                    if [[ "$deviceid" == "iPhone10,3"* || "$deviceid" == "iPhone10,6"* ]]; then
+                        "$bin"/dfuhelper.sh
+                    elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
                         "$bin"/dfuhelper2.sh
                     else
                         "$bin"/dfuhelper3.sh
