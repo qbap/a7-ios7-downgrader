@@ -508,9 +508,7 @@ _download_boot_files() {
             "$bin"/img4 -i "$dir"/$1/$3/iBEC.patched -o "$dir"/$1/$3/iBEC.img4 -M IM4M -A -T ibec
             "$bin"/seprmvr64 "$dir"/$1/$3/kcache.raw "$dir"/$1/$3/kcache.patched
             "$bin"/Kernel64Patcher2 "$dir"/$1/$3/kcache.patched "$dir"/$1/$3/kcache2.patched -a
-            #"$bin"/Kernel64Patcher "$dir"/$1/$3/kcache2.patched "$dir"/$1/$3/kcache3.patched -e -l -m -a -f
-#"$bin"/Kernel64Patcher "$dir"/$1/$3/kcache2.patched "$dir"/$1/$3/kcache3.patched -f
-cp "$dir"/$1/$3/kcache2.patched "$dir"/$1/$3/kcache3.patched
+            "$bin"/Kernel64Patcher "$dir"/$1/$3/kcache2.patched "$dir"/$1/$3/kcache3.patched -e -l -m -a -f
             "$bin"/kerneldiff "$dir"/$1/$3/kcache.raw "$dir"/$1/$3/kcache3.patched "$dir"/$1/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/$3/kernelcache.dec -o "$dir"/$1/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/$3/kernelcache.dec -o "$dir"/$1/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$3/kc.bpatch
@@ -1207,8 +1205,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                 "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/0.0/com.apple.commcenter.device_specific_nobackup.plist root@localhost:/mnt5/wireless/Library/Preferences/com.apple.commcenter.device_specific_nobackup.plist 2> /dev/null
             fi
             if [[ "$version" == "10."* || "$version" == "11."* ]]; then
-                #cp "$dir"/jb/fstab_apfs_rw "$dir"/$deviceid/$version/fstab.patched
-                cp "$dir"/jb/fstab_apfs "$dir"/$deviceid/$version/fstab.patched
+                cp "$dir"/jb/fstab_apfs_rw "$dir"/$deviceid/$version/fstab.patched
             else
                 cp "$dir"/jb/fstab_apfs "$dir"/$deviceid/$version/fstab.patched
             fi
