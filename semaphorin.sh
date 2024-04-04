@@ -659,7 +659,7 @@ done
 if [ "$cmd_not_found" = "1" ]; then
     exit 1
 fi
-if [[ "$*" == "--fix-auto-boot" ]]; then
+if [[ "$*" == *"--fix-auto-boot"* ]]; then
     "$bin"/irecovery -c "setenv auto-boot true"
     "$bin"/irecovery -c "saveenv"
     "$bin"/irecovery -c "reset"
