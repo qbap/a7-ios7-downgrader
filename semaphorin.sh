@@ -56,6 +56,7 @@ Main operation mode:
     --boot              Don't enter ramdisk or wipe device, just boot
     --clean             Delete all the created boot files for your device
     --fix-activation    Fixes activation on iOS 10.3.3-11.1 so you can navigate through Setup.app
+    --fix-auto-boot     Fixes booting into the main OS on A11 devices such as the iPhone X
 
 The iOS version argument should be the iOS version you are downgrading to.
 EOF
@@ -530,7 +531,7 @@ _download_root_fs() {
             "$bin"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
             fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
             asr -source $fn -target "$dir"/$1/$3/OS.dmg --embed -erase -noprompt --chunkchecksum --puppetstrings
-            "$bin"/irecovery -f /dev/null
+            #"$bin"/irecovery -f /dev/null
         fi
     else
         if [ ! -e "$dir"/$1/$3/OS.tar ]; then
@@ -658,12 +659,14 @@ done
 if [ "$cmd_not_found" = "1" ]; then
     exit 1
 fi
+if [[ "$*" == *"--fix-auto-boot"* ]]; then
+    "$bin"/irecovery -c "setenv auto-boot true"
+    "$bin"/irecovery -c "saveenv"
+    "$bin"/irecovery -c "reset"
+    exit 0
+fi
 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-    if [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
-        "$bin"/dfuhelper2.sh
-    else
-        "$bin"/dfuhelper3.sh
-    fi
+    "$bin"/dfuhelper.sh
 fi
 _wait_for_dfu
 check=$("$bin"/irecovery -q | grep CPID | sed 's/CPID: //')
@@ -764,7 +767,9 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
     _download_boot_files $deviceid $replace $version
     sleep 1
     if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-        if [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+        if [[ "$deviceid" == "iPhone10,3"* || "$deviceid" == "iPhone10,6"* ]]; then
+            "$bin"/dfuhelper.sh
+        elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
             "$bin"/dfuhelper2.sh
         else
             "$bin"/dfuhelper3.sh
@@ -810,9 +815,14 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
     "$bin"/irecovery -c bootx &
     cd ../../../
     read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk " r1
+    echo "[*] Waiting 6 seconds before continuing.."
+    sleep 6
     "$bin"/iproxy 2222 22 &
     sleep 2
     if [[ "$restore" == 1 ]]; then
+        if [[ "$deviceid" == "iPhone10,3"* || "$deviceid" == "iPhone10,6"* ]]; then
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram auto-boot=false" 2> /dev/null
+        fi
         mkdir -p "$dir"/$deviceid/0.0/
         hit=0
         if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
@@ -848,6 +858,26 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             fi
             if [ ! -e "$dir"/$deviceid/0.0/com.apple.factorydata ]; then
                 "$bin"/sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/System/Library/Caches/com.apple.factorydata "$dir"/$deviceid/0.0/com.apple.factorydata 2> /dev/null
+            fi
+            if [ ! -e "$dir"/$deviceid/0.0/IC-Info.sisv ]; then
+                "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt2/mobile/Library/FairPlay/iTunes_Control/iTunes/IC-Info.sisv "$dir"/$deviceid/0.0/IC-Info.sisv 2> /dev/null
+            fi
+            if [ ! -e "$dir"/$deviceid/0.0/com.apple.commcenter.device_specific_nobackup.plist ]; then
+                "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt2/wireless/Library/Preferences/com.apple.commcenter.device_specific_nobackup.plist "$dir"/$deviceid/0.0/com.apple.commcenter.device_specific_nobackup.plist 2> /dev/null
+            fi
+            # /mnt2/containers/Data/System/58954F59-3AA2-4005-9C5B-172BE4ADEC98/Library/internal/data_ark.plist
+            dataarkplist=$(remote_cmd "/usr/bin/find /mnt2/containers/Data/System -name 'data_ark.plist'" 2> /dev/null)
+            if [[ "$dataarkplist" == "/mnt2/containers/Data/System"* ]]; then
+                folder=$(echo $dataarkplist | sed 's/\/data_ark.plist//g')
+                # /mnt2/containers/Data/System/58954F59-3AA2-4005-9C5B-172BE4ADEC98/Library/internal
+                if [[ "$folder" == "/mnt2/containers/Data/System"* ]]; then
+                    if [ ! -e "$dir"/$deviceid/0.0/activation_records ]; then
+                        "$bin"/sshpass -p "alpine" scp -r -P 2222 root@localhost:$folder/activation_records "$dir"/$deviceid/0.0/activation_records 2> /dev/null
+                    fi
+                fi
+            fi
+            if [ ! -e "$dir"/$deviceid/0.0/activation_records ]; then
+                "$bin"/sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt2/mobile/Library/mad/activation_records "$dir"/$deviceid/0.0/activation_records 2> /dev/null
             fi
             if [[ ! -e "$dir"/$deviceid/0.0/apticket.der ]]; then
                 has_active=$(remote_cmd "ls /mnt6/active" 2> /dev/null)
@@ -893,7 +923,13 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                 _kill_if_running iproxy
                 echo "device should now reboot into recovery, pls wait"
                 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                    if [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                    if [[ "$deviceid" == "iPhone10,3"* || "$deviceid" == "iPhone10,6"* ]]; then
+                        if [[ "$r" == "13.*" || "$r" == "14.*" || "$r" == "15.*" ]]; then
+                            echo "[*] Waiting 30 seconds before continuing.."
+                            sleep 30
+                        fi
+                        "$bin"/dfuhelper.sh
+                    elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
                         "$bin"/dfuhelper2.sh
                     else
                         "$bin"/dfuhelper3.sh
@@ -936,7 +972,9 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                 "$bin"/irecovery -f kernelcache.img4
                 "$bin"/irecovery -c bootx &
                 cd ../../../
-                read -p "pls press the enter key on your keyboard once device is in the ramdisk " r1
+                read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk " r1
+                echo "[*] Waiting 6 seconds before continuing.."
+                sleep 6
                 "$bin"/iproxy 2222 22 &
             fi
             echo "[*] Testing for baseband presence"
@@ -1082,10 +1120,13 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             echo "[*] Wiped the device"
         fi
         $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
+        sleep 5
         _kill_if_running iproxy
         echo "[*] Device should boot to Recovery mode. Please wait..."
         if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-            if [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+            if [[ "$deviceid" == "iPhone10,3"* || "$deviceid" == "iPhone10,6"* ]]; then
+                "$bin"/dfuhelper.sh
+            elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
                 "$bin"/dfuhelper2.sh
             else
                 "$bin"/dfuhelper3.sh
@@ -1123,6 +1164,8 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
         "$bin"/irecovery -c bootx &
         cd ../../../
         read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk. " r1
+        echo "[*] Waiting 6 seconds before continuing.."
+        sleep 6
         "$bin"/iproxy 2222 22 &
         if [[ "$version" == "10.3"* || "$version" == "11."* || "$version" == "12."* ]]; then
             echo "[*] /System/Library/Filesystems/apfs.fs/apfs_invert -d /dev/disk0s1 -s $systemdisk -n OS.dmg"
@@ -1153,6 +1196,14 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             if [ -e "$dir"/$deviceid/0.0/com.apple.factorydata ]; then
                 "$bin"/sshpass -p "alpine" scp -r -P 2222 "$dir"/$deviceid/0.0/com.apple.factorydata root@localhost:/mnt4/System/Library/Caches
             fi
+            if [ -e "$dir"/$deviceid/0.0/IC-Info.sisv ]; then
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt5/mobile/Library/FairPlay/iTunes_Control/iTunes/"
+                "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/0.0/IC-Info.sisv root@localhost:/mnt5/mobile/Library/FairPlay/iTunes_Control/iTunes/IC-Info.sisv 2> /dev/null
+            fi
+            if [ -e "$dir"/$deviceid/0.0/com.apple.commcenter.device_specific_nobackup.plist ]; then
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt5/wireless/Library/Preferences/"
+                "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/0.0/com.apple.commcenter.device_specific_nobackup.plist root@localhost:/mnt5/wireless/Library/Preferences/com.apple.commcenter.device_specific_nobackup.plist 2> /dev/null
+            fi
             if [[ "$version" == "10."* || "$version" == "11."* ]]; then
                 cp "$dir"/jb/fstab_apfs_rw "$dir"/$deviceid/$version/fstab.patched
             else
@@ -1161,12 +1212,13 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             sed -i -e "s/mnt4/$systemdisk/g" "$dir"/$deviceid/$version/fstab.patched
             sed -i -e "s/mnt5/$datadisk/g" "$dir"/$deviceid/$version/fstab.patched
             "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/$version/fstab.patched root@localhost:/mnt4/etc/fstab
-            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/data_ark.plist_ios7.tar root@localhost:/mnt5/
-            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt5/data_ark.plist_ios7.tar -C /mnt5"
-            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt5/data_ark.plist_ios7.tar"
-            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/data_ark.plist_ios8.tar root@localhost:/mnt5/
-            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt5/data_ark.plist_ios8.tar -C /mnt5"
-            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt5/data_ark.plist_ios8.tar"
+            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/data_ark.plist_ios10.tar root@localhost:/mnt5/
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt5/data_ark.plist_ios10.tar -C /mnt5"
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt5/data_ark.plist_ios10.tar"
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/chflags schg /mnt5/root/Library/Lockdown/device_private_key.pem"
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/chflags schg /mnt5/root/Library/Lockdown/device_public_key.pem"
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt5/root/Library/Lockdown/escrow_records"
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt5/root/Library/Lockdown/pair_records"
             "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt4/usr/libexec/mobileactivationd "$dir"/$deviceid/$version/mobactivationd.raw
             "$bin"/mobactivationd64patcher "$dir"/$deviceid/$version/mobactivationd.raw "$dir"/$deviceid/$version/mobactivationd.patched -b -c -d
             "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/$version/mobactivationd.patched root@localhost:/mnt4/usr/libexec/mobileactivationd
@@ -1198,6 +1250,9 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt4/AppleInternal/'
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt4/AppleInternal.tar'
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt5/mobile/Library/Caches/com.apple.MobileGestalt.plist'
+                "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/Meridian.app.tar root@localhost:/mnt4/
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xvf /mnt4/Meridian.app.tar -C /mnt4/Applications' 2> /dev/null
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt4/Meridian.app.tar' 2> /dev/null
             elif [[ "$version" == "11."* ]]; then
                 "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/AppleInternal.tar root@localhost:/mnt4/
                 "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/PrototypeTools.framework_ios11.tar root@localhost:/mnt4/
@@ -1256,6 +1311,17 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             fi
             if [ -e "$dir"/$deviceid/0.0/com.apple.factorydata ]; then
                 "$bin"/sshpass -p "alpine" scp -r -P 2222 "$dir"/$deviceid/0.0/com.apple.factorydata root@localhost:/mnt1/System/Library/Caches 2> /dev/null
+            fi
+            if [ -e "$dir"/$deviceid/0.0/IC-Info.sisv ]; then
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt2/mobile/Library/FairPlay/iTunes_Control/iTunes/"
+                "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/0.0/IC-Info.sisv root@localhost:/mnt2/mobile/Library/FairPlay/iTunes_Control/iTunes/IC-Info.sisv 2> /dev/null
+            fi
+            if [ -e "$dir"/$deviceid/0.0/com.apple.commcenter.device_specific_nobackup.plist ]; then
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt2/wireless/Library/Preferences/"
+                "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/0.0/com.apple.commcenter.device_specific_nobackup.plist root@localhost:/mnt2/wireless/Library/Preferences/com.apple.commcenter.device_specific_nobackup.plist 2> /dev/null
+            fi
+            if [ -e "$dir"/$deviceid/0.0/activation_records ]; then
+                "$bin"/sshpass -p "alpine" scp -r -P 2222 "$dir"/$deviceid/0.0/activation_records root@localhost:/mnt2/mobile/Library/mad 2> /dev/null
             fi
             if [[ "$version" == "7."* || "$version" == "8."* || "$version" == "9."* ]]; then
                 "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/fstab_rw root@localhost:/mnt1/etc/fstab 2> /dev/null
@@ -1411,10 +1477,13 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             fi
         fi
         $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
+        sleep 5
         if [[ "$version" == "10.3"* || "$version" == "11."* || "$version" == "12."* ]]; then
             if [ -e "$dir"/$deviceid/$version/iBSS.img4 ]; then
                 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                    if [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                    if [[ "$deviceid" == "iPhone10,3"* || "$deviceid" == "iPhone10,6"* ]]; then
+                        "$bin"/dfuhelper.sh
+                    elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
                         "$bin"/dfuhelper2.sh
                     else
                         "$bin"/dfuhelper3.sh
@@ -1454,14 +1523,8 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             _wait_for_dfu
             if [[ "$version" == "7."* || "$version" == "8."* ]]; then
                 cd "$dir"/$deviceid/ramdisk/8.4.1
-            elif [[ "$version" == "10.3"* ]]; then
-                cd "$dir"/$deviceid/ramdisk/10.3.3
-            elif [[ "$version" == "11."* || "$version" == "12."* ]]; then
-                if [[ "$(./java/bin/java -jar ./Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e 14.3 $deviceid)" == "true" ]]; then
-                    cd "$dir"/$deviceid/ramdisk/14.3
-                else
-                    cd "$dir"/$deviceid/ramdisk/12.5.4
-                fi
+            elif [[ "$version" == "10.3"* || "$version" == "11."* ||  "$version" == "12."* ]]; then
+                cd "$dir"/$deviceid/ramdisk/$r
             else
                 cd "$dir"/$deviceid/ramdisk/11.4.1
             fi
@@ -1488,19 +1551,55 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             "$bin"/irecovery -f kernelcache.img4
             "$bin"/irecovery -c bootx &
             cd ../../../
-            read -p "pls press the enter key on your keyboard once device is in the ramdisk " r1
+            read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk " r1
+            echo "[*] Waiting 6 seconds before continuing.."
+            sleep 6
             "$bin"/iproxy 2222 22 &
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s$systemdisk /mnt4"
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s$datadisk /mnt5"
             # /mnt5/containers/Data/System/58954F59-3AA2-4005-9C5B-172BE4ADEC98/Library/internal/data_ark.plist
             dataarkplist=$(remote_cmd "/usr/bin/find /mnt5/containers/Data/System -name 'data_ark.plist'" 2> /dev/null)
             echo $dataarkplist
+            if [ -e "$dir"/$deviceid/0.0/IC-Info.sisv ]; then
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt5/mobile/Library/FairPlay/iTunes_Control/iTunes/"
+                "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/0.0/IC-Info.sisv root@localhost:/mnt5/mobile/Library/FairPlay/iTunes_Control/iTunes/IC-Info.sisv 2> /dev/null
+            fi
+            if [ -e "$dir"/$deviceid/0.0/com.apple.commcenter.device_specific_nobackup.plist ]; then
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt5/wireless/Library/Preferences/"
+                "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/0.0/com.apple.commcenter.device_specific_nobackup.plist root@localhost:/mnt5/wireless/Library/Preferences/com.apple.commcenter.device_specific_nobackup.plist 2> /dev/null
+            fi
+            if [[ "$dataarkplist" == "/mnt5/containers/Data/System"* ]]; then
+                folder=$(echo $dataarkplist | sed 's/\/data_ark.plist//g')
+                # /mnt5/containers/Data/System/58954F59-3AA2-4005-9C5B-172BE4ADEC98/Library/internal
+                if [[ "$folder" == "/mnt5/containers/Data/System"* ]]; then
+                    if [ -e "$dir"/$deviceid/0.0/activation_records ]; then
+                        "$bin"/sshpass -p "alpine" scp -r -P 2222 "$dir"/$deviceid/0.0/activation_records root@localhost:$folder 2> /dev/null
+                    fi
+                fi
+            fi
             "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/data_ark.plist root@localhost:$dataarkplist
+            #buildid="$(./java/bin/java -jar ./Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -b $version $deviceid)"
+            #"$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "sed -i -e 's/14G60/$buildid/g' $dataarkplist"
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt5" 2> /dev/null
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s$datadisk /mnt4/private/var"
+            #"$bin"/sshpass -p 'alpine' scp -P 2222 "$dir"/jb/cydia.tar root@localhost:/mnt4
+            #"$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt4/cydia.tar -C /mnt4"
+            #"$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt4/cydia.tar"
+            #"$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/untether_ios9.tar root@localhost:/mnt4/ 2> /dev/null
+            #"$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xvf /mnt4/untether_ios9.tar -C /mnt4/' 2> /dev/null
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt4/private/var/root/Library/Lockdown/escrow_records"
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt4/private/var/root/Library/Lockdown/pair_records"
+            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/Meridian.app.tar root@localhost:/mnt4/
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xvf /mnt4/Meridian.app.tar -C /mnt4/Applications' 2> /dev/null
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt4/Meridian.app.tar' 2> /dev/null
             $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
+            sleep 5
         fi
         if [ -e "$dir"/$deviceid/$version/iBSS.img4 ]; then
             if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                if [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                if [[ "$deviceid" == "iPhone10,3"* || "$deviceid" == "iPhone10,6"* ]]; then
+                    "$bin"/dfuhelper.sh
+                elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
                     "$bin"/dfuhelper2.sh
                 else
                     "$bin"/dfuhelper3.sh
@@ -1578,11 +1677,32 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
         elif [[ "$fix_activation" == 1 ]]; then
             # /mnt5/containers/Data/System/58954F59-3AA2-4005-9C5B-172BE4ADEC98/Library/internal/data_ark.plist
             dataarkplist=$(remote_cmd "/usr/bin/find /mnt5/containers/Data/System -name 'data_ark.plist'" 2> /dev/null)
+            echo $dataarkplist
+            if [ -e "$dir"/$deviceid/0.0/IC-Info.sisv ]; then
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt5/mobile/Library/FairPlay/iTunes_Control/iTunes/"
+                "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/0.0/IC-Info.sisv root@localhost:/mnt5/mobile/Library/FairPlay/iTunes_Control/iTunes/IC-Info.sisv 2> /dev/null
+            fi
+            if [ -e "$dir"/$deviceid/0.0/com.apple.commcenter.device_specific_nobackup.plist ]; then
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt5/wireless/Library/Preferences/"
+                "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/0.0/com.apple.commcenter.device_specific_nobackup.plist root@localhost:/mnt5/wireless/Library/Preferences/com.apple.commcenter.device_specific_nobackup.plist 2> /dev/null
+            fi
+            if [[ "$dataarkplist" == "/mnt5/containers/Data/System"* ]]; then
+                folder=$(echo $dataarkplist | sed 's/\/data_ark.plist//g')
+                # /mnt5/containers/Data/System/58954F59-3AA2-4005-9C5B-172BE4ADEC98/Library/internal
+                if [[ "$folder" == "/mnt5/containers/Data/System"* ]]; then
+                    if [ -e "$dir"/$deviceid/0.0/activation_records ]; then
+                        "$bin"/sshpass -p "alpine" scp -r -P 2222 "$dir"/$deviceid/0.0/activation_records root@localhost:$folder 2> /dev/null
+                    fi
+                fi
+            fi
             "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/data_ark.plist root@localhost:$dataarkplist
             $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
+            sleep 5
             if [ -e "$dir"/$deviceid/$version/iBSS.img4 ]; then
                 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                    if [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                    if [[ "$deviceid" == "iPhone10,3"* || "$deviceid" == "iPhone10,6"* ]]; then
+                        "$bin"/dfuhelper.sh
+                    elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
                         "$bin"/dfuhelper2.sh
                     else
                         "$bin"/dfuhelper3.sh
