@@ -849,6 +849,26 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             if [ ! -e "$dir"/$deviceid/0.0/com.apple.factorydata ]; then
                 "$bin"/sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt1/System/Library/Caches/com.apple.factorydata "$dir"/$deviceid/0.0/com.apple.factorydata 2> /dev/null
             fi
+            if [ ! -e "$dir"/$deviceid/0.0/IC-Info.sisv ]; then
+                "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt2/mobile/Library/FairPlay/iTunes_Control/iTunes/IC-Info.sisv "$dir"/$deviceid/0.0/IC-Info.sisv 2> /dev/null
+            fi
+            if [ ! -e "$dir"/$deviceid/0.0/com.apple.commcenter.device_specific_nobackup.plist ]; then
+                "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt2/wireless/Library/Preferences/com.apple.commcenter.device_specific_nobackup.plist "$dir"/$deviceid/0.0/com.apple.commcenter.device_specific_nobackup.plist 2> /dev/null
+            fi
+            # /mnt2/containers/Data/System/58954F59-3AA2-4005-9C5B-172BE4ADEC98/Library/internal/data_ark.plist
+            dataarkplist=$(remote_cmd "/usr/bin/find /mnt2/containers/Data/System -name 'data_ark.plist'" 2> /dev/null)
+            if [[ "$dataarkplist" == "/mnt2/containers/Data/System"* ]]; then
+                folder=$(echo $dataarkplist | sed 's/\/data_ark.plist//g')
+                # /mnt2/containers/Data/System/58954F59-3AA2-4005-9C5B-172BE4ADEC98/Library/internal
+                if [[ "$folder" == "/mnt2/containers/Data/System"* ]]; then
+                    if [ ! -e "$dir"/$deviceid/0.0/activation_records ]; then
+                        "$bin"/sshpass -p "alpine" scp -r -P 2222 root@localhost:$folder/activation_records "$dir"/$deviceid/0.0/activation_records 2> /dev/null
+                    fi
+                fi
+            fi
+            if [ ! -e "$dir"/$deviceid/0.0/activation_records ]; then
+                "$bin"/sshpass -p "alpine" scp -r -P 2222 root@localhost:/mnt2/mobile/Library/mad/activation_records "$dir"/$deviceid/0.0/activation_records 2> /dev/null
+            fi
             if [[ ! -e "$dir"/$deviceid/0.0/apticket.der ]]; then
                 has_active=$(remote_cmd "ls /mnt6/active" 2> /dev/null)
                 if [ ! "$has_active" = "/mnt6/active" ]; then
@@ -1153,6 +1173,14 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             if [ -e "$dir"/$deviceid/0.0/com.apple.factorydata ]; then
                 "$bin"/sshpass -p "alpine" scp -r -P 2222 "$dir"/$deviceid/0.0/com.apple.factorydata root@localhost:/mnt4/System/Library/Caches
             fi
+            if [ -e "$dir"/$deviceid/0.0/IC-Info.sisv ]; then
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt5/mobile/Library/FairPlay/iTunes_Control/iTunes/"
+                "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/0.0/IC-Info.sisv root@localhost:/mnt5/mobile/Library/FairPlay/iTunes_Control/iTunes/IC-Info.sisv 2> /dev/null
+            fi
+            if [ -e "$dir"/$deviceid/0.0/com.apple.commcenter.device_specific_nobackup.plist ]; then
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt5/wireless/Library/Preferences/"
+                "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/0.0/com.apple.commcenter.device_specific_nobackup.plist root@localhost:/mnt5/wireless/Library/Preferences/com.apple.commcenter.device_specific_nobackup.plist 2> /dev/null
+            fi
             if [[ "$version" == "10."* || "$version" == "11."* ]]; then
                 cp "$dir"/jb/fstab_apfs_rw "$dir"/$deviceid/$version/fstab.patched
             else
@@ -1256,6 +1284,17 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             fi
             if [ -e "$dir"/$deviceid/0.0/com.apple.factorydata ]; then
                 "$bin"/sshpass -p "alpine" scp -r -P 2222 "$dir"/$deviceid/0.0/com.apple.factorydata root@localhost:/mnt1/System/Library/Caches 2> /dev/null
+            fi
+            if [ -e "$dir"/$deviceid/0.0/IC-Info.sisv ]; then
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt2/mobile/Library/FairPlay/iTunes_Control/iTunes/"
+                "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/0.0/IC-Info.sisv root@localhost:/mnt2/mobile/Library/FairPlay/iTunes_Control/iTunes/IC-Info.sisv 2> /dev/null
+            fi
+            if [ -e "$dir"/$deviceid/0.0/com.apple.commcenter.device_specific_nobackup.plist ]; then
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt2/wireless/Library/Preferences/"
+                "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/0.0/com.apple.commcenter.device_specific_nobackup.plist root@localhost:/mnt2/wireless/Library/Preferences/com.apple.commcenter.device_specific_nobackup.plist 2> /dev/null
+            fi
+            if [ -e "$dir"/$deviceid/0.0/activation_records ]; then
+                "$bin"/sshpass -p "alpine" scp -r -P 2222 "$dir"/$deviceid/0.0/activation_records root@localhost:/mnt2/mobile/Library/mad 2> /dev/null
             fi
             if [[ "$version" == "7."* || "$version" == "8."* || "$version" == "9."* ]]; then
                 "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/fstab_rw root@localhost:/mnt1/etc/fstab 2> /dev/null
@@ -1495,6 +1534,23 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             # /mnt5/containers/Data/System/58954F59-3AA2-4005-9C5B-172BE4ADEC98/Library/internal/data_ark.plist
             dataarkplist=$(remote_cmd "/usr/bin/find /mnt5/containers/Data/System -name 'data_ark.plist'" 2> /dev/null)
             echo $dataarkplist
+            if [ -e "$dir"/$deviceid/0.0/IC-Info.sisv ]; then
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt5/mobile/Library/FairPlay/iTunes_Control/iTunes/"
+                "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/0.0/IC-Info.sisv root@localhost:/mnt5/mobile/Library/FairPlay/iTunes_Control/iTunes/IC-Info.sisv 2> /dev/null
+            fi
+            if [ -e "$dir"/$deviceid/0.0/com.apple.commcenter.device_specific_nobackup.plist ]; then
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt5/wireless/Library/Preferences/"
+                "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/0.0/com.apple.commcenter.device_specific_nobackup.plist root@localhost:/mnt5/wireless/Library/Preferences/com.apple.commcenter.device_specific_nobackup.plist 2> /dev/null
+            fi
+            if [[ "$dataarkplist" == "/mnt5/containers/Data/System"* ]]; then
+                folder=$(echo $dataarkplist | sed 's/\/data_ark.plist//g')
+                # /mnt5/containers/Data/System/58954F59-3AA2-4005-9C5B-172BE4ADEC98/Library/internal
+                if [[ "$folder" == "/mnt5/containers/Data/System"* ]]; then
+                    if [ -e "$dir"/$deviceid/0.0/activation_records ]; then
+                        "$bin"/sshpass -p "alpine" scp -r -P 2222 "$dir"/$deviceid/0.0/activation_records root@localhost:$folder 2> /dev/null
+                    fi
+                fi
+            fi
             "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/data_ark.plist root@localhost:$dataarkplist
             $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
         fi
@@ -1578,6 +1634,24 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
         elif [[ "$fix_activation" == 1 ]]; then
             # /mnt5/containers/Data/System/58954F59-3AA2-4005-9C5B-172BE4ADEC98/Library/internal/data_ark.plist
             dataarkplist=$(remote_cmd "/usr/bin/find /mnt5/containers/Data/System -name 'data_ark.plist'" 2> /dev/null)
+            echo $dataarkplist
+            if [ -e "$dir"/$deviceid/0.0/IC-Info.sisv ]; then
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt5/mobile/Library/FairPlay/iTunes_Control/iTunes/"
+                "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/0.0/IC-Info.sisv root@localhost:/mnt5/mobile/Library/FairPlay/iTunes_Control/iTunes/IC-Info.sisv 2> /dev/null
+            fi
+            if [ -e "$dir"/$deviceid/0.0/com.apple.commcenter.device_specific_nobackup.plist ]; then
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt5/wireless/Library/Preferences/"
+                "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/0.0/com.apple.commcenter.device_specific_nobackup.plist root@localhost:/mnt5/wireless/Library/Preferences/com.apple.commcenter.device_specific_nobackup.plist 2> /dev/null
+            fi
+            if [[ "$dataarkplist" == "/mnt5/containers/Data/System"* ]]; then
+                folder=$(echo $dataarkplist | sed 's/\/data_ark.plist//g')
+                # /mnt5/containers/Data/System/58954F59-3AA2-4005-9C5B-172BE4ADEC98/Library/internal
+                if [[ "$folder" == "/mnt5/containers/Data/System"* ]]; then
+                    if [ -e "$dir"/$deviceid/0.0/activation_records ]; then
+                        "$bin"/sshpass -p "alpine" scp -r -P 2222 "$dir"/$deviceid/0.0/activation_records root@localhost:$folder 2> /dev/null
+                    fi
+                fi
+            fi
             "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/data_ark.plist root@localhost:$dataarkplist
             $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
             if [ -e "$dir"/$deviceid/$version/iBSS.img4 ]; then
