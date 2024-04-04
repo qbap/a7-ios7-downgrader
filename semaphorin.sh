@@ -815,6 +815,8 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
     "$bin"/irecovery -c bootx &
     cd ../../../
     read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk " r1
+    echo "[*] Waiting 6 seconds before continuing.."
+    sleep 6
     "$bin"/iproxy 2222 22 &
     sleep 2
     if [[ "$restore" == 1 ]]; then
@@ -970,7 +972,9 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                 "$bin"/irecovery -f kernelcache.img4
                 "$bin"/irecovery -c bootx &
                 cd ../../../
-                read -p "pls press the enter key on your keyboard once device is in the ramdisk " r1
+                read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk " r1
+                echo "[*] Waiting 6 seconds before continuing.."
+                sleep 6
                 "$bin"/iproxy 2222 22 &
             fi
             echo "[*] Testing for baseband presence"
@@ -1160,6 +1164,8 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
         "$bin"/irecovery -c bootx &
         cd ../../../
         read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk. " r1
+        echo "[*] Waiting 6 seconds before continuing.."
+        sleep 6
         "$bin"/iproxy 2222 22 &
         if [[ "$version" == "10.3"* || "$version" == "11."* || "$version" == "12."* ]]; then
             echo "[*] /System/Library/Filesystems/apfs.fs/apfs_invert -d /dev/disk0s1 -s $systemdisk -n OS.dmg"
@@ -1547,7 +1553,9 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             "$bin"/irecovery -f kernelcache.img4
             "$bin"/irecovery -c bootx &
             cd ../../../
-            read -p "pls press the enter key on your keyboard once device is in the ramdisk " r1
+            read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk " r1
+            echo "[*] Waiting 6 seconds before continuing.."
+            sleep 6
             "$bin"/iproxy 2222 22 &
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s$systemdisk /mnt4"
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s$datadisk /mnt5"
