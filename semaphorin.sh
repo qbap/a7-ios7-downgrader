@@ -94,9 +94,9 @@ parse_opt() {
             clean=1
             ;;
         --fix-auto-boot)
-            "$dir"/irecovery -c "setenv auto-boot true"
-            "$dir"/irecovery -c "saveenv"
-            "$dir"/irecovery -c "reset"
+            "$bin"/irecovery -c "setenv auto-boot true"
+            "$bin"/irecovery -c "saveenv"
+            "$bin"/irecovery -c "reset"
             exit 0
             ;;
         --help)
