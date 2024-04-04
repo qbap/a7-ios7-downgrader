@@ -1516,14 +1516,8 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             _wait_for_dfu
             if [[ "$version" == "7."* || "$version" == "8."* ]]; then
                 cd "$dir"/$deviceid/ramdisk/8.4.1
-            elif [[ "$version" == "10.3"* ]]; then
-                cd "$dir"/$deviceid/ramdisk/10.3.3
-            elif [[ "$version" == "11."* || "$version" == "12."* ]]; then
-                if [[ "$(./java/bin/java -jar ./Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e 14.3 $deviceid)" == "true" ]]; then
-                    cd "$dir"/$deviceid/ramdisk/14.3
-                else
-                    cd "$dir"/$deviceid/ramdisk/12.5.4
-                fi
+            elif [[ "$version" == "10.3"* || "$version" == "11."* ||  "$version" == "12."* ]]; then
+                cd "$dir"/$deviceid/ramdisk/$r
             else
                 cd "$dir"/$deviceid/ramdisk/11.4.1
             fi
