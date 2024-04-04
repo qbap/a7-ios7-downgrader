@@ -666,13 +666,7 @@ if [ "$cmd_not_found" = "1" ]; then
     exit 1
 fi
 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-    if [[ "$deviceid" == "iPhone10,3"* || "$deviceid" == "iPhone10,6"* ]]; then
-        "$bin"/dfuhelper.sh
-    elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
-        "$bin"/dfuhelper2.sh
-    else
-        "$bin"/dfuhelper3.sh
-    fi
+    "$bin"/dfuhelper.sh
 fi
 _wait_for_dfu
 check=$("$bin"/irecovery -q | grep CPID | sed 's/CPID: //')
