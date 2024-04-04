@@ -921,7 +921,13 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                 _kill_if_running iproxy
                 echo "device should now reboot into recovery, pls wait"
                 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                    if [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                    if [[ "$deviceid" == "iPhone10,3"* || "$deviceid" == "iPhone10,6"* ]]; then
+                        if [[ "$r" == "13.*" || "$r" == "14.*" || "$r" == "15.*" ]]; then
+                            echo "[*] Waiting 30 seconds before continuing.."
+                            sleep 30
+                        fi
+                        "$bin"/dfuhelper.sh
+                    elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
                         "$bin"/dfuhelper2.sh
                     else
                         "$bin"/dfuhelper3.sh
