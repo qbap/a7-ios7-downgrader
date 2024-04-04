@@ -93,12 +93,6 @@ parse_opt() {
         --clean)
             clean=1
             ;;
-        --fix-auto-boot)
-            "$bin"/irecovery -c "setenv auto-boot true"
-            "$bin"/irecovery -c "saveenv"
-            "$bin"/irecovery -c "reset"
-            exit 0
-            ;;
         --help)
             print_help
             exit 0
@@ -664,6 +658,12 @@ for cmd in curl unzip git ssh scp killall sudo grep pgrep ${linux_cmds}; do
 done
 if [ "$cmd_not_found" = "1" ]; then
     exit 1
+fi
+if [[ "$*" == "--fix-auto-boot" ]]; then
+    "$bin"/irecovery -c "setenv auto-boot true"
+    "$bin"/irecovery -c "saveenv"
+    "$bin"/irecovery -c "reset"
+    exit 0
 fi
 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
     "$bin"/dfuhelper.sh
