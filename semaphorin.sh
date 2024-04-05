@@ -1479,7 +1479,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
         fi
         $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
         sleep 5
-        if [[ "$version" == "10.3"* || "$version" == "11."* || "$version" == "12."* ]]; then
+        if [[ "$version" == "9.3"* || "$version" == "10.3"* || "$version" == "11."* || "$version" == "12."* ]]; then
             if [ -e "$dir"/$deviceid/$version/iBSS.img4 ]; then
                 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
                     if [[ "$deviceid" == "iPhone10,3"* || "$deviceid" == "iPhone10,6"* ]]; then
@@ -1556,43 +1556,61 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             echo "[*] Waiting 6 seconds before continuing.."
             sleep 6
             "$bin"/iproxy 2222 22 &
-            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s$systemdisk /mnt4"
-            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s$datadisk /mnt5"
-            # /mnt5/containers/Data/System/58954F59-3AA2-4005-9C5B-172BE4ADEC98/Library/internal/data_ark.plist
-            dataarkplist=$(remote_cmd "/usr/bin/find /mnt5/containers/Data/System -name 'data_ark.plist'" 2> /dev/null)
-            echo $dataarkplist
-            if [ -e "$dir"/$deviceid/0.0/IC-Info.sisv ]; then
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt5/mobile/Library/FairPlay/iTunes_Control/iTunes/"
-                "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/0.0/IC-Info.sisv root@localhost:/mnt5/mobile/Library/FairPlay/iTunes_Control/iTunes/IC-Info.sisv 2> /dev/null
-            fi
-            if [ -e "$dir"/$deviceid/0.0/com.apple.commcenter.device_specific_nobackup.plist ]; then
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt5/wireless/Library/Preferences/"
-                "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/0.0/com.apple.commcenter.device_specific_nobackup.plist root@localhost:/mnt5/wireless/Library/Preferences/com.apple.commcenter.device_specific_nobackup.plist 2> /dev/null
-            fi
-            if [[ "$dataarkplist" == "/mnt5/containers/Data/System"* ]]; then
-                folder=$(echo $dataarkplist | sed 's/\/data_ark.plist//g')
-                # /mnt5/containers/Data/System/58954F59-3AA2-4005-9C5B-172BE4ADEC98/Library/internal
-                if [[ "$folder" == "/mnt5/containers/Data/System"* ]]; then
-                    if [ -e "$dir"/$deviceid/0.0/activation_records ]; then
-                        "$bin"/sshpass -p "alpine" scp -r -P 2222 "$dir"/$deviceid/0.0/activation_records root@localhost:$folder 2> /dev/null
+            if [[ "$version" == "9.3"* ]]; then
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1" 2> /dev/null
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s2 /mnt2" 2> /dev/null
+                # /mnt2/containers/Data/System/58954F59-3AA2-4005-9C5B-172BE4ADEC98/Library/internal/data_ark.plist
+                dataarkplist=$(remote_cmd "/usr/bin/find /mnt2/containers/Data/System -name 'internal'" 2> /dev/null)
+                dataarkplist="$dataarkplist/data_ark.plist"
+                echo $dataarkplist
+                if [ -e "$dir"/$deviceid/0.0/IC-Info.sisv ]; then
+                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt2/mobile/Library/FairPlay/iTunes_Control/iTunes/"
+                    "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/0.0/IC-Info.sisv root@localhost:/mnt2/mobile/Library/FairPlay/iTunes_Control/iTunes/IC-Info.sisv 2> /dev/null
+                fi
+                if [ -e "$dir"/$deviceid/0.0/com.apple.commcenter.device_specific_nobackup.plist ]; then
+                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt2/wireless/Library/Preferences/"
+                    "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/0.0/com.apple.commcenter.device_specific_nobackup.plist root@localhost:/mnt2/wireless/Library/Preferences/com.apple.commcenter.device_specific_nobackup.plist 2> /dev/null
+                fi
+                if [[ "$dataarkplist" == "/mnt2/containers/Data/System"* ]]; then
+                    folder=$(echo $dataarkplist | sed 's/\/data_ark.plist//g')
+                    # /mnt2/containers/Data/System/58954F59-3AA2-4005-9C5B-172BE4ADEC98/Library/internal
+                    if [[ "$folder" == "/mnt2/containers/Data/System"* ]]; then
+                        if [ -e "$dir"/$deviceid/0.0/activation_records ]; then
+                            "$bin"/sshpass -p "alpine" scp -r -P 2222 "$dir"/$deviceid/0.0/activation_records root@localhost:$folder 2> /dev/null
+                        fi
                     fi
                 fi
+                "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/data_ark.plist root@localhost:$dataarkplist
+            else
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s$systemdisk /mnt4"
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s$datadisk /mnt5"
+                # /mnt5/containers/Data/System/58954F59-3AA2-4005-9C5B-172BE4ADEC98/Library/internal/data_ark.plist
+                dataarkplist=$(remote_cmd "/usr/bin/find /mnt5/containers/Data/System -name 'data_ark.plist'" 2> /dev/null)
+                echo $dataarkplist
+                if [ -e "$dir"/$deviceid/0.0/IC-Info.sisv ]; then
+                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt5/mobile/Library/FairPlay/iTunes_Control/iTunes/"
+                    "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/0.0/IC-Info.sisv root@localhost:/mnt5/mobile/Library/FairPlay/iTunes_Control/iTunes/IC-Info.sisv 2> /dev/null
+                fi
+                if [ -e "$dir"/$deviceid/0.0/com.apple.commcenter.device_specific_nobackup.plist ]; then
+                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt5/wireless/Library/Preferences/"
+                    "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/0.0/com.apple.commcenter.device_specific_nobackup.plist root@localhost:/mnt5/wireless/Library/Preferences/com.apple.commcenter.device_specific_nobackup.plist 2> /dev/null
+                fi
+                if [[ "$dataarkplist" == "/mnt5/containers/Data/System"* ]]; then
+                    folder=$(echo $dataarkplist | sed 's/\/data_ark.plist//g')
+                    # /mnt5/containers/Data/System/58954F59-3AA2-4005-9C5B-172BE4ADEC98/Library/internal
+                    if [[ "$folder" == "/mnt5/containers/Data/System"* ]]; then
+                        if [ -e "$dir"/$deviceid/0.0/activation_records ]; then
+                            "$bin"/sshpass -p "alpine" scp -r -P 2222 "$dir"/$deviceid/0.0/activation_records root@localhost:$folder 2> /dev/null
+                        fi
+                    fi
+                fi
+                "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/data_ark.plist root@localhost:$dataarkplist
             fi
-            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/data_ark.plist root@localhost:$dataarkplist
-            #buildid="$(./java/bin/java -jar ./Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -b $version $deviceid)"
-            #"$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "sed -i -e 's/14G60/$buildid/g' $dataarkplist"
-            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt5" 2> /dev/null
-            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s$datadisk /mnt4/private/var"
-            #"$bin"/sshpass -p 'alpine' scp -P 2222 "$dir"/jb/cydia.tar root@localhost:/mnt4
-            #"$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt4/cydia.tar -C /mnt4"
-            #"$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt4/cydia.tar"
-            #"$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/untether_ios9.tar root@localhost:/mnt4/ 2> /dev/null
-            #"$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xvf /mnt4/untether_ios9.tar -C /mnt4/' 2> /dev/null
-            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt4/private/var/root/Library/Lockdown/escrow_records"
-            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt4/private/var/root/Library/Lockdown/pair_records"
-            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/Meridian.app.tar root@localhost:/mnt4/
-            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xvf /mnt4/Meridian.app.tar -C /mnt4/Applications' 2> /dev/null
-            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt4/Meridian.app.tar' 2> /dev/null
+            if [[ "$version" == "10.3"* ]]; then
+                "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/Meridian.app.tar root@localhost:/mnt4/
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xvf /mnt4/Meridian.app.tar -C /mnt4/Applications' 2> /dev/null
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt4/Meridian.app.tar' 2> /dev/null
+            fi
             $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
             sleep 5
         fi
