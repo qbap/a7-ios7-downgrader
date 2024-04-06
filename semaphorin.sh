@@ -311,7 +311,7 @@ _download_ramdisk_boot_files() {
             hdiutil detach /tmp/ramdisk
             "$bin"/img4 -i "$dir"/$1/ramdisk/$3/RestoreRamDisk.dmg -o "$dir"/$1/ramdisk/$3/ramdisk.img4 -M IM4M -A -T rdsk
             "$bin"/iBoot64Patcher "$dir"/$1/ramdisk/$3/iBSS.dec "$dir"/$1/ramdisk/$3/iBSS.patched
-            if [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* ]]; then
+            if [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* ]]; then
                 "$bin"/iBoot64Patcher "$dir"/$1/ramdisk/$3/iBEC.dec "$dir"/$1/ramdisk/$3/iBEC.patched -b "rd=md0 debug=0x2014e -v wdt=-1 `if [ "$check" = '0x8960' ] || [ "$check" = '0x7000' ] || [ "$check" = '0x7001' ]; then echo "-restore"; fi`"
             else
                 "$bin"/iBoot64Patcher "$dir"/$1/ramdisk/$3/iBEC.dec "$dir"/$1/ramdisk/$3/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 amfi_get_out_of_my_way=1 -restore -progress" -n
