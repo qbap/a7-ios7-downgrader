@@ -1016,18 +1016,18 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             echo "[*] Testing for baseband presence"
             systemdisk=8
             datadisk=9
-            if [ "$(remote_cmd "/usr/bin/mgask HasBaseband | grep -E 'true|false'")" = "true" ] && [[ "${cpid}" == *"0x700"* ]]; then
-                systemdisk=7
-                datadisk=8
-            elif [ "$(remote_cmd "/usr/bin/mgask HasBaseband | grep -E 'true|false'")" = "false" ]; then
-                if [[ "${cpid}" == *"0x700"* ]]; then
-                    systemdisk=6
-                    datadisk=7
-                else
-                    systemdisk=7
-                    datadisk=8
-                fi
-            fi
+            #if [ "$(remote_cmd "/usr/bin/mgask HasBaseband | grep -E 'true|false'")" = "true" ] && [[ "${cpid}" == *"0x700"* ]]; then
+            #    systemdisk=7
+            #    datadisk=8
+            #elif [ "$(remote_cmd "/usr/bin/mgask HasBaseband | grep -E 'true|false'")" = "false" ]; then
+            #    if [[ "${cpid}" == *"0x700"* ]]; then
+            #        systemdisk=6
+            #        datadisk=7
+            #    else
+            #        systemdisk=7
+            #        datadisk=8
+            #    fi
+            #fi
             systemfs=disk0s1s$systemdisk
             datafs=disk0s1s$datadisk
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt4" 2> /dev/null
