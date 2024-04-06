@@ -314,7 +314,7 @@ _download_ramdisk_boot_files() {
             if [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* ]]; then
                 "$bin"/iBoot64Patcher "$dir"/$1/ramdisk/$3/iBEC.dec "$dir"/$1/ramdisk/$3/iBEC.patched -b "rd=md0 debug=0x2014e -v wdt=-1 `if [ "$check" = '0x8960' ] || [ "$check" = '0x7000' ] || [ "$check" = '0x7001' ]; then echo "-restore"; fi`"
             else
-                "$bin"/iBoot64Patcher "$dir"/$1/ramdisk/$3/iBEC.dec "$dir"/$1/ramdisk/$3/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 amfi_get_out_of_my_way=1 -progress" -n
+                "$bin"/iBoot64Patcher "$dir"/$1/ramdisk/$3/iBEC.dec "$dir"/$1/ramdisk/$3/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 -v rd=md0 nand-enable-reformat=1 amfi_get_out_of_my_way=1 -restore -progress" -n
             fi
             "$bin"/img4 -i "$dir"/$1/ramdisk/$3/iBSS.patched -o "$dir"/$1/ramdisk/$3/iBSS.img4 -M IM4M -A -T ibss
             "$bin"/img4 -i "$dir"/$1/ramdisk/$3/iBEC.patched -o "$dir"/$1/ramdisk/$3/iBEC.img4 -M IM4M -A -T ibec
@@ -725,7 +725,11 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
     if [[ "$version" == "7."* || "$version" == "8."* ]]; then
         _download_ramdisk_boot_files $deviceid $replace 8.4.1
     elif [[ "$version" == "10.3"* ]]; then
-        _download_ramdisk_boot_files $deviceid $replace 10.3.3
+        if [[ "$deviceid" == "iPhone7,1"* || "$deviceid" == "iPhone7,2"* ]]; then
+            _download_ramdisk_boot_files $deviceid $replace 11.0
+        else
+            _download_ramdisk_boot_files $deviceid $replace 10.3.3
+        fi
         if [[ "$(./java/bin/java -jar ./Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e 14.3 $deviceid)" == "true" ]]; then
             _download_ramdisk_boot_files $deviceid $replace 14.3
         else
@@ -773,7 +777,11 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
     elif [[ "$version" == "7."* || "$version" == "8."* ]]; then
         cd "$dir"/$deviceid/ramdisk/8.4.1
     elif [[ "$version" == "10.3"* ]]; then
-        cd "$dir"/$deviceid/ramdisk/10.3.3
+        if [[ "$deviceid" == "iPhone7,1"* || "$deviceid" == "iPhone7,2"* ]]; then
+            cd "$dir"/$deviceid/ramdisk/11.0
+        else
+            cd "$dir"/$deviceid/ramdisk/10.3.3
+        fi
     elif [[ "$version" == "11."* || "$version" == "12."* ]]; then
         if [[ "$(./java/bin/java -jar ./Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e 14.3 $deviceid)" == "true" ]]; then
             cd "$dir"/$deviceid/ramdisk/14.3
