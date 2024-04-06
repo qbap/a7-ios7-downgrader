@@ -1445,9 +1445,6 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                 "$bin"/lockdownd64patcher "$dir"/$deviceid/$version/lockdownd.raw "$dir"/$deviceid/$version/lockdownd.patched -u -l -b 2> /dev/null
                 "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/$version/lockdownd.patched root@localhost:/mnt1/usr/libexec/lockdownd 2> /dev/null
             elif [[ "$version" == "9."* ]]; then
-                if [[ "$version" == "9.3"* ]]; then
-                    "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/containermanagerd root@localhost:/mnt1/System/Library/PrivateFrameworks/MobileContainerManager.framework/Support/containermanagerd
-                fi
                 "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/AppleInternal.tar root@localhost:/mnt1/ 2> /dev/null
                 "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/jb/PrototypeTools.framework_ios9.tar root@localhost:/mnt1/ 2> /dev/null
                 "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/CoreServices/SystemVersion.plist "$dir"/$deviceid/$version/SystemVersion.plist 2> /dev/null
@@ -1470,6 +1467,12 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/iapmigrator.migrator/' 2> /dev/null
                 "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/usr/libexec/lockdownd "$dir"/$deviceid/$version/lockdownd.raw 2> /dev/null
                 "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/PrivateFrameworks/MobileActivation.framework/Support/mobactivationd "$dir"/$deviceid/$version/mobactivationd.raw 2> /dev/null
+            fi
+            if [[ "$version" == "9.3"* ]]; then
+                # fix Sandbox: hook..execve() killing %s pid %ld[UID: %d]: failure in upcall to containermanagerd for a platform app\n 
+                "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/PrivateFrameworks/MobileContainerManager.framework/Support/containermanagerd "$dir"/$deviceid/$version/containermanagerd.raw 2> /dev/null
+                "$bin"/containermanagerd64patcher "$dir"/$deviceid/$version/containermanagerd.raw "$dir"/$deviceid/$version/containermanagerd.patched -f -d 2> /dev/null
+                "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/$version/containermanagerd.patched root@localhost:/mnt1/System/Library/PrivateFrameworks/MobileContainerManager.framework/Support/containermanagerd 2> /dev/null
             fi
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/usr/standalone/firmware/FUD/AOP.img4"
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/usr/lib/libmis.dylib" 2> /dev/null
