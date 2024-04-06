@@ -1471,7 +1471,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             if [[ "$version" == "9.3"* ]]; then
                 # fix Sandbox: hook..execve() killing %s pid %ld[UID: %d]: failure in upcall to containermanagerd for a platform app\n 
                 "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/System/Library/PrivateFrameworks/MobileContainerManager.framework/Support/containermanagerd "$dir"/$deviceid/$version/containermanagerd.raw 2> /dev/null
-                "$bin"/lockdownd64patcher "$dir"/$deviceid/$version/containermanagerd.raw "$dir"/$deviceid/$version/containermanagerd.patched -f -d 2> /dev/null
+                "$bin"/containermanagerd64patcher "$dir"/$deviceid/$version/containermanagerd.raw "$dir"/$deviceid/$version/containermanagerd.patched -f -d 2> /dev/null
                 "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/$version/containermanagerd.patched root@localhost:/mnt1/System/Library/PrivateFrameworks/MobileContainerManager.framework/Support/containermanagerd 2> /dev/null
             fi
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/usr/standalone/firmware/FUD/AOP.img4"
