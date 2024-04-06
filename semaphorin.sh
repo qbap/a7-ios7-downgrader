@@ -1077,24 +1077,24 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             mkdir work
             cd work
             "$bin"/img4tool -e -s "$dir"/other/shsh/"${check}".shsh -m IM4M
-            if [[ "$version" == "10.0"* || "$version" == "10.1"* || "$version" == "10.2"* ]]; then
-                ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$bin"/jq '.firmwares | .[] | select(.version=="'10.3'")' | "$bin"/jq -s '.[0] | .url' --raw-output)
+            if [[ "$version" == "10."* ]]; then
+                ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$bin"/jq '.firmwares | .[] | select(.version=="'11.1'")' | "$bin"/jq -s '.[0] | .url' --raw-output)
             fi
             rm -rf "$dir"/$deviceid/$version/iBSS*
             rm -rf "$dir"/$deviceid/$version/iBEC*
             "$bin"/pzb -g BuildManifest.plist "$ipswurl"
             "$bin"/pzb -g $(awk "/""$replace""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
             fn="$(awk "/""$replace""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')"
-            if [[ "$version" == "10.0"* || "$version" == "10.1"* || "$version" == "10.2"* ]]; then
-                ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn 10.3 $deviceid)"
+            if [[ "$version" == "10."* ]]; then
+                ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn 11.1 $deviceid)"
             else
                 ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $version $deviceid)"
             fi
             "$bin"/img4 -i $fn -o "$dir"/$deviceid/$version/iBSS.dec -k $ivkey
             "$bin"/pzb -g $(awk "/""$replace""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
             fn="$(awk "/""$replace""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')"
-            if [[ "$version" == "10.0"* || "$version" == "10.1"* || "$version" == "10.2"* ]]; then
-                ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn 10.3 $deviceid)"
+            if [[ "$version" == "10."* ]]; then
+                ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn 11.1 $deviceid)"
             else
                 ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $version $deviceid)"
             fi
