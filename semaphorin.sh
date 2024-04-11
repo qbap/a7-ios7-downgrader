@@ -48,15 +48,21 @@ Examples:
     $0 7.1.2 --boot
 
 Main operation mode:
-    --help              Print this help
-    --ramdisk           Download& enter ramdisk
-    --dump-blobs        Self explanatory
-    --ssh               Tries to connect to ssh over usb interface to the connected device
-    --restore           Wipe device and downgrade ios
-    --boot              Don't enter ramdisk or wipe device, just boot
-    --clean             Delete all the created boot files for your device
-    --fix-activation    Fixes activation on iOS 10.3.3-11.1 so you can navigate through Setup.app
-    --fix-auto-boot     Fixes booting into the main OS on A11 devices such as the iPhone X
+    --help                     Print this help
+    --ramdisk                  Download& enter ramdisk
+    --dump-blobs               Self explanatory
+    --ssh                      Tries to connect to ssh over usb interface to the connected device
+    --restore                  Wipe device and downgrade ios
+    --dump-nand                Backs up the entire contents of your iOS device to disk0.gz
+    --NoMoreSIGABRT            Adds the "protect" flag to /dev/disk0s1s2
+    --disable-NoMoreSIGABRT    Removes the "protect" flag from /dev/disk0s1s2
+    --restore-nand             Copies the contents of disk0.gz to /dev/disk0 of the iOS device
+    --restore-mnt1             Copies the contents of disk0s1s1.gz to /dev/disk0s1s1 of the iOS device
+    --restore-mnt2             Copies the contents of disk0s1s2.gz to /dev/disk0s1s2 of the iOS device
+    --boot                     Don't enter ramdisk or wipe device, just boot
+    --clean                    Delete all the created boot files for your device
+    --fix-activation           Fixes activation on iOS 10.3.3-11.1 so you can navigate through Setup.app
+    --fix-auto-boot            Fixes booting into the main OS on A11 devices such as the iPhone X
 
 The iOS version argument should be the iOS version you are downgrading to.
 EOF
@@ -74,6 +80,24 @@ parse_opt() {
             ;;
         --dump-blobs)
             dump_blobs=1
+            ;;
+        --dump-nand)
+            dump_nand=1
+            ;;
+        --NoMoreSIGABRT)
+            NoMoreSIGABRT=1
+            ;;
+        --disable-NoMoreSIGABRT)
+            disable_NoMoreSIGABRT=1
+            ;;
+        --restore-nand)
+            restore_nand=1
+            ;;
+        --restore-mnt1)
+            restore_mnt1=1
+            ;;
+        --restore-mnt2)
+            restore_mnt2=1
             ;;
         --fix-activation)
             fix_activation=1
@@ -765,7 +789,7 @@ if [[ "$boot" == 1 ]]; then
     fi
     exit 0
 fi
-if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activation" == 1 ]]; then
+if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activation" == 1 || "$dump_nand" == 1 || "$restore_nand" == 1 || "$restore_mnt1" == 1 || "$restore_mnt2" == 1 || "$disable_NoMoreSIGABRT" == 1 || "$NoMoreSIGABRT" == 1 ]]; then
     if [[ "$version" == "7."* || "$version" == "8."* ]]; then
         _download_ramdisk_boot_files $deviceid $replace 8.4.1
     elif [[ "$version" == "10.3"* ]]; then
@@ -1781,6 +1805,81 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             if [[ -e "$dir"/$deviceid/0.0/apticket.der ]]; then
                 echo "$dir"/$deviceid/0.0/apticket.der
             fi
+            $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
+            exit
+        elif [[ "$dump_nand" == 1 ]]; then
+            # dd if=/dev/sda bs=5M conv=fsync status=progress | gzip -c -9 | ssh user@DestinationIP 'gzip -d | dd of=/dev/sda bs=5M'
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt1" 2> /dev/null
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt2" 2> /dev/null
+            echo "[*] Backing up /dev/disk0 to $dir/disk0.gz, this may take up to 15 minutes.."
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "dd if=/dev/disk0 bs=64k | gzip -1 -" | dd of=disk0.gz bs=64k
+            echo "[*] Backing up /dev/disk0s1s1 to $dir/disk0s1s1.gz, this may take up to 15 minutes.."
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "dd if=/dev/disk0s1s1 bs=64k | gzip -1 -" | dd of=disk0s1s1.gz bs=64k
+            echo "[*] Backing up /dev/disk0s1s2 to $dir/disk0s1s2.gz, this may take up to 15 minutes.."
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "dd if=/dev/disk0s1s2 bs=64k | gzip -1 -" | dd of=disk0s1s2.gz bs=64k
+            echo "[*] Disabling auto-boot in nvram to prevent effaceable storage issues.."
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram auto-boot=false" 2> /dev/null
+            echo "[*] You can enable auto-boot again at any time by running $0 $version --fix-auto-boot"
+            echo "[*] Done"
+            $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
+            exit
+        elif [[ "$restore_nand" == 1 ]]; then
+            # dd if=/dev/sda bs=5M conv=fsync status=progress | gzip -c -9 | ssh user@DestinationIP 'gzip -d | dd of=/dev/sda bs=5M'
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt1" 2> /dev/null
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt2" 2> /dev/null
+            echo "[*] Restoring /dev/disk0 from $dir/disk0.gz, this may take up to 15 minutes.."
+            dd if=disk0.gz bs=64k | "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "gzip -d | dd of=/dev/disk0 bs=64k"
+            echo "[*] Enabling auto-boot in nvram to allow booting the restored nand after a reboot.."
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram auto-boot=true" 2> /dev/null
+            echo "[*] Done"
+            $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
+            exit
+        elif [[ "$restore_mnt1" == 1 ]]; then
+            # dd if=/dev/sda bs=5M conv=fsync status=progress | gzip -c -9 | ssh user@DestinationIP 'gzip -d | dd of=/dev/sda bs=5M'
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt1" 2> /dev/null
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt2" 2> /dev/null
+            echo "[*] Restoring /dev/disk0s1s1 from $dir/disk0s1s1.gz, this may take up to 15 minutes.."
+            dd if=disk0s1s1.gz bs=64k | "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "gzip -d | dd of=/dev/disk0s1s1 bs=64k"
+            echo "[*] Enabling auto-boot in nvram to allow booting the restored nand after a reboot.."
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram auto-boot=true" 2> /dev/null
+            echo "[*] Done"
+            $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
+            exit
+        elif [[ "$restore_mnt2" == 1 ]]; then
+            # dd if=/dev/sda bs=5M conv=fsync status=progress | gzip -c -9 | ssh user@DestinationIP 'gzip -d | dd of=/dev/sda bs=5M'
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt1" 2> /dev/null
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt2" 2> /dev/null
+            echo "[*] Restoring /dev/disk0s1s2 from $dir/disk0s1s2.gz, this may take up to 15 minutes.."
+            dd if=disk0s1s2.gz bs=64k | "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "gzip -d | dd of=/dev/disk0s1s2 bs=64k"
+            echo "[*] Enabling auto-boot in nvram to allow booting the restored nand after a reboot.."
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram auto-boot=true" 2> /dev/null
+            echo "[*] Done"
+            $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
+            exit
+        elif [[ "$disable_NoMoreSIGABRT" == 1 ]]; then
+            # dd if=/dev/sda bs=5M conv=fsync status=progress | gzip -c -9 | ssh user@DestinationIP 'gzip -d | dd of=/dev/sda bs=5M'
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1" 2> /dev/null
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt2" 2> /dev/null
+            echo "[*] Disabling NoMoreSIGABRT on /dev/disk0s1s2.."
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/bin/dd if=/dev/disk0s1s2 of=/mnt1/out.img bs=512 count=8192'
+            "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/out.img "$dir"/$deviceid/$version/NoMoreSIGABRT.img
+            "$bin"/Kernel64Patcher "$dir"/$deviceid/$version/NoMoreSIGABRT.img "$dir"/$deviceid/$version/NoMoreSIGABRT.patched -o
+            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/$version/NoMoreSIGABRT.patched root@localhost:/mnt1/out.img
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/bin/dd if=/mnt1/out.img of=/dev/disk0s1s2 bs=512 count=8192'
+            echo "[*] Done"
+            $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
+            exit
+        elif [[ "$NoMoreSIGABRT" == 1 ]]; then
+            # dd if=/dev/sda bs=5M conv=fsync status=progress | gzip -c -9 | ssh user@DestinationIP 'gzip -d | dd of=/dev/sda bs=5M'
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1" 2> /dev/null
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt2" 2> /dev/null
+            echo "[*] Enabling NoMoreSIGABRT on /dev/disk0s1s2.."
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/bin/dd if=/dev/disk0s1s2 of=/mnt1/out.img bs=512 count=8192'
+            "$bin"/sshpass -p "alpine" scp -P 2222 root@localhost:/mnt1/out.img "$dir"/$deviceid/$version/NoMoreSIGABRT.img
+            "$bin"/Kernel64Patcher "$dir"/$deviceid/$version/NoMoreSIGABRT.img "$dir"/$deviceid/$version/NoMoreSIGABRT.patched -n
+            "$bin"/sshpass -p "alpine" scp -P 2222 "$dir"/$deviceid/$version/NoMoreSIGABRT.patched root@localhost:/mnt1/out.img
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/bin/dd if=/mnt1/out.img of=/dev/disk0s1s2 bs=512 count=8192'
+            echo "[*] Done"
             $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
             exit
         elif [[ "$fix_activation" == 1 ]]; then
