@@ -5,8 +5,8 @@
    </h1>
 </div>
 
-<h4 align="center"> Uses seprmvr64 <h4>
-<h6 align="center"> Supports* iOS 7.0.1-7.1.2/8.0 Beta 4/10.3.3/11.1  </h6>
+<h4 align="center"> Uses seprmvr64 by mineek<h4>
+<h6 align="center"> Supports* iOS 7.0.1-7.1.2/8.0 Beta 4/10.3.3/11.1 as well as A7-A9 devices </h6>
 
 # IF YOUR DEVICE SUPPORTS [LEGACY-IOS-KIT](https://github.com/LukeZGD/Legacy-iOS-Kit), YOU SHOULD REALLY USE THAT OVER THIS.
 
