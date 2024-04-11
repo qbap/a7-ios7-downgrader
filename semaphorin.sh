@@ -147,28 +147,6 @@ parse_arg() {
             if [[ "$version" == "8.0b4" ]]; then
                 version="8.0"
             fi
-            if [[ "$version" == "8."* && ! "$version" == "8.0" ]]; then
-                echo "[-] Downgrading to that version is not yet feasible"
-                exit
-            fi
-            if [[ "$version" == "11."* && "$version" == "11.2"* ]]; then
-                echo "[-] Downgrading to that version is not yet feasible"
-                exit
-            fi
-            if [[ "$version" == "11."* && "$version" == "11.3"* ]]; then
-                echo "[-] Downgrading to that version is not yet feasible"
-                exit
-            fi
-            if [[ "$version" == "11."* && "$version" == "11.4"* ]]; then
-                echo "[-] Downgrading to that version is not yet feasible"
-                exit
-            fi
-            if [[ "$version" == "8.0" ]]; then
-                if [[ ! "$deviceid" == "iPhone6,2" && ! "$deviceid" == "iPhone6,1" && ! "$deviceid" == "iPad4,4" && ! "$deviceid" == "iPad4,5" && ! "$deviceid" == "iPad4,2" && ! "$deviceid" == "iPad4,8" ]]; then
-                    echo "[-] Downgrading to that version is not yet feasible on your device"
-                    exit
-                fi
-            fi
             ;;
     esac
 }
@@ -790,66 +768,82 @@ if [[ "$boot" == 1 ]]; then
     exit 0
 fi
 if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activation" == 1 || "$dump_nand" == 1 || "$restore_nand" == 1 || "$restore_mnt1" == 1 || "$restore_mnt2" == 1 || "$disable_NoMoreSIGABRT" == 1 || "$NoMoreSIGABRT" == 1 ]]; then
-    if [[ "$version" == "7."* || "$version" == "8."* ]]; then
-        _download_ramdisk_boot_files $deviceid $replace 8.4.1
-    elif [[ "$version" == "10.3"* ]]; then
-        _download_ramdisk_boot_files $deviceid $replace 10.3.3
-        if [[ "$(./java/bin/java -jar ./Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e 14.3 $deviceid)" == "true" ]]; then
-            _download_ramdisk_boot_files $deviceid $replace 14.3
-        else
-            _download_ramdisk_boot_files $deviceid $replace 12.5.4
+    if [[ "$ramdisk" == 1 || "$dump_blobs" == 1 || "$dump_nand" == 1 || "$restore_nand" == 1 || "$restore_mnt1" == 1 || "$restore_mnt2" == 1 || "$disable_NoMoreSIGABRT" == 1 || "$NoMoreSIGABRT" == 1 ]]; then
+        _download_ramdisk_boot_files $deviceid $replace $version
+        sleep 1
+        if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+            if [[ "$deviceid" == "iPhone10,3"* || "$deviceid" == "iPhone10,6"* ]]; then
+                "$bin"/dfuhelper.sh
+            elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                "$bin"/dfuhelper2.sh
+            else
+                "$bin"/dfuhelper3.sh
+            fi
         fi
-    elif [[ "$version" == "11."* || "$version" == "12."* ]]; then
-        if [[ "$(./java/bin/java -jar ./Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e 14.3 $deviceid)" == "true" ]]; then
-            _download_ramdisk_boot_files $deviceid $replace 14.3
-        else
-            _download_ramdisk_boot_files $deviceid $replace 12.5.4
-        fi
+        _wait_for_dfu
+        cd "$dir"/$deviceid/ramdisk/$version
     else
-        _download_ramdisk_boot_files $deviceid $replace 11.4.1
-    fi
-    if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
-        read -p "[*] Please enter the iOS version that is currently installed on your device  " r
-        _download_ramdisk_boot_files $deviceid $replace $r
-    fi
-    if [[ "$version" == "10.3"* || "$version" == "11."* || "$version" == "12."* ]]; then
-        if [ -z "$r" ]; then
-            read -p "what ios version was installed on this device prior to downgrade? " r
+        if [[ "$version" == "7."* || "$version" == "8."* ]]; then
+            _download_ramdisk_boot_files $deviceid $replace 8.4.1
+        elif [[ "$version" == "10.3"* ]]; then
+            _download_ramdisk_boot_files $deviceid $replace 10.3.3
+            if [[ "$(./java/bin/java -jar ./Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e 14.3 $deviceid)" == "true" ]]; then
+                _download_ramdisk_boot_files $deviceid $replace 14.3
+            else
+                _download_ramdisk_boot_files $deviceid $replace 12.5.4
+            fi
+        elif [[ "$version" == "11."* || "$version" == "12."* ]]; then
+            if [[ "$(./java/bin/java -jar ./Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e 14.3 $deviceid)" == "true" ]]; then
+                _download_ramdisk_boot_files $deviceid $replace 14.3
+            else
+                _download_ramdisk_boot_files $deviceid $replace 12.5.4
+            fi
+        else
+            _download_ramdisk_boot_files $deviceid $replace 11.4.1
+        fi
+        if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
+            read -p "[*] Please enter the iOS version that is currently installed on your device  " r
             _download_ramdisk_boot_files $deviceid $replace $r
         fi
-    fi
-    if [[ "$restore" == 1 ]]; then
-        _download_root_fs $deviceid $replace $version
-    elif [[ "$version" == "8.0" ]]; then
-        # required to get ios 8 beta 4 kernel
-        _download_root_fs $deviceid $replace $version
-    fi
-    _download_boot_files $deviceid $replace $version
-    sleep 1
-    if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-        if [[ "$deviceid" == "iPhone10,3"* || "$deviceid" == "iPhone10,6"* ]]; then
-            "$bin"/dfuhelper.sh
-        elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
-            "$bin"/dfuhelper2.sh
-        else
-            "$bin"/dfuhelper3.sh
+        if [[ "$version" == "10.3"* || "$version" == "11."* || "$version" == "12."* ]]; then
+            if [ -z "$r" ]; then
+                read -p "what ios version was installed on this device prior to downgrade? " r
+                _download_ramdisk_boot_files $deviceid $replace $r
+            fi
         fi
-    fi
-    _wait_for_dfu
-    if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
-        cd "$dir"/$deviceid/ramdisk/$r
-    elif [[ "$version" == "7."* || "$version" == "8."* ]]; then
-        cd "$dir"/$deviceid/ramdisk/8.4.1
-    elif [[ "$version" == "10.3"* ]]; then
-        cd "$dir"/$deviceid/ramdisk/10.3.3
-    elif [[ "$version" == "11."* || "$version" == "12."* ]]; then
-        if [[ "$(./java/bin/java -jar ./Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e 14.3 $deviceid)" == "true" ]]; then
-            cd "$dir"/$deviceid/ramdisk/14.3
-        else
-            cd "$dir"/$deviceid/ramdisk/12.5.4
+        if [[ "$restore" == 1 ]]; then
+            _download_root_fs $deviceid $replace $version
+        elif [[ "$version" == "8.0" && "$boot" == 1 ]]; then
+            # required to get ios 8 beta 4 kernel
+            _download_root_fs $deviceid $replace $version
         fi
-    else
-        cd "$dir"/$deviceid/ramdisk/11.4.1
+        _download_boot_files $deviceid $replace $version
+        sleep 1
+        if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+            if [[ "$deviceid" == "iPhone10,3"* || "$deviceid" == "iPhone10,6"* ]]; then
+                "$bin"/dfuhelper.sh
+            elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                "$bin"/dfuhelper2.sh
+            else
+                "$bin"/dfuhelper3.sh
+            fi
+        fi
+        _wait_for_dfu
+        if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
+            cd "$dir"/$deviceid/ramdisk/$r
+        elif [[ "$version" == "7."* || "$version" == "8."* ]]; then
+            cd "$dir"/$deviceid/ramdisk/8.4.1
+        elif [[ "$version" == "10.3"* ]]; then
+            cd "$dir"/$deviceid/ramdisk/10.3.3
+        elif [[ "$version" == "11."* || "$version" == "12."* ]]; then
+            if [[ "$(./java/bin/java -jar ./Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e 14.3 $deviceid)" == "true" ]]; then
+                cd "$dir"/$deviceid/ramdisk/14.3
+            else
+                cd "$dir"/$deviceid/ramdisk/12.5.4
+            fi
+        else
+            cd "$dir"/$deviceid/ramdisk/11.4.1
+        fi
     fi
     if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
         "$bin"/ipwnder -p
