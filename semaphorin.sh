@@ -593,7 +593,9 @@ _download_root_fs() {
             "$bin"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
             fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
             asr -source $fn -target "$dir"/$1/$cpid/$3/OS.dmg --embed -erase -noprompt --chunkchecksum --puppetstrings
-            #"$bin"/irecovery -f /dev/null
+            if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
+               "$bin"/irecovery -f /dev/null
+            fi
         fi
     else
         if [ ! -e "$dir"/$1/$cpid/$3/OS.tar ]; then
@@ -688,7 +690,9 @@ _download_root_fs() {
             sudo "$bin"/gnutar -cvf "$dir"/$1/$cpid/$3/OS.tar -C /tmp/ios .
             hdiutil detach /tmp/ios
             rm -rf /tmp/ios
-            "$bin"/irecovery -f /dev/null
+            if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
+               "$bin"/irecovery -f /dev/null
+            fi
         fi
     fi
     cd ..
