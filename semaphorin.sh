@@ -730,7 +730,7 @@ if [[ "$clean" == 1 ]]; then
     rm -rf "$dir"/$deviceid/$cpid/$version/kpp.bin
     rm -rf "$dir"/$deviceid/$cpid/$version/DeviceTree*
     rm -rf "$dir"/$deviceid/$cpid/$version/devicetree*
-    rm -rf "$dir"/$deviceid/ramdisk/
+    rm -rf "$dir"/$deviceid/$cpid/ramdisk/
     rm -rf "$dir"/work/
     echo "[*] Removed the created boot files"
     exit 0
@@ -790,7 +790,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             fi
         fi
         _wait_for_dfu
-        cd "$dir"/$deviceid/ramdisk/$rdversion
+        cd "$dir"/$deviceid/$cpid/ramdisk/$rdversion
     else
         if [[ "$version" == "7."* || "$version" == "8."* ]]; then
             _download_ramdisk_boot_files $deviceid $replace 8.4.1
@@ -839,19 +839,19 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
         fi
         _wait_for_dfu
         if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
-            cd "$dir"/$deviceid/ramdisk/$r
+            cd "$dir"/$deviceid/$cpid/ramdisk/$r
         elif [[ "$version" == "7."* || "$version" == "8."* ]]; then
-            cd "$dir"/$deviceid/ramdisk/8.4.1
+            cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
         elif [[ "$version" == "10.3"* ]]; then
-            cd "$dir"/$deviceid/ramdisk/10.3.3
+            cd "$dir"/$deviceid/$cpid/ramdisk/10.3.3
         elif [[ "$version" == "11."* || "$version" == "12."* ]]; then
             if [[ "$(./java/bin/java -jar ./Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e 14.3 $deviceid)" == "true" ]]; then
-                cd "$dir"/$deviceid/ramdisk/14.3
+                cd "$dir"/$deviceid/$cpid/ramdisk/14.3
             else
-                cd "$dir"/$deviceid/ramdisk/12.5.4
+                cd "$dir"/$deviceid/$cpid/ramdisk/12.5.4
             fi
         else
-            cd "$dir"/$deviceid/ramdisk/11.4.1
+            cd "$dir"/$deviceid/$cpid/ramdisk/11.4.1
         fi
     fi
     if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
@@ -1000,17 +1000,17 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                 fi
                 _wait_for_dfu
                 if [[ "$version" == "7."* || "$version" == "8."* ]]; then
-                    cd "$dir"/$deviceid/ramdisk/8.4.1
+                    cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
                 elif [[ "$version" == "10.3"* ]]; then
-                    cd "$dir"/$deviceid/ramdisk/10.3.3
+                    cd "$dir"/$deviceid/$cpid/ramdisk/10.3.3
                 elif [[ "$version" == "11."* || "$version" == "12."* ]]; then
                     if [[ "$(./java/bin/java -jar ./Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e 14.3 $deviceid)" == "true" ]]; then
-                        cd "$dir"/$deviceid/ramdisk/14.3
+                        cd "$dir"/$deviceid/$cpid/ramdisk/14.3
                     else
-                        cd "$dir"/$deviceid/ramdisk/12.5.4
+                        cd "$dir"/$deviceid/$cpid/ramdisk/12.5.4
                     fi
                 else
-                    cd "$dir"/$deviceid/ramdisk/11.4.1
+                    cd "$dir"/$deviceid/$cpid/ramdisk/11.4.1
                 fi
                 if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
                     "$bin"/ipwnder -p
@@ -1209,11 +1209,11 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
         fi
         _wait_for_dfu
         if [[ "$version" == "7."* || "$version" == "8."* ]]; then
-            cd "$dir"/$deviceid/ramdisk/8.4.1
+            cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
         elif [[ "$version" == "10.3"* || "$version" == "11."* ||  "$version" == "12."* ]]; then
-            cd "$dir"/$deviceid/ramdisk/$r
+            cd "$dir"/$deviceid/$cpid/ramdisk/$r
         else
-            cd "$dir"/$deviceid/ramdisk/11.4.1
+            cd "$dir"/$deviceid/$cpid/ramdisk/11.4.1
         fi
         if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
             "$bin"/ipwnder -p
@@ -1653,11 +1653,11 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             echo "[*] We will then finish patching your device to allow you to navigate to the lock screen"
             _wait_for_dfu
             if [[ "$version" == "7."* || "$version" == "8."* ]]; then
-                cd "$dir"/$deviceid/ramdisk/8.4.1
+                cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
             elif [[ "$version" == "10.3"* || "$version" == "11."* ||  "$version" == "12."* ]]; then
-                cd "$dir"/$deviceid/ramdisk/$r
+                cd "$dir"/$deviceid/$cpid/ramdisk/$r
             else
-                cd "$dir"/$deviceid/ramdisk/11.4.1
+                cd "$dir"/$deviceid/$cpid/ramdisk/11.4.1
             fi
             if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
                 "$bin"/ipwnder -p
