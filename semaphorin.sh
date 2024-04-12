@@ -906,6 +906,12 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
     read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk " r1
     echo "[*] Waiting 6 seconds before continuing.."
     sleep 6
+    if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
+        read -p "[*] Do you need to swap your cable to a more reliable cable? " r2
+        if [[ "$r2" == "yes" || "$r2" == "y" ]]; then
+            read -p "[*] Swap your cable now and then press Enter on your keyboard " r1
+        fi
+    fi
     "$bin"/iproxy 2222 22 &
     sleep 2
     if [[ "$restore" == 1 ]]; then
@@ -1064,6 +1070,12 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                 read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk " r1
                 echo "[*] Waiting 6 seconds before continuing.."
                 sleep 6
+                if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
+                    read -p "[*] Do you need to swap your cable to a more reliable cable? " r2
+                    if [[ "$r2" == "yes" || "$r2" == "y" ]]; then
+                        read -p "[*] Swap your cable now and then press Enter on your keyboard " r1
+                    fi
+                fi
                 "$bin"/iproxy 2222 22 &
             fi
             echo "[*] Testing for baseband presence"
@@ -1267,6 +1279,12 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
         read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk. " r1
         echo "[*] Waiting 6 seconds before continuing.."
         sleep 6
+        if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
+            read -p "[*] Do you need to swap your cable to a more reliable cable? " r2
+            if [[ "$r2" == "yes" || "$r2" == "y" ]]; then
+                read -p "[*] Swap your cable now and then press Enter on your keyboard " r1
+            fi
+        fi
         "$bin"/iproxy 2222 22 &
         if [[ "$version" == "10.3"* || "$version" == "11."* || "$version" == "12."* ]]; then
             echo "[*] /System/Library/Filesystems/apfs.fs/apfs_invert -d /dev/disk0s1 -s $systemdisk -n OS.dmg"
@@ -1729,6 +1747,12 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk " r1
             echo "[*] Waiting 6 seconds before continuing.."
             sleep 6
+            if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
+                read -p "[*] Do you need to swap your cable to a more reliable cable? " r2
+                if [[ "$r2" == "yes" || "$r2" == "y" ]]; then
+                    read -p "[*] Swap your cable now and then press Enter on your keyboard " r1
+                fi
+            fi
             "$bin"/iproxy 2222 22 &
             if [[ "$version" == "9.3"* || "$version" == "10.0"* || "$version" == "10.1"* || "$version" == "10.2"* ]]; then
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1" 2> /dev/null
