@@ -82,6 +82,9 @@ parse_opt() {
         --dump-blobs)
             dump_blobs=1
             ;;
+        --serial)
+            serial=1
+            ;;
         --dump-nand)
             dump_nand=1
             ;;
