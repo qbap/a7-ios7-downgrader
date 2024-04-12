@@ -188,7 +188,7 @@ _wait_for_dfu() {
 _download_ramdisk_boot_files() {
     ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$bin"/jq '.firmwares | .[] | select(.version=="'$3'")' | "$bin"/jq -s '.[0] | .url' --raw-output)
     rm -rf BuildManifest.plist
-    mkdir -p "$dir"/$1/ramdisk/$3
+    mkdir -p "$dir"/$1/$cpid/ramdisk/$3
     rm -rf work
     mkdir work
     cd work
