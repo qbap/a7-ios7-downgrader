@@ -531,7 +531,7 @@ _download_boot_files() {
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/iBSS.patched -o "$dir"/$1/$cpid/$3/iBSS.img4 -M IM4M -A -T ibss
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/iBEC.patched -o "$dir"/$1/$cpid/$3/iBEC.img4 -M IM4M -A -T ibec
             "$bin"/seprmvr64lite3 "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache.patched
-            "$bin"/seprmvr644 "$dir"/$1/$cpid/$3/kcache.pathed "$dir"/$1/$cpid/$3/kcache2.patched
+            "$bin"/seprmvr644 "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched
             "$bin"/KPlooshFinder "$dir"/$1/$cpid/$3/kcache2.patched "$dir"/$1/$cpid/$3/kcache3.patched
             "$bin"/seprmvr643 "$dir"/$1/$cpid/$3/kcache3.patched "$dir"/$1/$cpid/$3/kcache4.patched
             "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache4.patched "$dir"/$1/$cpid/$3/kcache5.patched -a -f -h
