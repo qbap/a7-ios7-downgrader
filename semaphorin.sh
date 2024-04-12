@@ -814,6 +814,12 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             fi
         fi
         _wait_for_dfu
+        if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
+            read -p "[*] Do you need to swap your cable to a Anker Powerline+ III Lightning to USB A Cable, (3ft MFi Certified) cable? " r2
+            if [[ "$r2" == "yes" || "$r2" == "y" ]]; then
+                read -p "[*] Swap your cable now and then press Enter on your keyboard " r1
+            fi
+        fi
         cd "$dir"/$deviceid/$cpid/ramdisk/$rdversion
     else
         if [[ "$version" == "7."* || "$version" == "8."* ]]; then
@@ -864,6 +870,12 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             fi
         fi
         _wait_for_dfu
+        if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
+            read -p "[*] Do you need to swap your cable to a Anker Powerline+ III Lightning to USB A Cable, (3ft MFi Certified) cable? " r2
+            if [[ "$r2" == "yes" || "$r2" == "y" ]]; then
+                read -p "[*] Swap your cable now and then press Enter on your keyboard " r1
+            fi
+        fi
         if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
             cd "$dir"/$deviceid/$cpid/ramdisk/$r
         elif [[ "$version" == "7."* || "$version" == "8."* ]]; then
@@ -907,7 +919,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
     echo "[*] Waiting 6 seconds before continuing.."
     sleep 6
     if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
-        read -p "[*] Do you need to swap your cable to a more reliable cable? " r2
+        read -p "[*] Do you need to swap your cable to a DCSD Alex cable? " r2
         if [[ "$r2" == "yes" || "$r2" == "y" ]]; then
             read -p "[*] Swap your cable now and then press Enter on your keyboard " r1
         fi
@@ -1031,6 +1043,12 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                     fi
                 fi
                 _wait_for_dfu
+                if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
+                    read -p "[*] Do you need to swap your cable to a Anker Powerline+ III Lightning to USB A Cable, (3ft MFi Certified) cable? " r2
+                    if [[ "$r2" == "yes" || "$r2" == "y" ]]; then
+                        read -p "[*] Swap your cable now and then press Enter on your keyboard " r1
+                    fi
+                fi
                 if [[ "$version" == "7."* || "$version" == "8."* ]]; then
                     cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
                 elif [[ "$version" == "10.3"* ]]; then
@@ -1071,7 +1089,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                 echo "[*] Waiting 6 seconds before continuing.."
                 sleep 6
                 if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
-                    read -p "[*] Do you need to swap your cable to a more reliable cable? " r2
+                    read -p "[*] Do you need to swap your cable to a DCSD Alex cable? " r2
                     if [[ "$r2" == "yes" || "$r2" == "y" ]]; then
                         read -p "[*] Swap your cable now and then press Enter on your keyboard " r1
                     fi
@@ -1246,6 +1264,12 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             fi
         fi
         _wait_for_dfu
+        if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
+            read -p "[*] Do you need to swap your cable to a Anker Powerline+ III Lightning to USB A Cable, (3ft MFi Certified) cable? " r2
+            if [[ "$r2" == "yes" || "$r2" == "y" ]]; then
+                read -p "[*] Swap your cable now and then press Enter on your keyboard " r1
+            fi
+        fi
         if [[ "$version" == "7."* || "$version" == "8."* ]]; then
             cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
         elif [[ "$version" == "10.3"* || "$version" == "11."* ||  "$version" == "12."* ]]; then
@@ -1280,7 +1304,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
         echo "[*] Waiting 6 seconds before continuing.."
         sleep 6
         if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
-            read -p "[*] Do you need to swap your cable to a more reliable cable? " r2
+            read -p "[*] Do you need to swap your cable to a DCSD Alex cable? " r2
             if [[ "$r2" == "yes" || "$r2" == "y" ]]; then
                 read -p "[*] Swap your cable now and then press Enter on your keyboard " r1
             fi
@@ -1714,6 +1738,12 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             echo "[*] When your device gets to the setup screen, put the device back into dfu mode"
             echo "[*] We will then finish patching your device to allow you to navigate to the lock screen"
             _wait_for_dfu
+            if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
+                read -p "[*] Do you need to swap your cable to a Anker Powerline+ III Lightning to USB A Cable, (3ft MFi Certified) cable? " r2
+                if [[ "$r2" == "yes" || "$r2" == "y" ]]; then
+                    read -p "[*] Swap your cable now and then press Enter on your keyboard " r1
+                fi
+            fi
             if [[ "$version" == "7."* || "$version" == "8."* ]]; then
                 cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
             elif [[ "$version" == "10.3"* || "$version" == "11."* ||  "$version" == "12."* ]]; then
@@ -1748,7 +1778,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             echo "[*] Waiting 6 seconds before continuing.."
             sleep 6
             if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
-                read -p "[*] Do you need to swap your cable to a more reliable cable? " r2
+                read -p "[*] Do you need to swap your cable to a DCSD Alex cable? " r2
                 if [[ "$r2" == "yes" || "$r2" == "y" ]]; then
                     read -p "[*] Swap your cable now and then press Enter on your keyboard " r1
                 fi
