@@ -765,20 +765,18 @@ if [[ "$boot" == 1 ]]; then
         _download_root_fs $deviceid $replace $version
     fi
     _download_boot_files $deviceid $replace $version
-    if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
-        read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
-        if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
-            read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-            echo "[*] Waiting 10 seconds before continuing.."
-            sleep 10
-        elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
-            echo "[*] Ok no problem, continuing.."
-        else
-            echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
-            read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-            echo "[*] Waiting 10 seconds before continuing.."
-            sleep 10
-        fi
+    read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
+    if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
+        read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+        echo "[*] Waiting 10 seconds before continuing.."
+        sleep 10
+    elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
+        echo "[*] Ok no problem, continuing.."
+    else
+        echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
+        read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+        echo "[*] Waiting 10 seconds before continuing.."
+        sleep 10
     fi
     if [ -e "$dir"/$deviceid/$cpid/$version/iBSS.img4 ]; then
         cd "$dir"/$deviceid/$cpid/$version
@@ -829,20 +827,18 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             fi
         fi
         _wait_for_dfu
-        if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
-            read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
-            if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
-                read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                echo "[*] Waiting 10 seconds before continuing.."
-                sleep 10
-            elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
-                echo "[*] Ok no problem, continuing.."
-            else
-                echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
-                read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                echo "[*] Waiting 10 seconds before continuing.."
-                sleep 10
-            fi
+        read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
+        if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
+            read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+            echo "[*] Waiting 10 seconds before continuing.."
+            sleep 10
+        elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
+            echo "[*] Ok no problem, continuing.."
+        else
+            echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
+            read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+            echo "[*] Waiting 10 seconds before continuing.."
+            sleep 10
         fi
         cd "$dir"/$deviceid/$cpid/ramdisk/$rdversion
     else
@@ -894,20 +890,18 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             fi
         fi
         _wait_for_dfu
-        if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
-            read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
-            if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
-                read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                echo "[*] Waiting 10 seconds before continuing.."
-                sleep 10
-            elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
-                echo "[*] Ok no problem, continuing.."
-            else
-                echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
-                read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                echo "[*] Waiting 10 seconds before continuing.."
-                sleep 10
-            fi
+        read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
+        if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
+            read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+            echo "[*] Waiting 10 seconds before continuing.."
+            sleep 10
+        elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
+            echo "[*] Ok no problem, continuing.."
+        else
+            echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
+            read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+            echo "[*] Waiting 10 seconds before continuing.."
+            sleep 10
         fi
         if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
             cd "$dir"/$deviceid/$cpid/ramdisk/$r
@@ -951,20 +945,18 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
     read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk " r1
     echo "[*] Waiting 6 seconds before continuing.."
     sleep 6
-    if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
-        read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
-        if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
-            read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-            echo "[*] Waiting 10 seconds before continuing.."
-            sleep 10
-        elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
-            echo "[*] Ok no problem, continuing.."
-        else
-            echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
-            read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-            echo "[*] Waiting 10 seconds before continuing.."
-            sleep 10
-        fi
+    read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
+    if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
+        read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+        echo "[*] Waiting 10 seconds before continuing.."
+        sleep 10
+    elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
+        echo "[*] Ok no problem, continuing.."
+    else
+        echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
+        read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+        echo "[*] Waiting 10 seconds before continuing.."
+        sleep 10
     fi
     "$bin"/iproxy 2222 22 &
     sleep 2
@@ -1085,20 +1077,18 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                     fi
                 fi
                 _wait_for_dfu
-                if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
-                    read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
-                    if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
-                        read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                        echo "[*] Waiting 10 seconds before continuing.."
-                        sleep 10
-                    elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
-                        echo "[*] Ok no problem, continuing.."
-                    else
-                        echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
-                        read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                        echo "[*] Waiting 10 seconds before continuing.."
-                        sleep 10
-                    fi
+                read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
+                if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
+                    read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                    echo "[*] Waiting 10 seconds before continuing.."
+                    sleep 10
+                elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
+                    echo "[*] Ok no problem, continuing.."
+                else
+                    echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
+                    read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                    echo "[*] Waiting 10 seconds before continuing.."
+                    sleep 10
                 fi
                 if [[ "$version" == "7."* || "$version" == "8."* ]]; then
                     cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
@@ -1139,20 +1129,18 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                 read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk " r1
                 echo "[*] Waiting 6 seconds before continuing.."
                 sleep 6
-                if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
-                    read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
-                    if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
-                        read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                        echo "[*] Waiting 10 seconds before continuing.."
-                        sleep 10
-                    elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
-                        echo "[*] Ok no problem, continuing.."
-                    else
-                        echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
-                        read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                        echo "[*] Waiting 10 seconds before continuing.."
-                        sleep 10
-                    fi
+                read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
+                if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
+                    read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                    echo "[*] Waiting 10 seconds before continuing.."
+                    sleep 10
+                elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
+                    echo "[*] Ok no problem, continuing.."
+                else
+                    echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
+                    read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                    echo "[*] Waiting 10 seconds before continuing.."
+                    sleep 10
                 fi
                 "$bin"/iproxy 2222 22 &
             fi
@@ -1324,20 +1312,18 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             fi
         fi
         _wait_for_dfu
-        if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
-            read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
-            if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
-                read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                echo "[*] Waiting 10 seconds before continuing.."
-                sleep 10
-            elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
-                echo "[*] Ok no problem, continuing.."
-            else
-                echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
-                read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                echo "[*] Waiting 10 seconds before continuing.."
-                sleep 10
-            fi
+        read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
+        if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
+            read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+            echo "[*] Waiting 10 seconds before continuing.."
+            sleep 10
+        elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
+            echo "[*] Ok no problem, continuing.."
+        else
+            echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
+            read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+            echo "[*] Waiting 10 seconds before continuing.."
+            sleep 10
         fi
         if [[ "$version" == "7."* || "$version" == "8."* ]]; then
             cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
@@ -1372,20 +1358,18 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
         read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk. " r1
         echo "[*] Waiting 6 seconds before continuing.."
         sleep 6
-        if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
-            read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
-            if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
-                read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                echo "[*] Waiting 10 seconds before continuing.."
-                sleep 10
-            elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
-                echo "[*] Ok no problem, continuing.."
-            else
-                echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
-                read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                echo "[*] Waiting 10 seconds before continuing.."
-                sleep 10
-            fi
+        read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
+        if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
+            read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+            echo "[*] Waiting 10 seconds before continuing.."
+            sleep 10
+        elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
+            echo "[*] Ok no problem, continuing.."
+        else
+            echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
+            read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+            echo "[*] Waiting 10 seconds before continuing.."
+            sleep 10
         fi
         "$bin"/iproxy 2222 22 &
         if [[ "$version" == "10.3"* || "$version" == "11."* || "$version" == "12."* ]]; then
@@ -1785,20 +1769,18 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                     fi
                 fi
                 _wait_for_dfu
-                if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
-                    read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
-                    if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
-                        read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                        echo "[*] Waiting 10 seconds before continuing.."
-                        sleep 10
-                    elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
-                        echo "[*] Ok no problem, continuing.."
-                    else
-                        echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
-                        read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                        echo "[*] Waiting 10 seconds before continuing.."
-                        sleep 10
-                    fi
+                read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
+                if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
+                    read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                    echo "[*] Waiting 10 seconds before continuing.."
+                    sleep 10
+                elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
+                    echo "[*] Ok no problem, continuing.."
+                else
+                    echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
+                    read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                    echo "[*] Waiting 10 seconds before continuing.."
+                    sleep 10
                 fi
                 cd "$dir"/$deviceid/$cpid/$version
                 if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
@@ -1831,20 +1813,18 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             echo "[*] When your device gets to the setup screen, put the device back into dfu mode"
             echo "[*] We will then finish patching your device to allow you to navigate to the lock screen"
             _wait_for_dfu
-            if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
-                read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
-                if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
-                    read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                    echo "[*] Waiting 10 seconds before continuing.."
-                    sleep 10
-                elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
-                    echo "[*] Ok no problem, continuing.."
-                else
-                    echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
-                    read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                    echo "[*] Waiting 10 seconds before continuing.."
-                    sleep 10
-                fi
+            read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
+            if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
+                read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                echo "[*] Waiting 10 seconds before continuing.."
+                sleep 10
+            elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
+                echo "[*] Ok no problem, continuing.."
+            else
+                echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
+                read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                echo "[*] Waiting 10 seconds before continuing.."
+                sleep 10
             fi
             if [[ "$version" == "7."* || "$version" == "8."* ]]; then
                 cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
@@ -1879,20 +1859,18 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk " r1
             echo "[*] Waiting 6 seconds before continuing.."
             sleep 6
-            if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
-                read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
-                if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
-                    read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                    echo "[*] Waiting 10 seconds before continuing.."
-                    sleep 10
-                elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
-                    echo "[*] Ok no problem, continuing.."
-                else
-                    echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
-                    read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                    echo "[*] Waiting 10 seconds before continuing.."
-                    sleep 10
-                fi
+            read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
+            if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
+                read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                echo "[*] Waiting 10 seconds before continuing.."
+                sleep 10
+            elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
+                echo "[*] Ok no problem, continuing.."
+            else
+                echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
+                read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                echo "[*] Waiting 10 seconds before continuing.."
+                sleep 10
             fi
             "$bin"/iproxy 2222 22 &
             if [[ "$version" == "9.3"* || "$version" == "10.0"* || "$version" == "10.1"* || "$version" == "10.2"* ]]; then
@@ -1964,20 +1942,18 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                 fi
             fi
             _wait_for_dfu
-            if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
-                read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
-                if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
-                    read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                    echo "[*] Waiting 10 seconds before continuing.."
-                    sleep 10
-                elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
-                    echo "[*] Ok no problem, continuing.."
-                else
-                    echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
-                    read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                    echo "[*] Waiting 10 seconds before continuing.."
-                    sleep 10
-                fi
+            read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
+            if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
+                read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                echo "[*] Waiting 10 seconds before continuing.."
+                sleep 10
+            elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
+                echo "[*] Ok no problem, continuing.."
+            else
+                echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
+                read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                echo "[*] Waiting 10 seconds before continuing.."
+                sleep 10
             fi
             cd "$dir"/$deviceid/$cpid/$version
             if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
@@ -2160,20 +2136,18 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                     fi
                 fi
                 _wait_for_dfu
-                if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
-                    read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
-                    if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
-                        read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                        echo "[*] Waiting 10 seconds before continuing.."
-                        sleep 10
-                    elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
-                        echo "[*] Ok no problem, continuing.."
-                    else
-                        echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
-                        read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                        echo "[*] Waiting 10 seconds before continuing.."
-                        sleep 10
-                    fi
+                read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
+                if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
+                    read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                    echo "[*] Waiting 10 seconds before continuing.."
+                    sleep 10
+                elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
+                    echo "[*] Ok no problem, continuing.."
+                else
+                    echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
+                    read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                    echo "[*] Waiting 10 seconds before continuing.."
+                    sleep 10
                 fi
                 cd "$dir"/$deviceid/$cpid/$version
                 if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
