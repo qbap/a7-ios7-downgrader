@@ -883,7 +883,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             _download_ramdisk_boot_files $deviceid $replace $r
 			if [[ "$r" == "9."* ]]; then
 				fuck=1
-				r="11.4.1"
+				r="10.2.1"
 			fi
         fi
         if [[ "$version" == "10.3"* || "$version" == "11."* || "$version" == "12."* ]]; then
