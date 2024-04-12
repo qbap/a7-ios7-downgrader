@@ -765,6 +765,12 @@ if [[ "$boot" == 1 ]]; then
         _download_root_fs $deviceid $replace $version
     fi
     _download_boot_files $deviceid $replace $version
+    if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
+        read -p "[*] Do you need to swap your cable to a Anker Powerline+ III Lightning to USB A Cable, (3ft MFi Certified) cable? " r2
+        if [[ "$r2" == "yes" || "$r2" == "y" ]]; then
+            read -p "[*] Swap your cable now and then press Enter on your keyboard " r1
+        fi
+    fi
     if [ -e "$dir"/$deviceid/$cpid/$version/iBSS.img4 ]; then
         cd "$dir"/$deviceid/$cpid/$version
         if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
@@ -1859,6 +1865,12 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                 fi
             fi
             _wait_for_dfu
+            if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
+                read -p "[*] Do you need to swap your cable to a Anker Powerline+ III Lightning to USB A Cable, (3ft MFi Certified) cable? " r2
+                if [[ "$r2" == "yes" || "$r2" == "y" ]]; then
+                    read -p "[*] Swap your cable now and then press Enter on your keyboard " r1
+                fi
+            fi
             cd "$dir"/$deviceid/$cpid/$version
             if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
                 "$bin"/ipwnder -p
