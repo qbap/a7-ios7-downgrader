@@ -766,9 +766,18 @@ if [[ "$boot" == 1 ]]; then
     fi
     _download_boot_files $deviceid $replace $version
     if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
-        read -p "[*] Do you need to swap your cable to a Anker Powerline+ III Lightning to USB A Cable, (3ft MFi Certified) cable? " r2
-        if [[ "$r2" == "yes" || "$r2" == "y" ]]; then
-            read -p "[*] Swap your cable now and then press Enter on your keyboard " r1
+        read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
+        if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
+            read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+            echo "[*] Waiting 10 seconds before continuing.."
+            sleep 10
+        elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
+            echo "[*] Ok no problem, continuing.."
+        else
+            echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
+            read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+            echo "[*] Waiting 10 seconds before continuing.."
+            sleep 10
         fi
     fi
     if [ -e "$dir"/$deviceid/$cpid/$version/iBSS.img4 ]; then
@@ -821,9 +830,18 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
         fi
         _wait_for_dfu
         if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
-            read -p "[*] Do you need to swap your cable to a Anker Powerline+ III Lightning to USB A Cable, (3ft MFi Certified) cable? " r2
-            if [[ "$r2" == "yes" || "$r2" == "y" ]]; then
-                read -p "[*] Swap your cable now and then press Enter on your keyboard " r1
+            read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
+            if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
+                read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                echo "[*] Waiting 10 seconds before continuing.."
+                sleep 10
+            elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
+                echo "[*] Ok no problem, continuing.."
+            else
+                echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
+                read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                echo "[*] Waiting 10 seconds before continuing.."
+                sleep 10
             fi
         fi
         cd "$dir"/$deviceid/$cpid/ramdisk/$rdversion
@@ -877,9 +895,18 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
         fi
         _wait_for_dfu
         if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
-            read -p "[*] Do you need to swap your cable to a Anker Powerline+ III Lightning to USB A Cable, (3ft MFi Certified) cable? " r2
-            if [[ "$r2" == "yes" || "$r2" == "y" ]]; then
-                read -p "[*] Swap your cable now and then press Enter on your keyboard " r1
+            read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
+            if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
+                read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                echo "[*] Waiting 10 seconds before continuing.."
+                sleep 10
+            elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
+                echo "[*] Ok no problem, continuing.."
+            else
+                echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
+                read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                echo "[*] Waiting 10 seconds before continuing.."
+                sleep 10
             fi
         fi
         if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
@@ -925,9 +952,18 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
     echo "[*] Waiting 6 seconds before continuing.."
     sleep 6
     if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
-        read -p "[*] Do you need to swap your cable to a DCSD Alex cable? " r2
-        if [[ "$r2" == "yes" || "$r2" == "y" ]]; then
-            read -p "[*] Swap your cable now and then press Enter on your keyboard " r1
+        read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
+        if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
+            read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+            echo "[*] Waiting 10 seconds before continuing.."
+            sleep 10
+        elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
+            echo "[*] Ok no problem, continuing.."
+        else
+            echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
+            read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+            echo "[*] Waiting 10 seconds before continuing.."
+            sleep 10
         fi
     fi
     "$bin"/iproxy 2222 22 &
@@ -1050,9 +1086,18 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                 fi
                 _wait_for_dfu
                 if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
-                    read -p "[*] Do you need to swap your cable to a Anker Powerline+ III Lightning to USB A Cable, (3ft MFi Certified) cable? " r2
-                    if [[ "$r2" == "yes" || "$r2" == "y" ]]; then
-                        read -p "[*] Swap your cable now and then press Enter on your keyboard " r1
+                    read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
+                    if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
+                        read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                        echo "[*] Waiting 10 seconds before continuing.."
+                        sleep 10
+                    elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
+                        echo "[*] Ok no problem, continuing.."
+                    else
+                        echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
+                        read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                        echo "[*] Waiting 10 seconds before continuing.."
+                        sleep 10
                     fi
                 fi
                 if [[ "$version" == "7."* || "$version" == "8."* ]]; then
@@ -1095,9 +1140,18 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                 echo "[*] Waiting 6 seconds before continuing.."
                 sleep 6
                 if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
-                    read -p "[*] Do you need to swap your cable to a DCSD Alex cable? " r2
-                    if [[ "$r2" == "yes" || "$r2" == "y" ]]; then
-                        read -p "[*] Swap your cable now and then press Enter on your keyboard " r1
+                    read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
+                    if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
+                        read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                        echo "[*] Waiting 10 seconds before continuing.."
+                        sleep 10
+                    elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
+                        echo "[*] Ok no problem, continuing.."
+                    else
+                        echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
+                        read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                        echo "[*] Waiting 10 seconds before continuing.."
+                        sleep 10
                     fi
                 fi
                 "$bin"/iproxy 2222 22 &
@@ -1271,9 +1325,18 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
         fi
         _wait_for_dfu
         if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
-            read -p "[*] Do you need to swap your cable to a Anker Powerline+ III Lightning to USB A Cable, (3ft MFi Certified) cable? " r2
-            if [[ "$r2" == "yes" || "$r2" == "y" ]]; then
-                read -p "[*] Swap your cable now and then press Enter on your keyboard " r1
+            read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
+            if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
+                read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                echo "[*] Waiting 10 seconds before continuing.."
+                sleep 10
+            elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
+                echo "[*] Ok no problem, continuing.."
+            else
+                echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
+                read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                echo "[*] Waiting 10 seconds before continuing.."
+                sleep 10
             fi
         fi
         if [[ "$version" == "7."* || "$version" == "8."* ]]; then
@@ -1310,9 +1373,18 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
         echo "[*] Waiting 6 seconds before continuing.."
         sleep 6
         if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
-            read -p "[*] Do you need to swap your cable to a DCSD Alex cable? " r2
-            if [[ "$r2" == "yes" || "$r2" == "y" ]]; then
-                read -p "[*] Swap your cable now and then press Enter on your keyboard " r1
+            read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
+            if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
+                read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                echo "[*] Waiting 10 seconds before continuing.."
+                sleep 10
+            elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
+                echo "[*] Ok no problem, continuing.."
+            else
+                echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
+                read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                echo "[*] Waiting 10 seconds before continuing.."
+                sleep 10
             fi
         fi
         "$bin"/iproxy 2222 22 &
@@ -1714,9 +1786,18 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                 fi
                 _wait_for_dfu
                 if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
-                    read -p "[*] Do you need to swap your cable to a Anker Powerline+ III Lightning to USB A Cable, (3ft MFi Certified) cable? " r2
-                    if [[ "$r2" == "yes" || "$r2" == "y" ]]; then
-                        read -p "[*] Swap your cable now and then press Enter on your keyboard " r1
+                    read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
+                    if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
+                        read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                        echo "[*] Waiting 10 seconds before continuing.."
+                        sleep 10
+                    elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
+                        echo "[*] Ok no problem, continuing.."
+                    else
+                        echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
+                        read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                        echo "[*] Waiting 10 seconds before continuing.."
+                        sleep 10
                     fi
                 fi
                 cd "$dir"/$deviceid/$cpid/$version
@@ -1751,9 +1832,18 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             echo "[*] We will then finish patching your device to allow you to navigate to the lock screen"
             _wait_for_dfu
             if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
-                read -p "[*] Do you need to swap your cable to a Anker Powerline+ III Lightning to USB A Cable, (3ft MFi Certified) cable? " r2
-                if [[ "$r2" == "yes" || "$r2" == "y" ]]; then
-                    read -p "[*] Swap your cable now and then press Enter on your keyboard " r1
+                read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
+                if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
+                    read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                    echo "[*] Waiting 10 seconds before continuing.."
+                    sleep 10
+                elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
+                    echo "[*] Ok no problem, continuing.."
+                else
+                    echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
+                    read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                    echo "[*] Waiting 10 seconds before continuing.."
+                    sleep 10
                 fi
             fi
             if [[ "$version" == "7."* || "$version" == "8."* ]]; then
@@ -1790,9 +1880,18 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             echo "[*] Waiting 6 seconds before continuing.."
             sleep 6
             if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
-                read -p "[*] Do you need to swap your cable to a DCSD Alex cable? " r2
-                if [[ "$r2" == "yes" || "$r2" == "y" ]]; then
-                    read -p "[*] Swap your cable now and then press Enter on your keyboard " r1
+                read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
+                if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
+                    read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                    echo "[*] Waiting 10 seconds before continuing.."
+                    sleep 10
+                elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
+                    echo "[*] Ok no problem, continuing.."
+                else
+                    echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
+                    read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                    echo "[*] Waiting 10 seconds before continuing.."
+                    sleep 10
                 fi
             fi
             "$bin"/iproxy 2222 22 &
@@ -1866,9 +1965,18 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             fi
             _wait_for_dfu
             if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
-                read -p "[*] Do you need to swap your cable to a Anker Powerline+ III Lightning to USB A Cable, (3ft MFi Certified) cable? " r2
-                if [[ "$r2" == "yes" || "$r2" == "y" ]]; then
-                    read -p "[*] Swap your cable now and then press Enter on your keyboard " r1
+                read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
+                if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
+                    read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                    echo "[*] Waiting 10 seconds before continuing.."
+                    sleep 10
+                elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
+                    echo "[*] Ok no problem, continuing.."
+                else
+                    echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
+                    read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                    echo "[*] Waiting 10 seconds before continuing.."
+                    sleep 10
                 fi
             fi
             cd "$dir"/$deviceid/$cpid/$version
@@ -2053,9 +2161,18 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                 fi
                 _wait_for_dfu
                 if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
-                    read -p "[*] Do you need to swap your cable to a Anker Powerline+ III Lightning to USB A Cable, (3ft MFi Certified) cable? " r2
-                    if [[ "$r2" == "yes" || "$r2" == "y" ]]; then
-                        read -p "[*] Swap your cable now and then press Enter on your keyboard " r1
+                    read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
+                    if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
+                        read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                        echo "[*] Waiting 10 seconds before continuing.."
+                        sleep 10
+                    elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
+                        echo "[*] Ok no problem, continuing.."
+                    else
+                        echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
+                        read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                        echo "[*] Waiting 10 seconds before continuing.."
+                        sleep 10
                     fi
                 fi
                 cd "$dir"/$deviceid/$cpid/$version
