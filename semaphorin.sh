@@ -2036,6 +2036,27 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
         exit 0
     else
         if [[ "$ramdisk" == 1 || "$fix_activation" == 1 || "$dump_blobs" == 1 ]]; then
+            remote_cmd "/sbin/mount_apfs /dev/disk0s1s1 /mnt1 2> /dev/null" && {
+                echo "[*] /dev/disk0s1s1 is an APFS volume"
+            } || {
+                echo "[*] /dev/disk0s1s1 is NOT an APFS volume"
+            }
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt1" 2> /dev/null
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt2" 2> /dev/null
+            remote_cmd "/sbin/mount_apfs /dev/disk0s1s1s1 /mnt1 2> /dev/null" && {
+                echo "[*] /dev/disk0s1s1s1 is an APFS volume"
+            } || {
+                echo "[*] /dev/disk0s1s1s1 is NOT an APFS volume"
+            }
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt1" 2> /dev/null
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt2" 2> /dev/null
+            remote_cmd "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1 2> /dev/null" && {
+                echo "[*] /dev/disk0s1s1 is an HFS+ volume"
+            } || {
+                echo "[*] /dev/disk0s1s1 is NOT an HFS+ volume"
+            }
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt1" 2> /dev/null
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt2" 2> /dev/null
             if [[ "$version" == "7."* || "$version" == "8."* || "$version" == "9."* || "$version" == "10.0"* || "$version" == "10.1"* || "$version" == "10.2"* ]]; then
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1" 2> /dev/null
                 if [[ "$version" == "9.0"* || "$version" == "9.1"* || "$version" == "9.2"* ]]; then
