@@ -369,9 +369,9 @@ _download_boot_files() {
     ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$bin"/jq '.firmwares | .[] | select(.version=="'$3'")' | "$bin"/jq -s '.[0] | .url' --raw-output)
     rm -rf BuildManifest.plist
     mkdir -p "$dir"/$1/$cpid/$3
-    rm -rf work
-    mkdir work
-    cd work
+    rm -rf "$dir"/work
+    mkdir "$dir"/work
+    cd "$dir"/work
     "$bin"/img4tool -e -s "$dir"/other/shsh/"${check}".shsh -m IM4M
     if [ ! -e "$dir"/$1/$cpid/$3/kernelcache ]; then
         if [[ "$3" == "10."* ]]; then
@@ -588,9 +588,9 @@ _download_root_fs() {
     ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$bin"/jq '.firmwares | .[] | select(.version=="'$3'")' | "$bin"/jq -s '.[0] | .url' --raw-output)
     rm -rf BuildManifest.plist
     mkdir -p "$dir"/$1/$cpid/$3
-    rm -rf work
-    mkdir work
-    cd work
+    rm -rf "$dir"/work
+    mkdir "$dir"/work
+    cd "$dir"/work
     "$bin"/img4tool -e -s "$dir"/other/shsh/"${check}".shsh -m IM4M
     if [[ "$3" == "10.3"* || "$3" == "11."* || "$3" == "12."* ]]; then
         if [ ! -e "$dir"/$1/$cpid/$3/OS.dmg ]; then
@@ -620,7 +620,7 @@ _download_root_fs() {
                     "$bin"/dmg extract 058-01244-053.dmg OS.dmg -k 5c8b481822b91861c1d19590e790b306daaab2230f89dd275c18356d28fdcd47436a0737
                     "$bin"/img4 -i kernelcache.release.n51 -o "$dir"/$1/$cpid/$3/kcache_12A4331d.raw -k fdee9545abf38072bb54d6cc46aeb44cc0ab44308fdccce0a0adc4f2c02c531339c2acd2d7c1e099abb298a63730967a
                     "$bin"/img4 -i kernelcache.release.n51 -o "$dir"/$1/$cpid/$3/kernelcache_12A4331d.dec -k fdee9545abf38072bb54d6cc46aeb44cc0ab44308fdccce0a0adc4f2c02c531339c2acd2d7c1e099abb298a63730967a -D
-                    cd ../../work/
+                    cd "$dir"/work/
                 elif [[ "$deviceid" == "iPad4,4" ]]; then
                     # https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.4%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
                     cd "$dir"/$1/$cpid/$3
@@ -630,7 +630,7 @@ _download_root_fs() {
                     "$bin"/dmg extract 058-01149-054.dmg OS.dmg -k b62a823a1b5355e1e8211db6441e4384f92e8b47407837afadf24facab5c7b0320f61a4f
                     "$bin"/img4 -i kernelcache.release.j85 -o "$dir"/$1/$cpid/$3/kcache_12A4331d.raw -k e64f85ed518a3747d5b04c9d703dd96b92df85410ace43dbed85b7fa66c186e002d59fd2812910e7326ef173cb1c5a8f
                     "$bin"/img4 -i kernelcache.release.j85 -o "$dir"/$1/$cpid/$3/kernelcache_12A4331d.dec -k e64f85ed518a3747d5b04c9d703dd96b92df85410ace43dbed85b7fa66c186e002d59fd2812910e7326ef173cb1c5a8f -D
-                    cd ../../work/
+                    cd "$dir"/work/
                 elif [[ "$deviceid" == "iPad4,5" ]]; then
                     # https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.5%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
                     cd "$dir"/$1/$cpid/$3
@@ -640,7 +640,7 @@ _download_root_fs() {
                     "$bin"/dmg extract 058-01282-053.dmg OS.dmg -k 67a958bddcc762e21702583b20b87caad97ed96433e9e7e8a57ef4ea53d71549f030c125
                     "$bin"/img4 -i kernelcache.release.j86 -o "$dir"/$1/$cpid/$3/kcache_12A4331d.raw -k 4c70597be8d32ab7c7177e1b1e3f1ba00065ed0b2222d0c9c8484a7dada36f2165037fa3324ee5e8aa2bd198a56fd2d9
                     "$bin"/img4 -i kernelcache.release.j86 -o "$dir"/$1/$cpid/$3/kernelcache_12A4331d.dec -k 4c70597be8d32ab7c7177e1b1e3f1ba00065ed0b2222d0c9c8484a7dada36f2165037fa3324ee5e8aa2bd198a56fd2d9 -D
-                    cd ../../work/
+                    cd "$dir"/work/
                 elif [[ "$deviceid" == "iPad4,2" ]]; then
                     # https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.2%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
                     cd "$dir"/$1/$cpid/$3
@@ -650,7 +650,7 @@ _download_root_fs() {
                     "$bin"/dmg extract 058-01330-053.dmg OS.dmg -k 65e1ae6a877652010bcafd88c1b882494b66bd9c2dc3ebbe35d0ebc42466be1a3956c6cc
                     "$bin"/img4 -i kernelcache.release.j72 -o "$dir"/$1/$cpid/$3/kcache_12A4331d.raw -k 93c94a8186de108199771d504c753ecf397433be91c748045b026631d976ac6fe80a2c196db01e6eef506ce231a3fb44
                     "$bin"/img4 -i kernelcache.release.j72 -o "$dir"/$1/$cpid/$3/kernelcache_12A4331d.dec -k 93c94a8186de108199771d504c753ecf397433be91c748045b026631d976ac6fe80a2c196db01e6eef506ce231a3fb44 -D
-                    cd ../../work/
+                    cd "$dir"/work/
                 elif [[ "$deviceid" == "iPad4,1" ]]; then
                     # https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.1%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
                     cd "$dir"/$1/$cpid/$3
@@ -660,7 +660,7 @@ _download_root_fs() {
                     "$bin"/dmg extract 058-01219-053.dmg OS.dmg -k c6017d6da64083eddbbf01c80f4dc6f84c1d935cec206d60116e7177255f2b677ac2d077
                     "$bin"/img4 -i kernelcache.release.j71 -o "$dir"/$1/$cpid/$3/kcache_12A4331d.raw -k 5ea29d371ad06c6e7fb0cd904779cd34f21385cc504f178fb5a9b2d4066703c816208e8f6d9479dd1b49d4d6a2460b02
                     "$bin"/img4 -i kernelcache.release.j71 -o "$dir"/$1/$cpid/$3/kernelcache_12A4331d.dec -k 5ea29d371ad06c6e7fb0cd904779cd34f21385cc504f178fb5a9b2d4066703c816208e8f6d9479dd1b49d4d6a2460b02 -D
-                    cd ../../work/
+                    cd "$dir"/work/
                 elif [[ "$deviceid" == "iPad4,6" ]]; then
                     # https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.6%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
                     cd "$dir"/$1/$cpid/$3
@@ -670,7 +670,7 @@ _download_root_fs() {
                     "$bin"/dmg extract 058-01099-053.dmg OS.dmg -k 3746eef01500a81f45d7ceed3c35ed02ad7b9d7da26e7fa4a27a84a1a53a224e65ab8ba8
                     "$bin"/img4 -i kernelcache.release.j87 -o "$dir"/$1/$cpid/$3/kcache_12A4331d.raw -k c17906bdffdf40b6f9c0656c6b7d585449e6eb495439f9cae8faee3a466e75de248c2ce176cddc3a1ca4de73be0baeef
                     "$bin"/img4 -i kernelcache.release.j87 -o "$dir"/$1/$cpid/$3/kernelcache_12A4331d.dec -k c17906bdffdf40b6f9c0656c6b7d585449e6eb495439f9cae8faee3a466e75de248c2ce176cddc3a1ca4de73be0baeef -D
-                    cd ../../work/
+                    cd "$dir"/work/
                 elif [[ "$deviceid" == "iPad4,3" ]]; then
                     # https://ia903400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.3%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
                     cd "$dir"/$1/$cpid/$3
@@ -680,7 +680,7 @@ _download_root_fs() {
                     "$bin"/dmg extract 058-01287-053.dmg OS.dmg -k f593490d57e2c6a01bbfee212c83f711a8e80e6366107803ff3a933850b48ed68f495014
                     "$bin"/img4 -i kernelcache.release.j73 -o "$dir"/$1/$cpid/$3/kcache_12A4331d.raw -k fc44a450a05e812125e93ff45c820a90cd11f08347133cc03a9b4bed23a1ec16c509c58d3b0f3083640d62edc56eee10
                     "$bin"/img4 -i kernelcache.release.j73 -o "$dir"/$1/$cpid/$3/kernelcache_12A4331d.dec -k fc44a450a05e812125e93ff45c820a90cd11f08347133cc03a9b4bed23a1ec16c509c58d3b0f3083640d62edc56eee10 -D
-                    cd ../../work/
+                    cd "$dir"/work/
                 else
                     "$bin"/pzb -g BuildManifest.plist "$ipswurl"
                     "$bin"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
@@ -818,7 +818,7 @@ if [[ "$boot" == 1 ]]; then
         fi
         "$bin"/irecovery -f kernelcache.img4
         "$bin"/irecovery -c bootx &
-        cd ../../
+        cd "$dir"/
         exit 0
     fi
     exit 0
@@ -892,7 +892,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                 _download_ramdisk_boot_files $deviceid $replace $r
             fi
         fi
-        if [[ "$version" == "8.0" && "$boot" == 1 ]]; then
+        if [[ "$version" == "8.0" && "$restore" == 1 ]]; then
             # required to get ios 8 beta 4 kernel
             _download_root_fs $deviceid $replace $version
         fi
@@ -963,7 +963,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
     fi
     "$bin"/irecovery -f kernelcache.img4
     "$bin"/irecovery -c bootx &
-    cd ../../../
+    cd "$dir"/
     read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk " r1
     echo "[*] Waiting 6 seconds before continuing.."
     sleep 6
@@ -1189,7 +1189,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                 fi
                 "$bin"/irecovery -f kernelcache.img4
                 "$bin"/irecovery -c bootx &
-                cd ../../../
+                cd "$dir"/
                 read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk " r1
                 echo "[*] Waiting 6 seconds before continuing.."
                 sleep 6
@@ -1418,7 +1418,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
         fi
         "$bin"/irecovery -f kernelcache.img4
         "$bin"/irecovery -c bootx &
-        cd ../../../
+        cd "$dir"/
         read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk. " r1
         echo "[*] Waiting 6 seconds before continuing.."
         sleep 6
@@ -1882,7 +1882,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                 fi
                 "$bin"/irecovery -f kernelcache.img4
                 "$bin"/irecovery -c bootx &
-                cd ../../
+                cd "$dir"/
             fi
             _kill_if_running iproxy
             echo "[*] Step 1 of downwgrading to iOS $version is now done"
@@ -1934,7 +1934,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             fi
             "$bin"/irecovery -f kernelcache.img4
             "$bin"/irecovery -c bootx &
-            cd ../../../
+            cd "$dir"/
             read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk " r1
             echo "[*] Waiting 6 seconds before continuing.."
             sleep 6
@@ -1969,10 +1969,12 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                 fi
                 if [[ "$dataarkplist" == "/mnt2/containers/Data/System"* ]]; then
                     folder=$(echo $dataarkplist | sed 's/\/data_ark.plist//g')
-                    # /mnt2/containers/Data/System/58954F59-3AA2-4005-9C5B-172BE4ADEC98/Library/internal
+                    folder=$(echo $dataarkplist | sed 's/\/internal//g')
+                    # /mnt2/containers/Data/System/58954F59-3AA2-4005-9C5B-172BE4ADEC98/Library
                     if [[ "$folder" == "/mnt2/containers/Data/System"* ]]; then
                         if [ -e "$dir"/$deviceid/0.0/activation_records ]; then
                             "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -r -P 2222 "$dir"/$deviceid/0.0/activation_records root@localhost:$folder 2> /dev/null
+                            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/chflags -R schg $folder/activation_records"
                         fi
                     fi
                 fi
@@ -1993,10 +1995,12 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                 fi
                 if [[ "$dataarkplist" == "/mnt5/containers/Data/System"* ]]; then
                     folder=$(echo $dataarkplist | sed 's/\/data_ark.plist//g')
-                    # /mnt5/containers/Data/System/58954F59-3AA2-4005-9C5B-172BE4ADEC98/Library/internal
+                    folder=$(echo $dataarkplist | sed 's/\/internal//g')
+                    # /mnt5/containers/Data/System/58954F59-3AA2-4005-9C5B-172BE4ADEC98/Library
                     if [[ "$folder" == "/mnt5/containers/Data/System"* ]]; then
                         if [ -e "$dir"/$deviceid/0.0/activation_records ]; then
                             "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -r -P 2222 "$dir"/$deviceid/0.0/activation_records root@localhost:$folder 2> /dev/null
+                            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/chflags -R schg $folder/activation_records"
                         fi
                     fi
                 fi
@@ -2055,7 +2059,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             fi
             "$bin"/irecovery -f kernelcache.img4
             "$bin"/irecovery -c bootx &
-            cd ../../
+            cd "$dir"/
         fi
         _kill_if_running iproxy
         echo "done"
