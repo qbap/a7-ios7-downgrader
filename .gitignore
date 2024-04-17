@@ -1,5 +1,7 @@
 iPhone6,1_7.1.2_11D257_Restore.ipsw
 iPhone6,1_8.4.1_12H321_Restore.ipsw
+Carrier_Bundles.tar
+data_ark.plist
 disk0*
 containermanagerd.*
 com.apple.commcenter*
