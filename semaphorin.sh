@@ -1,6 +1,7 @@
 #/bin/bash
 mkdir -p logs
 verbose=1
+sudo xattr -cr .
 {
 echo "[*] Command ran:`if [ $EUID = 0 ]; then echo " sudo"; fi` ./semaphorin.sh $@"
 os=$(uname)
