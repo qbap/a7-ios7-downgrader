@@ -152,6 +152,9 @@ parse_arg() {
             if [[ "$version" == "8.0b4" ]]; then
                 version="8.0"
             fi
+            if [[ "$version" == "11.0b1" ]]; then
+                version="11.0"
+            fi
             ;;
     esac
 }
@@ -642,15 +645,27 @@ _download_boot_files() {
             if [ -e "$dir"/$1/$cpid/$3/avefw.dec ]; then
                 "$bin"/img4 -i "$dir"/$1/$cpid/$3/avefw.dec -o "$dir"/$1/$cpid/$3/avefw.img4 -M IM4M -T avef
             fi
-            # seprmvr64 is plooshfinder seprmvr64
-            "$bin"/seprmvr64 "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache.patched
-            # KPlooshFinder is amfi patch
-            "$bin"/KPlooshFinder "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched
-            # -a is mapIO, -f is vm_fault_enter, -m is mount_common, and -b is image4 validation patches
-            "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache2.patched "$dir"/$1/$cpid/$3/kcache3.patched -a -f -m -b
-            "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache3.patched "$dir"/$1/$cpid/$3/kc.bpatch
-            "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$cpid/$3/kc.bpatch
-            "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$cpid/$3/kc.bpatch
+            if [[ "$deviceid" == "iPhone8,1" && "$3" == "11.0" ]]; then
+                # seprmvr64 is plooshfinder seprmvr64
+                "$bin"/seprmvr64 "$dir"/$1/$cpid/$3/kcache_15A5278f.raw "$dir"/$1/$cpid/$3/kcache.patched
+                # KPlooshFinder is amfi patch
+                "$bin"/KPlooshFinder "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched
+                # -a is mapIO, -f is vm_fault_enter, -m is mount_common, and -b is image4 validation patches
+                "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache2.patched "$dir"/$1/$cpid/$3/kcache3.patched -a -f -m -b
+                "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache_15A5278f.raw "$dir"/$1/$cpid/$3/kcache3.patched "$dir"/$1/$cpid/$3/kc.bpatch
+                "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache_15A5278f.dec -o "$dir"/$1/$cpid/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$cpid/$3/kc.bpatch
+                "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache_15A5278f.dec -o "$dir"/$1/$cpid/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$cpid/$3/kc.bpatch
+            else
+                # seprmvr64 is plooshfinder seprmvr64
+                "$bin"/seprmvr64 "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache.patched
+                # KPlooshFinder is amfi patch
+                "$bin"/KPlooshFinder "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched
+                # -a is mapIO, -f is vm_fault_enter, -m is mount_common, and -b is image4 validation patches
+                "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache2.patched "$dir"/$1/$cpid/$3/kcache3.patched -a -f -m -b
+                "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache3.patched "$dir"/$1/$cpid/$3/kc.bpatch
+                "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$cpid/$3/kc.bpatch
+                "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$cpid/$3/kc.bpatch
+            fi
             if [ -e "$dir"/$1/$cpid/$3/trustcache.im4p ]; then
                 "$bin"/img4 -i "$dir"/$1/$cpid/$3/trustcache.im4p -o "$dir"/$1/$cpid/$3/trustcache.img4 -M IM4M -T rtsc
             fi
@@ -726,10 +741,22 @@ _download_root_fs() {
     "$bin"/img4tool -e -s "$dir"/other/shsh/"${check}".shsh -m IM4M
     if [[ "$3" == "10.3"* || "$3" == "11."* || "$3" == "12."* ]]; then
         if [ ! -e "$dir"/$1/$cpid/$3/OS.dmg ]; then
-            "$bin"/pzb -g BuildManifest.plist "$ipswurl"
-            "$bin"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
-            fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
-            asr -source $fn -target "$dir"/$1/$cpid/$3/OS.dmg --embed -erase -noprompt --chunkchecksum --puppetstrings
+            if [[ "$deviceid" == "iPhone8,1" && "$3" == "11.0" ]]; then
+                # https://ia800301.us.archive.org/22/items/iPhone_4.7_11.0_15A5278f_Restore/iPhone_4.7_11.0_15A5278f_Restore.ipsw
+                cd "$dir"/$1/$cpid/$3
+                "$bin"/aria2c https://ia800301.us.archive.org/22/items/iPhone_4.7_11.0_15A5278f_Restore/iPhone_4.7_11.0_15A5278f_Restore.ipsw
+                "$bin"/7z x $(find . -name '*.ipsw*')
+                fn="058-76196-042.dmg"
+                asr -source $fn -target "$dir"/$1/$cpid/$3/OS.dmg --embed -erase -noprompt --chunkchecksum --puppetstrings
+                "$bin"/img4 -i kernelcache.release.n71 -o "$dir"/$1/$cpid/$3/kcache_15A5278f.raw
+                "$bin"/img4 -i kernelcache.release.n71 -o "$dir"/$1/$cpid/$3/kernelcache_15A5278f.dec -D
+                cd "$dir"/work/
+            else
+                "$bin"/pzb -g BuildManifest.plist "$ipswurl"
+                "$bin"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
+                fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
+                asr -source $fn -target "$dir"/$1/$cpid/$3/OS.dmg --embed -erase -noprompt --chunkchecksum --puppetstrings
+            fi
             if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
                "$bin"/irecovery -f /dev/null
             fi
@@ -911,8 +938,8 @@ if [[ "$clean" == 1 ]]; then
     exit 0
 fi
 if [[ "$boot" == 1 ]]; then
-    if [[ "$version" == "8.0" ]]; then
-        # required to get ios 8 beta 4 kernel
+    if [[ "$version" == "8.0" || "$version" == "11.0" ]]; then
+        # required to get ios 8 beta 4 or ios 11 beta 1 kernel
         _download_root_fs $deviceid $replace $version
     fi
     _download_boot_files $deviceid $replace $version
@@ -965,7 +992,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
         rdversion="$version"
         if [[ "$version" == "9."* ]]; then
             rdversion="11.4.1"
-        elif [[ "$version" == "10."* ]]; then
+        elif [[ "$version" == "10."* || "$version" == "11.0" ]]; then
             rdversion="10.3.3"
         elif [[ "$version" == "7."* || "$version" == "8."* ]]; then
             rdversion="8.4.1"
@@ -1000,7 +1027,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
     else
         if [[ "$version" == "7."* || "$version" == "8."* ]]; then
             _download_ramdisk_boot_files $deviceid $replace 8.4.1
-        elif [[ "$version" == "10.3"* ]]; then
+        elif [[ "$version" == "10.3"* || "$version" == "11.0" ]]; then
             _download_ramdisk_boot_files $deviceid $replace 10.3.3
             if [[ "$(./java/bin/java -jar ./Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e 14.3 $deviceid)" == "true" ]]; then
                 _download_ramdisk_boot_files $deviceid $replace 14.3
@@ -1033,6 +1060,10 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
         fi
         if [[ "$version" == "8.0" && "$restore" == 1 ]]; then
             # required to get ios 8 beta 4 kernel
+            _download_root_fs $deviceid $replace $version
+        fi
+        if [[ "$version" == "11.0" && "$restore" == 1 ]]; then
+            # required to get ios 11 beta 1 kernel
             _download_root_fs $deviceid $replace $version
         fi
         _download_boot_files $deviceid $replace $version
@@ -1069,7 +1100,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             cd "$dir"/$deviceid/$cpid/ramdisk/$r
         elif [[ "$version" == "7."* || "$version" == "8."* ]]; then
             cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
-        elif [[ "$version" == "10.3"* ]]; then
+        elif [[ "$version" == "10.3"* || "$version" == "11.0" ]]; then
             cd "$dir"/$deviceid/$cpid/ramdisk/10.3.3
         elif [[ "$version" == "11."* || "$version" == "12."* ]]; then
             if [[ "$(./java/bin/java -jar ./Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e 14.3 $deviceid)" == "true" ]]; then
@@ -1301,7 +1332,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                 fi
                 if [[ "$version" == "7."* || "$version" == "8."* ]]; then
                     cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
-                elif [[ "$version" == "10.3"* ]]; then
+                elif [[ "$version" == "10.3"* || "$version" == "11.0" ]]; then
                     cd "$dir"/$deviceid/$cpid/ramdisk/10.3.3
                 elif [[ "$version" == "11."* || "$version" == "12."* ]]; then
                     if [[ "$(./java/bin/java -jar ./Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e 14.3 $deviceid)" == "true" ]]; then
