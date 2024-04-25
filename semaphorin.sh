@@ -994,6 +994,8 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             rdversion="11.4.1"
         elif [[ "$version" == "10."* || "$version" == "11.0" ]]; then
             rdversion="10.3.3"
+        elif [[ "$deviceid" == "iPhone8,1" && "$version" == "11.0" ]]; then
+            rdversion="10.3.3"
         elif [[ "$version" == "7."* || "$version" == "8."* ]]; then
             rdversion="8.4.1"
         fi
@@ -1027,7 +1029,14 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
     else
         if [[ "$version" == "7."* || "$version" == "8."* ]]; then
             _download_ramdisk_boot_files $deviceid $replace 8.4.1
-        elif [[ "$version" == "10.3"* || "$version" == "11.0" ]]; then
+        elif [[ "$version" == "10.3"* ]]; then
+            _download_ramdisk_boot_files $deviceid $replace 10.3.3
+            if [[ "$(./java/bin/java -jar ./Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e 14.3 $deviceid)" == "true" ]]; then
+                _download_ramdisk_boot_files $deviceid $replace 14.3
+            else
+                _download_ramdisk_boot_files $deviceid $replace 12.5.4
+            fi
+        elif [[ "$deviceid" == "iPhone8,1" && "$version" == "11.0" ]]; then
             _download_ramdisk_boot_files $deviceid $replace 10.3.3
             if [[ "$(./java/bin/java -jar ./Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e 14.3 $deviceid)" == "true" ]]; then
                 _download_ramdisk_boot_files $deviceid $replace 14.3
@@ -1100,7 +1109,9 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             cd "$dir"/$deviceid/$cpid/ramdisk/$r
         elif [[ "$version" == "7."* || "$version" == "8."* ]]; then
             cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
-        elif [[ "$version" == "10.3"* || "$version" == "11.0" ]]; then
+        elif [[ "$version" == "10.3"* ]]; then
+            cd "$dir"/$deviceid/$cpid/ramdisk/10.3.3
+        elif [[ "$deviceid" == "iPhone8,1" && "$version" == "11.0" ]]; then
             cd "$dir"/$deviceid/$cpid/ramdisk/10.3.3
         elif [[ "$version" == "11."* || "$version" == "12."* ]]; then
             if [[ "$(./java/bin/java -jar ./Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e 14.3 $deviceid)" == "true" ]]; then
@@ -1332,7 +1343,9 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                 fi
                 if [[ "$version" == "7."* || "$version" == "8."* ]]; then
                     cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
-                elif [[ "$version" == "10.3"* || "$version" == "11.0" ]]; then
+                elif [[ "$version" == "10.3"* ]]; then
+                    cd "$dir"/$deviceid/$cpid/ramdisk/10.3.3
+                elif [[ "$deviceid" == "iPhone8,1" && "$version" == "11.0" ]]; then
                     cd "$dir"/$deviceid/$cpid/ramdisk/10.3.3
                 elif [[ "$version" == "11."* || "$version" == "12."* ]]; then
                     if [[ "$(./java/bin/java -jar ./Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e 14.3 $deviceid)" == "true" ]]; then
