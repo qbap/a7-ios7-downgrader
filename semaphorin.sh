@@ -1774,6 +1774,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                 echo "[*] Restoring to iOS $version is done"
                 echo "[*] But if you boot now, you will get stuck at the 'screen time' step in Setup.app"
                 echo "[*] You must delete Setup.app if you want to be able to use iOS $version"
+                echo "[*] See https://files.catbox.moe/96vhbl.mov for a video demonstration of the issue"
                 echo "[*] I will now drop you into ssh so you can do this, the root fs is mounted at /mnt4"
                 ssh -o StrictHostKeyChecking=no -p2222 root@localhost
             fi
