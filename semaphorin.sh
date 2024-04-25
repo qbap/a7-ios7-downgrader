@@ -647,7 +647,7 @@ _download_boot_files() {
             fi
             if [[ "$deviceid" == "iPhone8,1" && "$3" == "11.0" ]]; then
                 # seprmvr64 is plooshfinder seprmvr64
-                "$bin"/seprmvr64 "$dir"/$1/$cpid/$3/kcache_15A5278f.raw "$dir"/$1/$cpid/$3/kcache.patched
+                "$bin"/seprmvr647 "$dir"/$1/$cpid/$3/kcache_15A5278f.raw "$dir"/$1/$cpid/$3/kcache.patched
                 # KPlooshFinder is amfi patch
                 "$bin"/KPlooshFinder "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched
                 # -a is mapIO, -f is vm_fault_enter, -m is mount_common, and -b is image4 validation patches
@@ -657,7 +657,7 @@ _download_boot_files() {
                 "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache_15A5278f.dec -o "$dir"/$1/$cpid/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$cpid/$3/kc.bpatch
             else
                 # seprmvr64 is plooshfinder seprmvr64
-                "$bin"/seprmvr64 "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache.patched
+                "$bin"/seprmvr647 "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache.patched
                 # KPlooshFinder is amfi patch
                 "$bin"/KPlooshFinder "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched
                 # -a is mapIO, -f is vm_fault_enter, -m is mount_common, and -b is image4 validation patches
