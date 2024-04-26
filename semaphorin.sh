@@ -1060,7 +1060,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
         _download_ramdisk_boot_files $deviceid $replace $rdversion
         sleep 1
         if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-            if [[ "$deviceid" == "iPhone10,3"* || "$deviceid" == "iPhone10,6"* ]]; then
+            if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
                 "$bin"/dfuhelper.sh
             elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
                 "$bin"/dfuhelper2.sh
@@ -1146,7 +1146,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
         echo "[*] Waiting for device in DFU mode"
         sleep 1
         if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-            if [[ "$deviceid" == "iPhone10,3"* || "$deviceid" == "iPhone10,6"* ]]; then
+            if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
                 "$bin"/dfuhelper.sh
             elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
                 "$bin"/dfuhelper2.sh
@@ -1232,7 +1232,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
     "$bin"/iproxy 2222 22 &
     sleep 2
     if [[ "$restore" == 1 ]]; then
-        if [[ "$deviceid" == "iPhone10,3"* || "$deviceid" == "iPhone10,6"* ]]; then
+        if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram auto-boot=false" 2> /dev/null
         fi
         mkdir -p "$dir"/$deviceid/0.0/
@@ -1379,7 +1379,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                 _kill_if_running iproxy
                 echo "device should now reboot into recovery, pls wait"
                 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                    if [[ "$deviceid" == "iPhone10,3"* || "$deviceid" == "iPhone10,6"* ]]; then
+                    if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
                         if [[ "$r" == "13.*" || "$r" == "14.*" || "$r" == "15.*" ]]; then
                             echo "[*] Waiting 30 seconds before continuing.."
                             sleep 30
@@ -1625,7 +1625,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
         _kill_if_running iproxy
         echo "[*] Device should boot to Recovery mode. Please wait..."
         if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-            if [[ "$deviceid" == "iPhone10,3"* || "$deviceid" == "iPhone10,6"* ]]; then
+            if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
                 "$bin"/dfuhelper.sh
             elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
                 "$bin"/dfuhelper2.sh
@@ -2181,7 +2181,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             if [[ "$version" == "9.3"* || "$version" == "10."* || "$version" == "11."* || "$version" == "12."* ]]; then
                 if [ -e "$dir"/$deviceid/$cpid/$version/iBSS.img4 ]; then
                     if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                        if [[ "$deviceid" == "iPhone10,3"* || "$deviceid" == "iPhone10,6"* ]]; then
+                        if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
                             "$bin"/dfuhelper.sh
                         elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
                             "$bin"/dfuhelper2.sh
@@ -2369,7 +2369,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
         _kill_if_running iproxy
         if [ -e "$dir"/$deviceid/$cpid/$version/iBSS.img4 ]; then
             if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                if [[ "$deviceid" == "iPhone10,3"* || "$deviceid" == "iPhone10,6"* ]]; then
+                if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
                     "$bin"/dfuhelper.sh
                 elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
                     "$bin"/dfuhelper2.sh
