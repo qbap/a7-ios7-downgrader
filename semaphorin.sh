@@ -155,6 +155,9 @@ parse_arg() {
             if [[ "$version" == "11.0b1" ]]; then
                 version="11.0"
             fi
+            if [[ "$version" == "11.4.1" ]]; then
+                version="11.4"
+            fi
             ;;
     esac
 }
@@ -972,6 +975,7 @@ if [[ "$boot" == 1 ]]; then
         if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
             sleep 1
             "$bin"/irecovery -c go
+            sleep 2
         fi
         "$bin"/irecovery -f devicetree.img4
         "$bin"/irecovery -c devicetree
@@ -991,7 +995,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
     if [[ "$ramdisk" == 1 || "$dump_blobs" == 1 || "$dump_nand" == 1 || "$restore_nand" == 1 || "$restore_mnt1" == 1 || "$restore_mnt2" == 1 || "$disable_NoMoreSIGABRT" == 1 || "$NoMoreSIGABRT" == 1 ]]; then
         rdversion="$version"
         if [[ "$version" == "9."* ]]; then
-            rdversion="11.4.1"
+            rdversion="11.4"
         elif [[ "$version" == "10."* || "$version" == "11.0" ]]; then
             rdversion="10.3.3"
         elif [[ "$deviceid" == "iPhone8,1" && "$version" == "11.0" ]]; then
@@ -1050,10 +1054,13 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                 _download_ramdisk_boot_files $deviceid $replace 12.5.4
             fi
         else
-            _download_ramdisk_boot_files $deviceid $replace 11.4.1
+            _download_ramdisk_boot_files $deviceid $replace 11.4
         fi
         if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
             read -p "[*] Please enter the iOS version that is currently installed on your device  " r
+            if [[ "$r" == "11.4.1"* ]]; then
+                r="11.4"
+            fi
             _download_ramdisk_boot_files $deviceid $replace $r
 			if [[ "$r" == "9."* ]]; then
 				fuck=1
@@ -1064,6 +1071,9 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
         if [[ "$version" == "10.3"* || "$version" == "11."* || "$version" == "12."* ]]; then
             if [ -z "$r" ]; then
                 read -p "what ios version was installed on this device prior to downgrade? " r
+                if [[ "$r" == "11.4.1"* ]]; then
+                    r="11.4"
+                fi
                 _download_ramdisk_boot_files $deviceid $replace $r
             fi
         fi
@@ -1120,7 +1130,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                 cd "$dir"/$deviceid/$cpid/ramdisk/12.5.4
             fi
         else
-            cd "$dir"/$deviceid/$cpid/ramdisk/11.4.1
+            cd "$dir"/$deviceid/$cpid/ramdisk/11.4
         fi
     fi
     if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
@@ -1135,6 +1145,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
     if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
         sleep 1
         "$bin"/irecovery -c go
+        sleep 2
     fi
     "$bin"/irecovery -f ramdisk.img4
     "$bin"/irecovery -c ramdisk
@@ -1354,7 +1365,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                         cd "$dir"/$deviceid/$cpid/ramdisk/12.5.4
                     fi
                 else
-                    cd "$dir"/$deviceid/$cpid/ramdisk/11.4.1
+                    cd "$dir"/$deviceid/$cpid/ramdisk/11.4
                 fi
                 if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
                     "$bin"/ipwnder -p
@@ -1368,6 +1379,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                 if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
                     sleep 1
                     "$bin"/irecovery -c go
+                    sleep 2
                 fi
                 "$bin"/irecovery -f ramdisk.img4
                 "$bin"/irecovery -c ramdisk
@@ -1587,7 +1599,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
         elif [[ "$version" == "10.3"* || "$version" == "11."* ||  "$version" == "12."* ]]; then
             cd "$dir"/$deviceid/$cpid/ramdisk/$r
         else
-            cd "$dir"/$deviceid/$cpid/ramdisk/11.4.1
+            cd "$dir"/$deviceid/$cpid/ramdisk/11.4
         fi
         if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
             "$bin"/ipwnder -p
@@ -1601,6 +1613,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
         if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
             sleep 1
             "$bin"/irecovery -c go
+            sleep 2
         fi
         "$bin"/irecovery -f ramdisk.img4
         "$bin"/irecovery -c ramdisk
@@ -1749,9 +1762,12 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt4/AppleInternal/'
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt4/AppleInternal.tar'
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt5/mobile/Library/Caches/com.apple.MobileGestalt.plist'
-                "$bin"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P 2222 "$dir"/jb/cydia_ios10.tar root@localhost:/mnt5
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt5/cydia_ios10.tar -C /mnt4"
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt5/cydia_ios10.tar"
+                read -p "would you like to install Cydia.app to /mnt4/Applications? " r1
+                if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
+                    "$bin"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P 2222 "$dir"/jb/cydia_ios10.tar root@localhost:/mnt5
+                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt5/cydia_ios10.tar -C /mnt4"
+                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt5/cydia_ios10.tar"
+                fi
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt4/System/Library/DataClassMigrators/SystemAppMigrator.migrator/"
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mv -v /mnt5/staged_system_apps/* /mnt4/Applications"
             elif [[ "$version" == "12."* ]]; then
@@ -1770,9 +1786,6 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt4/AppleInternal/'
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt4/AppleInternal.tar'
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt5/mobile/Library/Caches/com.apple.MobileGestalt.plist'
-                "$bin"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P 2222 "$dir"/jb/cydia_ios10.tar root@localhost:/mnt5
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt5/cydia_ios10.tar -C /mnt4"
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt5/cydia_ios10.tar"
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt4/System/Library/DataClassMigrators/SystemAppMigrator.migrator/"
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mv -v /mnt5/staged_system_apps/* /mnt4/Applications"
                 echo "[*] Restoring to iOS $version is done"
@@ -2142,6 +2155,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                     if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
                         sleep 1
                         "$bin"/irecovery -c go
+                        sleep 2
                     fi
                     "$bin"/irecovery -f devicetree.img4
                     "$bin"/irecovery -c devicetree
@@ -2180,7 +2194,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                 elif [[ "$version" == "10.3"* || "$version" == "11."* ||  "$version" == "12."* ]]; then
                     cd "$dir"/$deviceid/$cpid/ramdisk/$r
                 else
-                    cd "$dir"/$deviceid/$cpid/ramdisk/11.4.1
+                    cd "$dir"/$deviceid/$cpid/ramdisk/11.4
                 fi
                 if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
                     "$bin"/ipwnder -p
@@ -2194,6 +2208,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                 if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
                     sleep 1
                     "$bin"/irecovery -c go
+                    sleep 2
                 fi
                 "$bin"/irecovery -f ramdisk.img4
                 "$bin"/irecovery -c ramdisk
@@ -2328,6 +2343,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
                 sleep 1
                 "$bin"/irecovery -c go
+                sleep 2
             fi
             "$bin"/irecovery -f devicetree.img4
             "$bin"/irecovery -c devicetree
