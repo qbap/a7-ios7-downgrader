@@ -9,6 +9,8 @@ trustcache
 trustcache.*
 aopfw.*
 homerfw.*
+multitouch.*
+audiocodecfirmware.*
 disk0*
 containermanagerd.*
 com.apple.commcenter*
