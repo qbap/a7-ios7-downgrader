@@ -6,56 +6,88 @@
 </div>
 
 <h4 align="center"> Uses seprmvr64 by mineek<h4>
-<h6 align="center"> Supports* iOS 7.0.1-7.1.2/8.0 Beta 4/10.3.3-11.1 as well as A7-A9 devices </h6>
+<h6 align="center"> Supports* iOS 7.0.4-12.1.2 as well as A7-A10 devices </h6>
 
 # IF YOUR DEVICE SUPPORTS [LEGACY-IOS-KIT](https://github.com/LukeZGD/Legacy-iOS-Kit), YOU SHOULD REALLY USE THAT OVER THIS.
 
 # Chart of device compatibility
 
-| iOS                  | iPhone 5s | iPad mini 2 | iPad Air 1 | iPhone 6/6+  | iPad mini 3  | iPhone 6s/6s+ | iPad mini 4  | iPad Air 2 | iPhone SE (2016) |
-|----------------------|-----------|-------------|------------|--------------|--------------|---------------|--------------|------------|------------------|
-| 7.0.1                | &#9745;   | &#9744;     | &#9744;    | &#9744;      | &#9744;      | &#9744;       | &#9744;      | &#9744;    | &#9744;          |
-| 7.0.2                | &#9745;   | &#9744;     | &#9744;    | &#9744;      | &#9744;      | &#9744;       | &#9744;      | &#9744;    | &#9744;          |
-| 7.0.3                | &#9745;   | &#9745;     | &#9744;    | &#9744;      | &#9744;      | &#9744;       | &#9744;      | &#9744;    | &#9744;          |
-| 7.0.4                | &#9745;   | &#9745;     | &#9744;    | &#9744;      | &#9744;      | &#9744;       | &#9744;      | &#9744;    | &#9744;          |
-| 7.0.6                | &#9745;   | &#9745;     | &#9744;    | &#9744;      | &#9744;      | &#9744;       | &#9744;      | &#9744;    | &#9744;          |
-| 7.1                  | &#9745;   | &#9745;     | &#9745;    | &#9744;      | &#9744;      | &#9744;       | &#9744;      | &#9744;    | &#9744;          |
-| 7.1.1                | &#9745;   | &#9745;     | &#9745;    | &#9744;      | &#9744;      | &#9744;       | &#9744;      | &#9744;    | &#9744;          |
-| 7.1.2                | &#9745;   | &#9745;     | &#9745;    | &#9744;      | &#9744;      | &#9744;       | &#9744;      | &#9744;    | &#9744;          |
-| 8.0b4                | &#9745;   | &#9745;     | &#9745;    | &#9744;      | &#9744;      | &#9744;       | &#9744;      | &#9744;    | &#9744;          |
-| 8.0-9.2.x            | &#9744;   | &#9744;     | &#9744;    | &#9744;      | &#9744;      | &#9744;       | &#9744;      | &#9744;    | &#9744;          |
-| 9.3.x                | &#9745;   | &#9745;     | &#9745;    | &#9745;      | &#9745;      | &#9744;       | &#9744;      | &#9744;    | &#9744;          |
-| 10.0-10.2.1 | &#9745;   | &#9745;     | &#9745;    | &#9745;      | &#9745;      | &#9745;       | &#9745;      | &#9745;    | &#9745;          |
-| 10.3.3 (dualboot)    | &#9745;   | &#9745;     | &#9745;    | &#9745;      | &#9745;      | &#9745;       | &#9745;      | &#9745;    | &#9745;          |
-| 11.0-11.1 (dualboot) | &#9745;   | &#9745;     | &#9745;    | &#9745;      | &#9745;      | &#9745;       | &#9745;      | &#9745;    | &#9745;          |
+| iOS                    | A7 SoC  | A8/A8X SoC | A9/A9X SoC | A10 SoC | A10X SoC | A11 SoC |
+|------------------------|---------|------------|------------|---------|----------|---------|
+| 7.0.4                  | &#9745; | &#9744;    | &#9744;    | &#9744; | &#9744;  | &#9744; |
+| 7.0.6                  | &#9745; | &#9744;    | &#9744;    | &#9744; | &#9744;  | &#9744; |
+| 7.1.2                  | &#9745; | &#9744;    | &#9744;    | &#9744; | &#9744;  | &#9744; |
+| 8.0b4                  | &#9745; | &#9744;    | &#9744;    | &#9744; | &#9744;  | &#9744; |
+| 9.3.2                  | &#9745; | &#9745;    | &#9744;    | &#9744; | &#9744;  | &#9744; |
+| 10.3.3                 | &#9745; | &#9745;    | &#9745;    | &#9745; | &#9744;  | &#9744; |
+| 11.1                   | &#9745; | &#9745;    | &#9745;    | &#9745; | &#9744;  | &#9744; |
+| 12.1.2                 | &#9745; | &#9745;    | &#9745;    | &#9745; | &#9744;  | &#9744; |
+
 
 # Chart of feature compatibility
 
-| iOS       | App Store | Home button  | Volume keys | Rootfs r/w  | Cydia     | Tweaks  | Respring | secured Wi-Fi | Cellular | Sideloadly | iTunes | Dualbooting |
-|-----------|-----------|--------------|-------------|-------------|-----------|---------|----------|---------------|----------|------------|--------|-------------|
-| 7.0.1     | &#9745;   | &#9744;      | &#9744;     | &#9745;     | &#9745;   | &#9745; | &#9744;  | &#9744;       | &#9744;  | &#9745;    | &#9745;| &#9744;     |
-| 7.0.2     | &#9745;   | &#9744;      | &#9745;     | &#9745;     | &#9745;   | &#9745; | &#9744;  | &#9744;       | &#9744;  | &#9745;    | &#9745;| &#9744;     |
-| 7.0.3     | &#9745;   | &#9745;      | &#9745;     | &#9745;     | &#9745;   | &#9745; | &#9744;  | &#9744;       | &#9744;  | &#9745;    | &#9745;| &#9744;     |
-| 7.0.4     | &#9745;   | &#9745;      | &#9745;     | &#9745;     | &#9745;   | &#9745; | &#9744;  | &#9744;       | &#9744;  | &#9745;    | &#9745;| &#9744;     |
-| 7.0.6     | &#9745;   | &#9745;      | &#9745;     | &#9745;     | &#9745;   | &#9745; | &#9744;  | &#9744;       | &#9744;  | &#9745;    | &#9745;| &#9744;     |
-| 7.1       | &#9745;   | &#9745;      | &#9745;     | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9744;       | &#9744;  | &#9745;    | &#9745;| &#9744;     |
-| 7.1.1     | &#9745;   | &#9745;      | &#9745;     | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9744;       | &#9744;  | &#9745;    | &#9745;| &#9744;     |
-| 7.1.2     | &#9745;   | &#9745;      | &#9745;     | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9744;       | &#9744;  | &#9745;    | &#9745;| &#9744;     |
-| 8.0b4     | &#9744;   | &#9745;      | &#9745;     | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9744;       | &#9744;  | &#9745;    | &#9745;| &#9744;     |
-| 9.3.x     | &#9744;   | &#9745;      | &#9745;     | &#9745;     | &#9745;   | &#9744; | &#9745;  | &#9744;       | &#9745;  | &#9744;    | &#9744;| &#9744;     |
-| 10.0-10.2.1     | &#9744;   | &#9745;      | &#9745;     | &#9745;     | &#9744;   | &#9744; | &#9745;  | &#9744;       | &#9745;  | &#9744;    | &#9744;| &#9744;     |
-| 10.3.3    | &#9745;   | &#9745;      | &#9745;     | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9744;       | &#9745;  | &#9744;    | &#9744;| &#9745;     |
-| 11.0-11.1 | &#9745;   | &#9745;      | &#9745;     | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9744;       | &#9745;  | &#9744;    | &#9744;| &#9745;     |
+| iOS         | App Store | Home button  | Volume keys | Cydia     | Tweaks  | Respring | Cellular | Sideloadly | iTunes |
+|-------------|-----------|--------------|-------------|-----------|---------|----------|----------|------------|--------|
+| 7.0.4**     | &#9745;   | &#9745;      | &#9745;     | &#9745;   | &#9745; | &#9744;  | &#9745;  | &#9745;    | &#9745;|
+| 7.0.6**     | &#9745;   | &#9745;      | &#9745;     | &#9745;   | &#9745; | &#9744;  | &#9745;  | &#9745;    | &#9745;|
+| 7.1.2**     | &#9745;   | &#9745;      | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9745;    | &#9745;|
+| 8.0b4**     | &#9744;   | &#9745;      | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9745;    | &#9745;|
+| 9.3.2**     | &#9744;   | &#9745;      | &#9745;     | &#9745;   | &#9744; | &#9745;  | &#9745;  | &#9744;    | &#9744;|
+| 10.3.3      | &#9745;   | &#9745;      | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9744;    | &#9744;|
+| 11.1        | &#9745;   | &#9745;      | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9744;    | &#9744;|
+| 12.1.2      | &#9745;   | &#9745;      | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9744;    | &#9744;|
+
+** These versions can only be tether booted with semaphorin, dualboot is only supported when downgrading to iOS 10.3.3 or later. You will lose all your data on your device if you downgrade to any of these versions, please keep that in mind before using this tool.
 
 ## How do I use this?
 
-This script deletes everything on your phone, including the main OS. Make sure to backup all of your data before using this script as **anything on the device prior to running this script will be UNRECOVERABLE afterwards**. Use this script at your own risk. We are not responsible for any damages caused by you using this script.
+This script deletes everything on your phone, including the main OS if you are not downgrading to iOS 10.3.3 or later. Make sure to backup all of your data before using this script as **anything on the device prior to running this script will be UNRECOVERABLE afterwards**. Use this script at your own risk. We are not responsible for any damages caused by you using this script.
 
 To use this app, you need to downgrade to a supported version, and have a supported device.
 
 `xcode-select install` to install `git` on macos
 
 `git clone https://github.com/y08wilm/Semaphorin && cd Semaphorin`
+
+Connect device in DFU mode
+
+`sudo ./semaphorin.sh <the version you are downgrading to> --restore`
+
+For example you may write `sudo ./semaphorin.sh 11.1 --restore`
+
+The script has to backup important files from your current iOS version before you can downgrade.
+
+When the script asks `[*] Please enter the iOS version that is currently installed on your device.`, type your current iOS version and then hit the Enter key to continue.
+
+It should then begin the process of downgrading your device. Please follow the on screen instructions. This might take a while. Your device will reboot multiple times.
+
+If you downgraded to iOS 10 or later, please use the jailbreak app on your home screen to begin jailbreaking your device.
+
+## Subsequent runs after downgrade is finished
+
+Connect device in DFU mode
+
+`sudo ./semaphorin.sh <the version you downgraded to previously> --boot`
+
+For example, if you downgraded to iOS 11.1, you would run `sudo ./semaphorin.sh 11.1 --boot`.
+
+It should just boot to your requested iOS version normally.
+
+## Requirements
+
+macOS Catalina or later. The script only officially supports these versions.
+
+Java 8 https://builds.openlogic.com/downloadJDK/openlogic-openjdk/8u262-b10/openlogic-openjdk-8u262-b10-mac-x64.pkg
+
+Intel Mac. Hackintoshes with AMD CPUs will **NOT** work with this.
+
+Stable internet connection. Please don't try using this with dial up...
+
+At least 20GB of free space on your computer
+
+USB Type-A port and Lightning cable. USB Type-C ports will **NOT** work with this script. If you're using a Mac that only has a USB-C port (such as 12" MacBooks, and late Intel MacBook Airs) a dongle/dock with a USB-A port should work just fine with a standard USB-A to Lightning cable.
+
+Working iDevice: The script has to backup `apticket.der`, `sep-firmware.img4`, `Baseband`, and `keybags` from your device before you can downgrade to an older iOS version.
 
 ## Support
 
@@ -65,34 +97,6 @@ If, for whatever reason, that invite link does not work, please contact [wilm271
 
 The Discord server is strictly for Semaphorin support only. Please don't bring personal issues into our server.
 
-## First run
-
-Connect device in DFU mode
-
-`sudo ./semaphorin.sh <the version you are downgrading to> --restore`
-
-For example you may write `sudo ./semaphorin.sh 7.1.2 --restore`
-
-The script has to backup important files from your current iOS version before you can downgrade.
-
-When the script asks `[*] Please enter the iOS version that is currently installed on your device.`, type your current iOS version and then hit the Enter key to continue.
-
-It should then begin the process of downgrading your device. Please follow the on screen instructions. This might take a while. Your device will reboot multiple times.
-
-Your device will be jailbroken automatically.
-
-If you are on iOS 7 please hit "go" in the wtfis app on your home screen to patch sandbox to allow Cydia Substrate (tweak injection) to work properly.
-
-## Subsequent runs after downgrade is finished
-
-Connect device in DFU mode
-
-`sudo ./semaphorin.sh <the version you downgraded to previously> --boot`
-
-For example, if you downgraded to iOS 7.1.2, you would run `sudo ./semaphorin.sh 7.1.2 --boot`.
-
-It should just boot to your requested iOS version normally.
-
 ## Setup.app bypass
 
 We will not be providing any support for any method of deleting `/Applications/Setup.app` with our script.
@@ -100,6 +104,8 @@ We will not be providing any support for any method of deleting `/Applications/S
 This is only to comply with [r/jailbreak](https://www.reddit.com/r/jailbreak/) and [r/LegacyJailbreak](https://www.reddit.com/r/LegacyJailbreak/) rules and guidelines.
 
 The script will downgrade your iOS version and jailbreak the downgraded OS very easily, but will not allow for bypassing **any** sort of Activation Lock.
+
+We back up the `activation_records` from your main OS prior to downgrading your device, so please make sure your main OS is activated before using this tool.
 
 ## Troubleshooting
 
@@ -117,9 +123,9 @@ The script will downgrade your iOS version and jailbreak the downgraded OS very 
    *Note: This does slightly affect battery life due to the way it works. You probably aren't using this script for battery life though, are you.
 
    ### Unsupported OS
-   The script only officially works on macOS 10.13 up to 10.15 (High Sierra to Catalina) due to some limitations on the developer's end. You have to install one of those versions to use the script. Please do not ask us about this.
+   The script only officially works on macOS 10.15 or later due to some limitations on the developer's end. You have to install one of those versions to use the script. Please do not ask us about this.
 
-Linux support is not planned either, do not ask about this either.
+Linux and Windows support is not planned either, do not ask about this either.
 
    ### Unable to connect to WiFi networks, incorrect password.
    This is caused by an issue that's *impossible* to fix. You need to connect to an open WiFi network
@@ -128,71 +134,40 @@ Linux support is not planned either, do not ask about this either.
 
    Be careful when doing this since *anyone* can connect to the open network you created. We are not responsible for **any** damages caused by doing this.
 
-   ### No apps on the Home Screen (iOS 8.0)
-   This is a weird issue with iOS 8. The workaround is easy, however.
+   ### No apps on the Home Screen (iOS 8.0 beta 4)
+   This is a weird issue with iOS 8 beta 4. The workaround is easy, however.
 
    After you unlock your device for the first time post setup, there will be no apps on the Home Screen. The workaround is, once you're on the Home Screen, to open the Control Center (swipe up) and press the Calculator icon. Once open, you can exit out of Calculator. This should make all icons appear.
 
    ### Cydia is absent (on iPads)
    iPads have uicache issues with most jailbreaking tools. To open Cydia, enter `cydia://` in Safari's address bar and press Enter.  
 
-   ### Respring not working through Cydia and co. (iOS 7.0.x)
-   Hit "go" inside the wtfis app on your home screen. This will properly respring your device.   
-   This means you will have to quit out of Cydia after installing a tweak in order to respring properly on affected firmwares.
+   ### wtfis.app is absent (on iPads)
+   iPads have uicache issues with most jailbreaking tools. To open wtfis, enter `wtfis://` in Safari's address bar and press Enter.  
 
+   ### Safari and others apps not opening (iOS 7)
+   Uninstall Cydia Substrate from within Cydia, and then reboot your device using semaphorin. When the device boots back up, reinstall your tweaks, but when Cydia asks you to "restart springboard" do not hit that button! Hit the home button on your device instead, and open Safari and type `wtfis://` in Safari's address bar and press Enter. Hit "go" inside the wtfis app. This will properly respring your device. All the apps on your device should now be working properly if you follow these steps.
  
-## iOS 9.3 Support
+### iOS 9.3 Support
 
-Keybags do not unlock on iOS <=9.2.1 but they do on iOS 9.3
+There are still some bugs left with iOS 9.3 downgrades. Due to the nature of hfs limitations on iOS 9.3-10.2.1, there is `Sandbox: hook..execve() killing %s pid %ld[UID: %d]: failure in upcall to containermanagerd for a platform app\n` errors during boot when using seprmvr64.
 
-The issue we are having with iOS 9.3 currently is that there's a ton of sandbox errors during the boot process.
+This is because hfs on iOS 9.3-10.2.1 requires the `/dev/disk0s1s2` partition to have a `protect` flag, otherwise sandbox complains. But the `protect` flag ensures that `/dev/disk0s1s2` is encrypted, but file system encryption is not possible because we have sep patched out. So we have to work around the issue. We patched out the sandbox eval function, but we are still getting that aforementioned error.
 
-See [here](https://files.catbox.moe/wn83g9.mp4) for a video example of why we need sandbox patches for iOS 9
+Most system apps can read/write to var just fine, but most if not all platformized apps cannot read/write to var and until we fix that issue we will have a lot of bugs on iOS 9.3. I made [containermanagerd64patcher](https://github.com/y08wilm/containermanagerd64patcher) which "patches" it but at the same time doesn't fix the actual issue. Most system apps crash on launch because they can not read or write to var. Oddly enough, those apps can create files just fine, just not open them.
 
-Once we have sandbox patched out properly on iOS 9.3, downgrading to it should work properly.
+See [here](https://files.catbox.moe/wn83g9.mp4) for a video example of why we need sandbox patches for iOS 9.
 
-## Quirks
-
-Passcode & TouchID do not work. If the device ever asks you for a passcode, it will normally accept anything as the passcode due to an unfixable issue.
-
-If you lock the screen while the phone is on, it will cause a deep sleep bug which causes the phone to be frozen at a black screen until you force reboot the device. Check the Troubleshooting section for more information.
-
-The App Store is broken on iOS 8 and 9
-
-Encrypted WiFi networks do **not** work when tether downgrading with this tool. This is caused by an issue with SEP. Check the Troubleshooting section for more information
-
-Respringing is currently broken on iOS 7.0.x. In order to respring on those versions you should open the wtfis app on the home screen and hit "go".
-
-In order for tweaks to work on ios 7.1.x, you need to open the wtfis app on the home screen and hit "go". This patches the sandbox, allowing for tweak injection to work correctly.
-
-
-## Requirements
-
-macOS High Sierra to Catalina. The script only officially supports these versions.
-
-Java 8 https://builds.openlogic.com/downloadJDK/openlogic-openjdk/8u262-b10/openlogic-openjdk-8u262-b10-mac-x64.pkg
-
-Python. You can download it for macOS High Sierra from https://www.python.org/ftp/python/3.7.6/python-3.7.6-macosx10.6.pkg 
-
-*Note: This should automatically be installed by the script.
-
-pyimg4 just run `pip3 install pyimg4` before running the script. The script should do this automatically too
-
-Intel Mac. Hackintoshes with AMD CPUs will **NOT** work with this.
-
-Stable internet connection. Please don't try using this with dial up...
-
-At least 20GB of free space on your computer
-
-USB Type-A port and Lightning cable. USB Type-C ports will **NOT** work with this script. If you're using a Mac that only has a USB-C port (such as 12" MacBooks, and late Intel MacBook Airs) a dongle/dock with a USB-A port should work just fine with a standard USB-A to Lightning cable.
-
-Working iDevice: The script has to backup `apticket.der`, `sep-firmware.img4`, `Baseband`, and `keybags` from your device before you can downgrade to an older iOS version.
+iOS 8.0 GM - 9.2.1 support will never be possible because keybags do not unlock on those versions which means nearly the entire OS is nonfunctional.
 
 ## Credits
 
+- [PsychoTea](https://github.com/PsychoTea/) for [MeridianJB](https://github.com/PsychoTea/MeridianJB/) which we use for iOS 10.3.3 downgrades
+- [coolstar](https://github.com/coolstar) for [Electra](https://www.coolstar.org/electra/) and [Chimera](https://chimera.coolstar.org/) jailbreaks which we use on iOS 11 and 12 downgrades
+- [edwin170](https://github.com/edwin170) for a ton of help with fixing cell service, icloud, audio, 3d touch, gyroscope, microphone and other issues
 - [johndoe123](https://twitter.com/iarchiveml) for the a7 ios 7 [downgrade guide](https://ios7.iarchive.app/downgrade/) which made this entire project possible
 - [LukeZGD](https://github.com/LukeZGD/) for the updated [cydia.tar](https://github.com/LukeZGD/Legacy-iOS-Kit/raw/main/resources/jailbreak/freeze.tar) for jailbreaking older ios versions
-- [TheRealClarity](https://github.com/TheRealClarity) for ios 7 & 8 semi untethered sandbox patches to enable tweaks to work
+- [TheRealClarity](https://github.com/TheRealClarity) for wtfis.app which we [repurposed](https://github.com/y08wilm/wtfis/blob/ios7/wtfis/ViewController.m#L27) to run [evasi0n7](https://ios.cfw.guide/installing-evasi0n7/) for sandbox patch on ios 7 to allow cydia substrate to not break apps
 - [Nathan](https://github.com/verygenericname) for the ssh ramdisk and [iBoot64Patcher fork](https://github.com/verygenericname/iBoot64Patcher)
 - [Mineek](https://github.com/mineek) for [seprmvr64](https://github.com/mineek/seprmvr64) and other patches. I want to give a very special thanks to [Mineek](https://github.com/mineek), if it werent for them this entire project would have not been possible. you are amazing and i appreciate all that you do, thank you so much
 - [nyuszika7h](https://github.com/nyuszika7h) for the script to help get into DFU
