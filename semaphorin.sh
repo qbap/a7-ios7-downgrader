@@ -226,12 +226,13 @@ _download_ramdisk_boot_files() {
                 else
                     ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
                 fi
+                "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/ramdisk/$3/iBSS.dec -k $ivkey
             else
                 fn2="$fn.dec"
                 "$bin"/gaster decrypt $fn $fn2
                 fn="$fn2"
+                cp $fn "$dir"/$1/$cpid/ramdisk/$3/iBSS.dec
             fi
-            "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/ramdisk/$3/iBSS.dec -k $ivkey
         fi
         if [ ! -e "$dir"/$1/$cpid/ramdisk/$3/iBEC.dec ]; then
             "$bin"/pzb -g $(awk "/""$replace""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
@@ -246,12 +247,13 @@ _download_ramdisk_boot_files() {
                 else
                     ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
                 fi
+                "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/ramdisk/$3/iBEC.dec -k $ivkey
             else
                 fn2="$fn.dec"
                 "$bin"/gaster decrypt $fn $fn2
                 fn="$fn2"
+                cp $fn "$dir"/$1/$cpid/ramdisk/$3/iBEC.dec
             fi
-            "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/ramdisk/$3/iBEC.dec -k $ivkey
         fi
         if [[ "$3" == "10."* ]]; then
             rm -rf BuildManifest.plist
@@ -402,12 +404,13 @@ _download_boot_files() {
                 else
                     ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
                 fi
+                "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/$3/iBSS.dec -k $ivkey
             else
                 fn2="$fn.dec"
                 "$bin"/gaster decrypt $fn $fn2
                 fn="$fn2"
+                cp $fn "$dir"/$1/$cpid/$3/iBSS.dec
             fi
-            "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/$3/iBSS.dec -k $ivkey
         fi
         if [ ! -e "$dir"/$1/$cpid/$3/iBEC.dec ]; then
             "$bin"/pzb -g $(awk "/""$replace""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
@@ -422,12 +425,13 @@ _download_boot_files() {
                 else
                     ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
                 fi
+                "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/$3/iBEC.dec -k $ivkey
             else
                 fn2="$fn.dec"
                 "$bin"/gaster decrypt $fn $fn2
                 fn="$fn2"
+                cp $fn "$dir"/$1/$cpid/$3/iBEC.dec
             fi
-            "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/$3/iBEC.dec -k $ivkey
         fi
         if [[ "$3" == "10."* ]]; then
             rm -rf BuildManifest.plist
@@ -971,6 +975,14 @@ else
     boot_args="-v"
 fi
 _wait_for_dfu
+if [[ "$deviceid" == "iPad"* && ! "$deviceid" == "iPad4"* ]]; then
+    if [[ "$version" == "8."* || "$version" == "9."* ]]; then
+        if [[ ! "$(./java/bin/java -jar ./Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e 9.3.2 $deviceid)" == "true" ]]; then
+            echo "[-] No firmware keys exist on https://theapplewiki.com/wiki/ for your device"
+            exit 0
+        fi
+    fi
+fi
 if [[ "$clean" == 1 ]]; then
     rm -rf "$dir"/$deviceid/$cpid/$version/iBSS*
     rm -rf "$dir"/$deviceid/$cpid/$version/iBEC*
@@ -1091,6 +1103,8 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             _download_ramdisk_boot_files $deviceid $replace 10.3.3
             if [[ "$(./java/bin/java -jar ./Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e 14.3 $deviceid)" == "true" ]]; then
                 _download_ramdisk_boot_files $deviceid $replace 14.3
+            elif [[ "$deviceid" == "iPad"* && ! "$deiceid" == "iPad4"* ]]; then
+                _download_ramdisk_boot_files $deviceid $replace 14.3
             else
                 _download_ramdisk_boot_files $deviceid $replace 12.5.4
             fi
@@ -1098,11 +1112,15 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             _download_ramdisk_boot_files $deviceid $replace 10.3.3
             if [[ "$(./java/bin/java -jar ./Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e 14.3 $deviceid)" == "true" ]]; then
                 _download_ramdisk_boot_files $deviceid $replace 14.3
+            elif [[ "$deviceid" == "iPad"* && ! "$deiceid" == "iPad4"* ]]; then
+                _download_ramdisk_boot_files $deviceid $replace 14.3
             else
                 _download_ramdisk_boot_files $deviceid $replace 12.5.4
             fi
         elif [[ "$version" == "11."* || "$version" == "12."* ]]; then
             if [[ "$(./java/bin/java -jar ./Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e 14.3 $deviceid)" == "true" ]]; then
+                _download_ramdisk_boot_files $deviceid $replace 14.3
+            elif [[ "$deviceid" == "iPad"* && ! "$deiceid" == "iPad4"* ]]; then
                 _download_ramdisk_boot_files $deviceid $replace 14.3
             else
                 _download_ramdisk_boot_files $deviceid $replace 12.5.4
@@ -1179,6 +1197,8 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             cd "$dir"/$deviceid/$cpid/ramdisk/10.3.3
         elif [[ "$version" == "11."* || "$version" == "12."* ]]; then
             if [[ "$(./java/bin/java -jar ./Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e 14.3 $deviceid)" == "true" ]]; then
+                cd "$dir"/$deviceid/$cpid/ramdisk/14.3
+            elif [[ "$deviceid" == "iPad"* && ! "$deiceid" == "iPad4"* ]]; then
                 cd "$dir"/$deviceid/$cpid/ramdisk/14.3
             else
                 cd "$dir"/$deviceid/$cpid/ramdisk/12.5.4
@@ -1414,6 +1434,8 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                     cd "$dir"/$deviceid/$cpid/ramdisk/10.3.3
                 elif [[ "$version" == "11."* || "$version" == "12."* ]]; then
                     if [[ "$(./java/bin/java -jar ./Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e 14.3 $deviceid)" == "true" ]]; then
+                        cd "$dir"/$deviceid/$cpid/ramdisk/14.3
+                    elif [[ "$deviceid" == "iPad"* && ! "$deiceid" == "iPad4"* ]]; then
                         cd "$dir"/$deviceid/$cpid/ramdisk/14.3
                     else
                         cd "$dir"/$deviceid/$cpid/ramdisk/12.5.4
