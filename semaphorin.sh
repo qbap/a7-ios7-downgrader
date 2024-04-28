@@ -63,7 +63,7 @@ Main operation mode:
     --restore-mnt2             Copies the contents of disk0s1s2.gz to /dev/disk0s1s2 of the iOS device
     --boot                     Don't enter ramdisk or wipe device, just boot
     --clean                    Delete all the created boot files for your device
-    --fix-activation           Fixes activation on iOS 10.3.3-11.1 so you can navigate through Setup.app
+    --force-activation         Forces FactoryActivation on your device during restore
     --fix-auto-boot            Fixes booting into the main OS on A11 devices such as the iPhone X
 
 The iOS version argument should be the iOS version you are downgrading to.
@@ -104,8 +104,8 @@ parse_opt() {
         --restore-mnt2)
             restore_mnt2=1
             ;;
-        --fix-activation)
-            fix_activation=1
+        --force-activation)
+            force_activation=1
             ;;
         --ssh)
             _kill_if_running iproxy
@@ -1056,7 +1056,7 @@ if [[ "$boot" == 1 ]]; then
     fi
     exit 0
 fi
-if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activation" == 1 || "$dump_nand" == 1 || "$restore_nand" == 1 || "$restore_mnt1" == 1 || "$restore_mnt2" == 1 || "$disable_NoMoreSIGABRT" == 1 || "$NoMoreSIGABRT" == 1 ]]; then
+if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activation" == 1 || "$dump_nand" == 1 || "$restore_nand" == 1 || "$restore_mnt1" == 1 || "$restore_mnt2" == 1 || "$disable_NoMoreSIGABRT" == 1 || "$NoMoreSIGABRT" == 1 ]]; then
     _kill_if_running iproxy
     if [[ "$ramdisk" == 1 || "$dump_blobs" == 1 || "$dump_nand" == 1 || "$restore_nand" == 1 || "$restore_mnt1" == 1 || "$restore_mnt2" == 1 || "$disable_NoMoreSIGABRT" == 1 || "$NoMoreSIGABRT" == 1 ]]; then
         rdversion="$version"
@@ -1588,55 +1588,6 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/$systemfs /mnt4"
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/$datafs /mnt5"
             "$bin"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P 2222 "$dir"/$deviceid/$cpid/$version/OS.dmg root@localhost:/mnt4
-            ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$bin"/jq '.firmwares | .[] | select(.version=="'$version'")' | "$bin"/jq -s '.[0] | .url' --raw-output)
-            rm -rf BuildManifest.plist
-            mkdir -p "$dir"/$deviceid/$cpid/$version
-            rm -rf "$dir"/work
-            mkdir "$dir"/work
-            cd "$dir"/work
-            "$bin"/img4tool -e -s "$dir"/other/shsh/"${check}".shsh -m IM4M
-            if [[ "$version" == "10."* ]]; then
-                if [[ "$deviceid" == "iPhone8,1" || "$deviceid" == "iPhone8,2" ]]; then
-                    ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$bin"/jq '.firmwares | .[] | select(.version=="'11.1'")' | "$bin"/jq -s '.[0] | .url' --raw-output)
-                else
-                    ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$bin"/jq '.firmwares | .[] | select(.version=="'10.3.3'")' | "$bin"/jq -s '.[0] | .url' --raw-output)
-                fi
-            fi
-            rm -rf "$dir"/$deviceid/$cpid/$version/iBSS*
-            rm -rf "$dir"/$deviceid/$cpid/$version/iBEC*
-            "$bin"/pzb -g BuildManifest.plist "$ipswurl"
-            "$bin"/pzb -g $(awk "/""$replace""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
-            fn="$(awk "/""$replace""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')"
-            if [[ "$version" == "10."* ]]; then
-                if [[ "$deviceid" == "iPhone8,1" || "$deviceid" == "iPhone8,2" ]]; then
-                    ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn 11.1 $deviceid)"
-                else
-                    ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn 10.3.3 $deviceid)"
-                fi
-            else
-                ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $version $deviceid)"
-            fi
-            "$bin"/img4 -i $fn -o "$dir"/$deviceid/$cpid/$version/iBSS.dec -k $ivkey
-            "$bin"/pzb -g $(awk "/""$replace""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
-            fn="$(awk "/""$replace""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')"
-            if [[ "$version" == "10."* ]]; then
-                if [[ "$deviceid" == "iPhone8,1" || "$deviceid" == "iPhone8,2" ]]; then
-                    ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn 11.1 $deviceid)"
-                else
-                    ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn 10.3.3 $deviceid)"
-                fi
-            else
-                ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $version $deviceid)"
-            fi
-            "$bin"/img4 -i $fn -o "$dir"/$deviceid/$cpid/$version/iBEC.dec -k $ivkey
-            rm -rf BuildManifest.plist
-            "$bin"/iBoot64Patcher "$dir"/$deviceid/$cpid/$version/iBSS.dec "$dir"/$deviceid/$cpid/$version/iBSS.patched
-            "$bin"/iBoot64Patcher "$dir"/$deviceid/$cpid/$version/iBEC.dec "$dir"/$deviceid/$cpid/$version/iBEC.patched2 -b "$boot_args rd=$systemfs amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1 amfi_get_out_of_my_way=1 amfi_allow_any_signature=1" -n
-            "$bin"/kairos "$dir"/$deviceid/$cpid/$version/iBEC.patched2 "$dir"/$deviceid/$cpid/$version/iBEC.patched -d 8
-            "$bin"/img4 -i "$dir"/$deviceid/$cpid/$version/iBSS.patched -o "$dir"/$deviceid/$cpid/$version/iBSS.img4 -M IM4M -A -T ibss
-            "$bin"/img4 -i "$dir"/$deviceid/$cpid/$version/iBEC.patched -o "$dir"/$deviceid/$cpid/$version/iBEC.img4 -M IM4M -A -T ibec
-            cd ..
-            rm -rf work
         else
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "lwvm init" 2> /dev/null
             sleep 1
@@ -1765,8 +1716,8 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/chflags schg /mnt5/root/Library/Lockdown/device_public_key.pem"
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt5/root/Library/Lockdown/escrow_records"
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt5/root/Library/Lockdown/pair_records"
-            if [ ! -e "$dir"/$deviceid/0.0/activation_records/activation_record.plist ]; then
-                "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 root@localhost:/mnt4/usr/libexec/mobileactivationd "$dir"/$deviceid/$cpid/$version/mobactivationd.raw
+            "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 root@localhost:/mnt4/usr/libexec/mobileactivationd "$dir"/$deviceid/$cpid/$version/mobactivationd.raw
+            if [[ ! -e "$dir"/$deviceid/0.0/activation_records/activation_record.plist || "$force_activation" == 1 ]]; then
                 "$bin"/mobactivationd64patcher "$dir"/$deviceid/$cpid/$version/mobactivationd.raw "$dir"/$deviceid/$cpid/$version/mobactivationd.patched -b -c -d
                 "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/$deviceid/$cpid/$version/mobactivationd.patched root@localhost:/mnt4/usr/libexec/mobileactivationd
             fi
@@ -1791,10 +1742,10 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/chflags schg /mnt4/usr/standalone/firmware/FUD/AudioCodecFirmware.img4"
             if [ -e "$dir"/$deviceid/0.0/activation_records ]; then
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt5/root/Library/Lockdown/activation_records"
-                "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -r -P 2222 "$dir"/$deviceid/0.0/activation_records root@localhost:/mnt5/root/Library/Lockdown 2> /dev/null
+                "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -r -P 2222 "$dir"/$deviceid/0.0/activation_records/* root@localhost:/mnt5/root/Library/Lockdown/activation_records 2> /dev/null
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/chflags -R schg /mnt5/root/Library/Lockdown/activation_records"
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt5/mobile/Library/mad/activation_records"
-                "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -r -P 2222 "$dir"/$deviceid/0.0/activation_records root@localhost:/mnt5/mobile/Library/mad 2> /dev/null
+                "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -r -P 2222 "$dir"/$deviceid/0.0/activation_records/* root@localhost:/mnt5/mobile/Library/mad/activation_records 2> /dev/null
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/chflags -R schg /mnt5/mobile/Library/mad/activation_records"
             fi
             if [ -e "$dir"/$deviceid/0.0/activation_records/activation_record.plist ]; then
@@ -1861,14 +1812,9 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt5/mobile/Library/Caches/com.apple.MobileGestalt.plist'
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt4/System/Library/DataClassMigrators/SystemAppMigrator.migrator/"
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mv -v /mnt5/staged_system_apps/* /mnt4/Applications"
-                if [ -e "$dir"/jb/Chimera.app.tar.gz ]; then
-                    read -p "would you like to install Chimera.app.tar.gz to /mnt4/Applications? " r1
-                    if [[ "$r1" = 'yes' || "$r1" = 'y' ]]; then
-                        "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/jb/Chimera.app.tar.gz root@localhost:/mnt4/
-                        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xzvf /mnt4/Chimera.app.tar.gz -C /mnt4/Applications/"
-                        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt4/Applications/Chimera.app'
-                    fi
-                fi
+                "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/jb/Chimera.app.tar.gz root@localhost:/mnt4/
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xzvf /mnt4/Chimera.app.tar.gz -C /mnt4/Applications/"
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt4/Applications/Chimera.app'
                 echo "[*] If you boot now, you will get stuck at the \"screen time\" step in Setup.app"
                 echo "[*] You must delete Setup.app if you want to be able to use iOS $version"
                 echo "[*] See https://files.catbox.moe/96vhbl.mov for a video demonstration of the issue"
@@ -1945,10 +1891,10 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             fi
             if [ -e "$dir"/$deviceid/0.0/activation_records ]; then
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt2/root/Library/Lockdown/activation_records"
-                "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -r -P 2222 "$dir"/$deviceid/0.0/activation_records root@localhost:/mnt2/root/Library/Lockdown 2> /dev/null
+                "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -r -P 2222 "$dir"/$deviceid/0.0/activation_records/* root@localhost:/mnt2/root/Library/Lockdown/activation_records 2> /dev/null
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/chflags -R schg /mnt2/root/Library/Lockdown/activation_records"
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt2/mobile/Library/mad/activation_records"
-                "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -r -P 2222 "$dir"/$deviceid/0.0/activation_records root@localhost:/mnt2/mobile/Library/mad 2> /dev/null
+                "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -r -P 2222 "$dir"/$deviceid/0.0/activation_records/* root@localhost:/mnt2/mobile/Library/mad/activation_records 2> /dev/null
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/chflags -R schg /mnt2/mobile/Library/mad/activation_records"
             fi
             if [[ "$version" == "10."* ]]; then
@@ -1959,8 +1905,8 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/chflags schg /mnt2/root/Library/Lockdown/device_public_key.pem"
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt2/root/Library/Lockdown/escrow_records"
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt2/root/Library/Lockdown/pair_records"
-                if [ ! -e "$dir"/$deviceid/0.0/activation_records/activation_record.plist ]; then
-                    "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 root@localhost:/mnt1/usr/libexec/mobileactivationd "$dir"/$deviceid/$cpid/$version/mobactivationd.raw
+                "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 root@localhost:/mnt1/usr/libexec/mobileactivationd "$dir"/$deviceid/$cpid/$version/mobactivationd.raw
+                if [[ ! -e "$dir"/$deviceid/0.0/activation_records/activation_record.plist || "$force_activation" == 1 ]]; then
                     "$bin"/mobactivationd64patcher "$dir"/$deviceid/$cpid/$version/mobactivationd.raw "$dir"/$deviceid/$cpid/$version/mobactivationd.patched -b -c -d
                     "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/$deviceid/$cpid/$version/mobactivationd.patched root@localhost:/mnt1/usr/libexec/mobileactivationd
                 fi
@@ -2028,7 +1974,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                 "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/jb/data_ark.plist_ios8.tar root@localhost:/mnt2/ 2> /dev/null
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/data_ark.plist_ios8.tar -C /mnt2" 2> /dev/null
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/data_ark.plist_ios8.tar" 2> /dev/null
-                if [ ! -e "$dir"/$deviceid/0.0/activation_records/activation_record.plist ]; then
+                if [[ ! -e "$dir"/$deviceid/0.0/activation_records/activation_record.plist || "$force_activation" == 1 ]]; then
                     "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 root@localhost:/mnt1/System/Library/PrivateFrameworks/MobileActivation.framework/Support/mobactivationd "$dir"/$deviceid/$cpid/$version/mobactivationd.raw 2> /dev/null
                     "$bin"/mobactivationd64patcher "$dir"/$deviceid/$cpid/$version/mobactivationd.raw "$dir"/$deviceid/$cpid/$version/mobactivationd.patched -b -c -d 2> /dev/null
                     "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/$deviceid/$cpid/$version/mobactivationd.patched root@localhost:/mnt1/System/Library/PrivateFrameworks/MobileActivation.framework/Support/mobactivationd 2> /dev/null
@@ -2043,8 +1989,8 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                 "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/jb/data_ark.plist_ios8.tar root@localhost:/mnt2/ 2> /dev/null
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/data_ark.plist_ios8.tar -C /mnt2" 2> /dev/null
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/data_ark.plist_ios8.tar" 2> /dev/null
-                if [ ! -e "$dir"/$deviceid/0.0/activation_records/activation_record.plist ]; then
-                    "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 root@localhost:/mnt1/usr/libexec/mobileactivationd "$dir"/$deviceid/$cpid/$version/mobactivationd.raw 2> /dev/null
+                "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 root@localhost:/mnt1/usr/libexec/mobileactivationd "$dir"/$deviceid/$cpid/$version/mobactivationd.raw 2> /dev/null
+                if [[ ! -e "$dir"/$deviceid/0.0/activation_records/activation_record.plist || "$force_activation" == 1 ]]; then
                     "$bin"/mobactivationd64patcher "$dir"/$deviceid/$cpid/$version/mobactivationd.raw "$dir"/$deviceid/$cpid/$version/mobactivationd.patched -b -c -d 2> /dev/null
                     "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/$deviceid/$cpid/$version/mobactivationd.patched root@localhost:/mnt1/usr/libexec/mobileactivationd 2> /dev/null
                 fi
@@ -2136,7 +2082,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/AppleInternal.tar' 2> /dev/null
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt2/mobile/Library/Caches/com.apple.MobileGestalt.plist' 2> /dev/null
                 "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 root@localhost:/mnt1/usr/libexec/lockdownd "$dir"/$deviceid/$cpid/$version/lockdownd.raw 2> /dev/null
-                if [ -e "$dir"/$deviceid/0.0/activation_records/activation_record.plist ]; then
+                if [[ -e "$dir"/$deviceid/0.0/activation_records/activation_record.plist || "$force_activation" == 1 ]]; then
                     "$bin"/lockdownd64patcher "$dir"/$deviceid/$cpid/$version/lockdownd.raw "$dir"/$deviceid/$cpid/$version/lockdownd.patched -u -l 2> /dev/null
                 else
                     "$bin"/lockdownd64patcher "$dir"/$deviceid/$cpid/$version/lockdownd.raw "$dir"/$deviceid/$cpid/$version/lockdownd.patched -u -l -b 2> /dev/null
@@ -2186,7 +2132,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
         fi
         $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
         sleep 5
-        if [ ! -e "$dir"/$deviceid/0.0/activation_records/activation_record.plist ]; then
+        if [[ ! -e "$dir"/$deviceid/0.0/activation_records/activation_record.plist || "$force_activation" == 1 ]]; then
             if [[ "$version" == "9.3"* || "$version" == "10."* || "$version" == "11."* || "$version" == "12."* ]]; then
                 if [ -e "$dir"/$deviceid/$cpid/$version/iBSS.img4 ]; then
                     if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
@@ -2241,10 +2187,8 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                 _kill_if_running iproxy
                 echo "[*] Step 1 of downwgrading to iOS $version is now done"
                 echo "[*] The device should now boot without any issue and show a progress bar"
-                echo "[-] You are NOT done!!"
-                echo "[-] You are NOT done!! Do NOT exit out of the script!!!"
                 echo "[*] When your device gets to the setup screen, put the device back into dfu mode"
-                echo "[*] We will then finish patching your device to allow you to navigate to the lock screen"
+                echo "[*] We will then activate your device to allow you to navigate to the home screen"
                 _wait_for_dfu
                 sudo killall -STOP -c usbd
                 read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
@@ -2332,12 +2276,19 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                         if [[ "$folder" == "/mnt2/containers/Data/System"* ]]; then
                             if [ -e "$dir"/$deviceid/0.0/activation_records ]; then
                                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p $folder/activation_records"
-                                "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -r -P 2222 "$dir"/$deviceid/0.0/activation_records root@localhost:$folder 2> /dev/null
+                                "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -r -P 2222 "$dir"/$deviceid/0.0/activation_records/* root@localhost:$folder/activation_records 2> /dev/null
                                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/chflags -R schg $folder/activation_records"
                             fi
                         fi
                     fi
+                    "$bin"/mobactivationd64patcher "$dir"/$deviceid/$cpid/$version/mobactivationd.raw "$dir"/$deviceid/$cpid/$version/mobactivationd.patched -b -c -d 2> /dev/null
+                    "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/$deviceid/$cpid/$version/mobactivationd.patched root@localhost:/mnt1/usr/libexec/mobileactivationd 2> /dev/null
                     "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/jb/data_ark.plis_ root@localhost:$dataarkplist
+                    if [[ "$version" == "10."* ]]; then
+                        "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/jb/Meridian.app.tar.gz root@localhost:/mnt1/
+                        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xzvf /mnt1/Meridian.app.tar.gz -C /mnt1/Applications' 2> /dev/null
+                        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/Meridian.app.tar.gz' 2> /dev/null
+                    fi
                 else
                     "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s$systemdisk /mnt4"
                     "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s$datadisk /mnt5"
@@ -2359,17 +2310,19 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                         if [[ "$folder" == "/mnt5/containers/Data/System"* ]]; then
                             if [ -e "$dir"/$deviceid/0.0/activation_records ]; then
                                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p $folder/activation_records"
-                                "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -r -P 2222 "$dir"/$deviceid/0.0/activation_records root@localhost:$folder 2> /dev/null
+                                "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -r -P 2222 "$dir"/$deviceid/0.0/activation_records/* root@localhost:$folder/activation_records 2> /dev/null
                                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/chflags -R schg $folder/activation_records"
                             fi
                         fi
                     fi
+                    "$bin"/mobactivationd64patcher "$dir"/$deviceid/$cpid/$version/mobactivationd.raw "$dir"/$deviceid/$cpid/$version/mobactivationd.patched -b -c -d 2> /dev/null
+                    "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/$deviceid/$cpid/$version/mobactivationd.patched root@localhost:/mnt4/usr/libexec/mobileactivationd 2> /dev/null
                     "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/jb/data_ark.plis_ root@localhost:$dataarkplist
-                fi
-                if [[ "$version" == "10."* ]]; then
-                    "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/jb/Meridian.app.tar.gz root@localhost:/mnt4/
-                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xzvf /mnt4/Meridian.app.tar.gz -C /mnt4/Applications' 2> /dev/null
-                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt4/Meridian.app.tar.gz' 2> /dev/null
+                    if [[ "$version" == "10."* ]]; then
+                        "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/jb/Meridian.app.tar.gz root@localhost:/mnt4/
+                        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xzvf /mnt4/Meridian.app.tar.gz -C /mnt4/Applications' 2> /dev/null
+                        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt4/Meridian.app.tar.gz' 2> /dev/null
+                    fi
                 fi
                 $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
                 sleep 5
@@ -2430,26 +2383,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
         echo "done"
         exit 0
     else
-        if [[ "$ramdisk" == 1 || "$fix_activation" == 1 || "$dump_blobs" == 1 ]]; then
-            remote_cmd "/sbin/mount_apfs /dev/disk0s1s1 /mnt1 2> /dev/null" && {
-                echo "[*] /dev/disk0s1s1 is an APFS volume"
-            } || {
-                echo "[*] /dev/disk0s1s1 is NOT an APFS volume"
-            }
-            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt1" 2> /dev/null
-            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt2" 2> /dev/null
-            remote_cmd "/sbin/mount_apfs /dev/disk0s1s1s1 /mnt1 2> /dev/null" && {
-                echo "[*] /dev/disk0s1s1s1 is an APFS volume"
-            } || {
-                echo "[*] /dev/disk0s1s1s1 is NOT an APFS volume"
-            }
-            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt1" 2> /dev/null
-            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt2" 2> /dev/null
-            remote_cmd "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1 2> /dev/null" && {
-                echo "[*] /dev/disk0s1s1 is an HFS+ volume"
-            } || {
-                echo "[*] /dev/disk0s1s1 is NOT an HFS+ volume"
-            }
+        if [[ "$ramdisk" == 1 || "$force_activation" == 1 || "$dump_blobs" == 1 ]]; then
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt1" 2> /dev/null
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt2" 2> /dev/null
             if [[ "$version" == "7."* || "$version" == "8."* || "$version" == "9."* || "$version" == "10.0"* || "$version" == "10.1"* || "$version" == "10.2"* ]]; then
@@ -2486,10 +2420,13 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt2" 2> /dev/null
             echo "[*] Backing up /dev/disk0 to $dir/$deviceid/disk0.gz, this may take up to 15 minutes.."
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "dd if=/dev/disk0 bs=64k | gzip -1 -" | dd of=disk0.gz bs=64k
-            echo "[*] Backing up /dev/disk0s1s1 to $dir/$deviceid/disk0s1s1.gz, this may take up to 15 minutes.."
-            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "dd if=/dev/disk0s1s1 bs=64k | gzip -1 -" | dd of=disk0s1s1.gz bs=64k
+            read -p "would you like to also back up /dev/disk0s1s1 to $dir/$deviceid/disk0s1s1.gz? " r
+            if [[ ! "$r" == "no" && ! "$r" == "n" ]]; then
+                echo "[*] Backing up /dev/disk0s1s1 to $dir/$deviceid/disk0s1s1.gz, this may take up to 15 minutes.."
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "dd if=/dev/disk0s1s1 bs=64k | gzip -1 -" | dd of=disk0s1s1.gz bs=64k
+            fi
             read -p "would you like to also back up /dev/disk0s1s2 to $dir/$deviceid/disk0s1s2.gz? " r
-            if [[ "$r" == "yes" || "$r" == "y" ]]; then
+            if [[ ! "$r" == "no" && ! "$r" == "n" ]]; then
                  echo "[*] Backing up /dev/disk0s1s2 to $dir/$deviceid/disk0s1s2.gz, this may take up to 15 minutes.."
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "dd if=/dev/disk0s1s2 bs=64k | gzip -1 -" | dd of=disk0s1s2.gz bs=64k
             fi
@@ -2564,7 +2501,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
             $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
             _kill_if_running iproxy
             exit 0
-        elif [[ "$fix_activation" == 1 ]]; then
+        elif [[ "$force_activation" == 1 ]]; then
             if [[ "$version" == "9.3"* || "$version" == "10.0"* || "$version" == "10.1"* || "$version" == "10.2"* ]]; then
                 # /mnt2/containers/Data/System/58954F59-3AA2-4005-9C5B-172BE4ADEC98/Library/internal/data_ark.plist
                 dataarkplist=$(remote_cmd "/usr/bin/find /mnt2/containers/Data/System -name 'internal'" 2> /dev/null)
@@ -2584,7 +2521,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                     if [[ "$folder" == "/mnt2/containers/Data/System"* ]]; then
                         if [ -e "$dir"/$deviceid/0.0/activation_records ]; then
                             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p $folder/activation_records"
-                            "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -r -P 2222 "$dir"/$deviceid/0.0/activation_records root@localhost:$folder 2> /dev/null
+                            "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -r -P 2222 "$dir"/$deviceid/0.0/activation_records/* root@localhost:$folder/activation_records 2> /dev/null
                             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/chflags -R schg $folder/activation_records"
                         fi
                     fi
@@ -2608,7 +2545,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$fix_activati
                     if [[ "$folder" == "/mnt5/containers/Data/System"* ]]; then
                         if [ -e "$dir"/$deviceid/0.0/activation_records ]; then
                             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p $folder/activation_records"
-                            "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -r -P 2222 "$dir"/$deviceid/0.0/activation_records root@localhost:$folder 2> /dev/null
+                            "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -r -P 2222 "$dir"/$deviceid/0.0/activation_records/* root@localhost:$folder/activation_records 2> /dev/null
                             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/chflags -R schg $folder/activation_records"
                         fi
                     fi
