@@ -7,6 +7,7 @@ Carrier_Bundles.tar
 data_ark.plist
 trustcache
 trustcache.*
+avefw.*
 aopfw.*
 homerfw.*
 multitouch.*
