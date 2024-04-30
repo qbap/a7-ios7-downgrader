@@ -634,9 +634,11 @@ _download_boot_files() {
             "$bin"/KPlooshFinder "$dir"/$1/$cpid/$3/kcache2.patched "$dir"/$1/$cpid/$3/kcache3.patched
             # seprmvr643 just patches "SEP Panic" and may not even be required
             "$bin"/seprmvr643 "$dir"/$1/$cpid/$3/kcache3.patched "$dir"/$1/$cpid/$3/kcache4.patched
+            # seprmvr64lite5 fixes "SEP ROM boot panic. 0x%s" on a8 devices
+            "$bin"/seprmvr64lite5 "$dir"/$1/$cpid/$3/kcache4.patched "$dir"/$1/$cpid/$3/kcache5.patched
             # -a is mapIO, -f is vm_fault_enter, -h is sandbox patch, and -q is image4 validation patches
-            "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache4.patched "$dir"/$1/$cpid/$3/kcache5.patched -a -f -h -q
-            "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache5.patched "$dir"/$1/$cpid/$3/kc.bpatch
+            "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache5.patched "$dir"/$1/$cpid/$3/kcache6.patched -a -f -h -q
+            "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache6.patched "$dir"/$1/$cpid/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$cpid/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$cpid/$3/kc.bpatch
             if [ -e "$dir"/$1/$cpid/$3/trustcache.im4p ]; then
@@ -661,15 +663,17 @@ _download_boot_files() {
             if [ -e "$dir"/$1/$cpid/$3/audiocodecfirmware.dec ]; then
                 "$bin"/img4 -i "$dir"/$1/$cpid/$3/audiocodecfirmware.dec -o "$dir"/$1/$cpid/$3/audiocodecfirmware.img4 -M IM4M -T acfw
             fi
-            # seprmvr64 is plooshfinder seprmvr64
-            "$bin"/seprmvr64 "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache.patched
+            # seprmvr647 is plooshfinder seprmvr64 but with EP0 patches removed
+            "$bin"/seprmvr647 "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache.patched
             # KPlooshFinder is amfi patch
             "$bin"/KPlooshFinder "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched
             # seprmvr643 just patches "SEP Panic" and may not even be required
             "$bin"/seprmvr643 "$dir"/$1/$cpid/$3/kcache2.patched "$dir"/$1/$cpid/$3/kcache3.patched
             # -a is mapIO, -f is vm_fault_enter, and -q is image4 validation patches
             "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache3.patched "$dir"/$1/$cpid/$3/kcache4.patched -a -f -q
-            "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache4.patched "$dir"/$1/$cpid/$3/kc.bpatch
+            # seprmvr64lite5 fixes "SEP ROM boot panic. 0x%s" on a8 devices
+            "$bin"/seprmvr64lite5 "$dir"/$1/$cpid/$3/kcache4.patched "$dir"/$1/$cpid/$3/kcache5.patched
+            "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache5.patched "$dir"/$1/$cpid/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$cpid/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$cpid/$3/kc.bpatch
             if [ -e "$dir"/$1/$cpid/$3/trustcache.im4p ]; then
@@ -695,23 +699,27 @@ _download_boot_files() {
                 "$bin"/img4 -i "$dir"/$1/$cpid/$3/audiocodecfirmware.dec -o "$dir"/$1/$cpid/$3/audiocodecfirmware.img4 -M IM4M -T acfw
             fi
             if [[ "$deviceid" == "iPhone8,1" && "$3" == "11.0" ]]; then
-                # seprmvr64 is plooshfinder seprmvr64
+                # seprmvr647 is plooshfinder seprmvr64 but with EP0 patches removed
                 "$bin"/seprmvr647 "$dir"/$1/$cpid/$3/kcache_15A5278f.raw "$dir"/$1/$cpid/$3/kcache.patched
                 # KPlooshFinder is amfi patch
                 "$bin"/KPlooshFinder "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched
                 # -a is mapIO, -f is vm_fault_enter, -m is mount_common, and -b is image4 validation patches
                 "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache2.patched "$dir"/$1/$cpid/$3/kcache3.patched -a -f -m -b
-                "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache_15A5278f.raw "$dir"/$1/$cpid/$3/kcache3.patched "$dir"/$1/$cpid/$3/kc.bpatch
+                # seprmvr64lite5 fixes "SEP ROM boot panic. 0x%s" on a8 devices
+                "$bin"/seprmvr64lite5 "$dir"/$1/$cpid/$3/kcache3.patched "$dir"/$1/$cpid/$3/kcache4.patched
+                "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache_15A5278f.raw "$dir"/$1/$cpid/$3/kcache4.patched "$dir"/$1/$cpid/$3/kc.bpatch
                 "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache_15A5278f.dec -o "$dir"/$1/$cpid/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$cpid/$3/kc.bpatch
                 "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache_15A5278f.dec -o "$dir"/$1/$cpid/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$cpid/$3/kc.bpatch
             else
-                # seprmvr64 is plooshfinder seprmvr64
+                # seprmvr647 is plooshfinder seprmvr64 but with EP0 patches removed
                 "$bin"/seprmvr647 "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache.patched
                 # KPlooshFinder is amfi patch
                 "$bin"/KPlooshFinder "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched
                 # -a is mapIO, -f is vm_fault_enter, -m is mount_common, and -b is image4 validation patches
                 "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache2.patched "$dir"/$1/$cpid/$3/kcache3.patched -a -f -m -b
-                "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache3.patched "$dir"/$1/$cpid/$3/kc.bpatch
+                # seprmvr64lite5 fixes "SEP ROM boot panic. 0x%s" on a8 devices
+                "$bin"/seprmvr64lite5 "$dir"/$1/$cpid/$3/kcache3.patched "$dir"/$1/$cpid/$3/kcache4.patched
+                "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache4.patched "$dir"/$1/$cpid/$3/kc.bpatch
                 "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$cpid/$3/kc.bpatch
                 "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$cpid/$3/kc.bpatch
             fi
@@ -745,7 +753,9 @@ _download_boot_files() {
             "$bin"/seprmvr64lite4 "$dir"/$1/$cpid/$3/kcache2.patched "$dir"/$1/$cpid/$3/kcache3.patched
             # -a is mapIO, -m is mount_common, -f is vm_fault_enter, and -r is image4 validation patches
             "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache3.patched "$dir"/$1/$cpid/$3/kcache4.patched -a -m -r -f
-            "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache4.patched "$dir"/$1/$cpid/$3/kc.bpatch
+            # seprmvr64lite5 fixes "SEP ROM boot panic. 0x%s" on a8 devices
+            "$bin"/seprmvr64lite5 "$dir"/$1/$cpid/$3/kcache4.patched "$dir"/$1/$cpid/$3/kcache5.patched
+            "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache5.patched "$dir"/$1/$cpid/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$cpid/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$cpid/$3/kc.bpatch
             if [ -e "$dir"/$1/$cpid/$3/trustcache.im4p ]; then
@@ -777,7 +787,9 @@ _download_boot_files() {
             "$bin"/KPlooshFinder "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched
             # -a is mapIO, -m is mount_common, -f is vm_fault_enter, and -r is image4 validation patches
             "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache2.patched "$dir"/$1/$cpid/$3/kcache3.patched -a -m -r -f
-            "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache3.patched "$dir"/$1/$cpid/$3/kc.bpatch
+            # seprmvr64lite5 fixes "SEP ROM boot panic. 0x%s" on a8 devices
+            "$bin"/seprmvr64lite5 "$dir"/$1/$cpid/$3/kcache3.patched "$dir"/$1/$cpid/$3/kcache4.patched
+            "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache4.patched "$dir"/$1/$cpid/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$cpid/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$cpid/$3/kc.bpatch
             if [ -e "$dir"/$1/$cpid/$3/trustcache.im4p ]; then
