@@ -55,6 +55,7 @@ Main operation mode:
     --serial                   Enable serial debugging
     --ssh                      Tries to connect to ssh over usb interface to the connected device
     --restore                  Wipe device and downgrade ios
+    --restore-activation       Copies the backed up activation records to /dev/disk0s1s2 on the iOS device
     --dump-nand                Backs up the entire contents of your iOS device to disk0.gz
     --NoMoreSIGABRT            Adds the "protect" flag to /dev/disk0s1s2
     --disable-NoMoreSIGABRT    Removes the "protect" flag from /dev/disk0s1s2
@@ -94,6 +95,9 @@ parse_opt() {
             ;;
         --disable-NoMoreSIGABRT)
             disable_NoMoreSIGABRT=1
+            ;;
+        --restore-activation)
+            restore_activation=1
             ;;
         --restore-nand)
             restore_nand=1
@@ -1123,9 +1127,9 @@ if [[ "$boot" == 1 ]]; then
     fi
     exit 0
 fi
-if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activation" == 1 || "$dump_nand" == 1 || "$restore_nand" == 1 || "$restore_mnt1" == 1 || "$restore_mnt2" == 1 || "$disable_NoMoreSIGABRT" == 1 || "$NoMoreSIGABRT" == 1 ]]; then
+if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activation" == 1 || "$restore_activation" == 1 || "$dump_nand" == 1 || "$restore_nand" == 1 || "$restore_mnt1" == 1 || "$restore_mnt2" == 1 || "$disable_NoMoreSIGABRT" == 1 || "$NoMoreSIGABRT" == 1 ]]; then
     _kill_if_running iproxy
-    if [[ "$ramdisk" == 1 || "$dump_blobs" == 1 || "$dump_nand" == 1 || "$restore_nand" == 1 || "$restore_mnt1" == 1 || "$restore_mnt2" == 1 || "$disable_NoMoreSIGABRT" == 1 || "$NoMoreSIGABRT" == 1 ]]; then
+    if [[ "$ramdisk" == 1 || "$dump_blobs" == 1 || "$dump_nand" == 1 || "$restore_activation" == 1 || "$restore_nand" == 1 || "$restore_mnt1" == 1 || "$restore_mnt2" == 1 || "$disable_NoMoreSIGABRT" == 1 || "$NoMoreSIGABRT" == 1 ]]; then
         rdversion="$version"
         if [[ "$version" == "9."* ]]; then
             rdversion="11.4"
@@ -2478,6 +2482,63 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s$systemdisk /mnt4"
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s$datadisk /mnt5"
             fi
+        fi
+        if [[ "$restore_activation" == 1 ]]; then
+            if [[ "$r" == "7."* || "$r" == "8."* || "$r" == "9."* || "$r" == "10.0"* || "$r" == "10.1"* || "$r" == "10.2"* ]]; then
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_hfs /dev/disk0s1s1 /mnt1" 2> /dev/null
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -t hfs /dev/disk0s1s2 /mnt2" 2> /dev/null
+            else
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "bash -c mount_filesystems" 2> /dev/null
+            fi
+            if [ -e "$dir"/$deviceid/0.0/IC-Info.sisv ]; then
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt2/mobile/Library/FairPlay/iTunes_Control/iTunes/"
+                "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/$deviceid/0.0/IC-Info.sisv root@localhost:/mnt2/mobile/Library/FairPlay/iTunes_Control/iTunes/IC-Info.sisv 2> /dev/null
+            else
+                echo "[-] "$dir"/$deviceid/0.0/IC-Info.sisv does not exist"
+            fi
+            if [ -e "$dir"/$deviceid/0.0/com.apple.commcenter.device_specific_nobackup.plist ]; then
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt2/wireless/Library/Preferences/"
+                "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/$deviceid/0.0/com.apple.commcenter.device_specific_nobackup.plist root@localhost:/mnt2/wireless/Library/Preferences/com.apple.commcenter.device_specific_nobackup.plist 2> /dev/null
+            else
+                echo "[-] "$dir"/$deviceid/0.0/com.apple.commcenter.device_specific_nobackup.plist does not exist"
+            fi
+            if [[ -e "$dir"/$deviceid/0.0/activation_records ]]; then
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt2/root/Library/Lockdown/activation_records"
+                "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -r -P 2222 "$dir"/$deviceid/0.0/activation_records/* root@localhost:/mnt2/root/Library/Lockdown/activation_records 2> /dev/null
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/chflags -R schg /mnt2/root/Library/Lockdown/activation_records"
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt2/mobile/Library/mad/activation_records"
+                "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -r -P 2222 "$dir"/$deviceid/0.0/activation_records/* root@localhost:/mnt2/mobile/Library/mad/activation_records 2> /dev/null
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/chflags -R schg /mnt2/mobile/Library/mad/activation_records"
+            else
+                echo "[-] "$dir"/$deviceid/0.0/activation_records does not exist"
+            fi
+            if [[ -e "$dir"/$deviceid/0.0/activation_records/activation_record.plist ]]; then
+                if [ -e "$dir"/$deviceid/0.0/data_ark.plist ]; then
+                    "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/$deviceid/0.0/data_ark.plist root@localhost:/mnt2/root/Library/Lockdown/data_ark.plist 2> /dev/null
+                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/chflags schg /mnt2/root/Library/Lockdown/data_ark.plist"
+                else
+                    echo "[-] "$dir"/$deviceid/0.0/data_ark.plist does not exist"
+                fi
+            else
+                echo "[-] "$dir"/$deviceid/0.0/activation_records/activation_record.plist does not exist"
+            fi
+            # /mnt2/containers/Data/System/58954F59-3AA2-4005-9C5B-172BE4ADEC98/Library/internal/data_ark.plist
+            dataarkplist=$(remote_cmd "/usr/bin/find /mnt2/containers/Data/System -name 'data_ark.plist'" 2> /dev/null)
+            if [[ "$dataarkplist" == "/mnt2/containers/Data/System"* ]]; then
+                folder=$(echo $dataarkplist | sed 's/\/data_ark.plist//g')
+                folder=$(echo $folder | sed 's/\/internal//g')
+                # /mnt2/containers/Data/System/58954F59-3AA2-4005-9C5B-172BE4ADEC98/Library
+                if [[ "$folder" == "/mnt2/containers/Data/System"* ]]; then
+                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf $folder/internal/data_ark.plist"
+                    echo "[*] Removed residual data_ark.plist from $folder/internal/data_ark.plist"
+                fi
+            fi
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt1" 2> /dev/null
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt2" 2> /dev/null
+            echo "[*] Restored the activation records on your device"
+            $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
+            _kill_if_running iproxy
+            exit 0
         fi
         if [[ "$dump_blobs" == 1 ]]; then
             mkdir -p "$dir"/$deviceid/0.0/
