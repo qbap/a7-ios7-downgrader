@@ -381,10 +381,10 @@ _download_ramdisk_boot_files() {
 _download_boot_files() {
     ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$bin"/jq '.firmwares | .[] | select(.version=="'$3'")' | "$bin"/jq -s '.[0] | .url' --raw-output)
     buildid="$3"
-    if [[ "$3" == "9.3" ]]; then
-        ipswurl="http://appldnld.apple.com/ios9.3seed/031-45306-20160111-5D2D5728-B590-11E5-ADDE-25238FD31F8F/iPhone6,1_9.3_13E5181d_Restore.ipsw"
-        buildid="13E5181d"
-    fi
+    #if [[ "$3" == "9.3" ]]; then
+    #    ipswurl="http://appldnld.apple.com/ios9.3seed/031-51522-20160222-4D0EDA22-D67B-11E5-A9AB-1E6E919DCAD8/iPhone6,1_9.3_13E5214d_Restore.ipsw"
+    #    buildid="13E5214d"
+    #fi
     rm -rf BuildManifest.plist
     mkdir -p "$dir"/$1/$cpid/$3
     rm -rf "$dir"/work
@@ -585,29 +585,24 @@ _download_boot_files() {
             fi
             "$bin"/dtree_patcher "$dir"/$1/$cpid/$3/devicetree.dec "$dir"/$1/$cpid/$3/DeviceTree.patched -n
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/DeviceTree.patched -o "$dir"/$1/$cpid/$3/devicetree.img4 -A -M IM4M -T rdtr
+        elif [[ "$3" == "8.4"* ]]; then
+            "$bin"/img4 -i "$dir"/$1/$cpid/$3/iBSS.patched -o "$dir"/$1/$cpid/$3/iBSS.img4 -M IM4M -A -T ibss
+            "$bin"/img4 -i "$dir"/$1/$cpid/$3/iBEC.patched -o "$dir"/$1/$cpid/$3/iBEC.img4 -M IM4M -A -T ibec
+            "$bin"/seprmvr64lite "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache.patched
+            "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched -t -p -e -i -a -m -g -s
+            "$bin"/cp64patcher "$dir"/$1/$cpid/$3/kcache2.patched "$dir"/$1/$cpid/$3/kcache3.patched
+            "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache3.patched "$dir"/$1/$cpid/$3/kc.bpatch
+            "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$cpid/$3/kc.bpatch
+            "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$cpid/$3/kc.bpatch
+            "$bin"/dtree_patcher "$dir"/$1/$cpid/$3/devicetree.dec "$dir"/$1/$cpid/$3/DeviceTree.patched -n
+            "$bin"/img4 -i "$dir"/$1/$cpid/$3/DeviceTree.patched -o "$dir"/$1/$cpid/$3/devicetree.img4 -A -M IM4M -T rdtr
         elif [[ "$3" == "8."* ]]; then
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/iBSS.patched -o "$dir"/$1/$cpid/$3/iBSS.img4 -M IM4M -A -T ibss
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/iBEC.patched -o "$dir"/$1/$cpid/$3/iBEC.img4 -M IM4M -A -T ibec
             "$bin"/seprmvr64lite "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache.patched
             "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched -t -p -e -f -a -m -g -s
-            "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache2.patched "$dir"/$1/$cpid/$3/kc.bpatch
-            "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$cpid/$3/kc.bpatch
-            "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$cpid/$3/kc.bpatch
-            "$bin"/dtree_patcher "$dir"/$1/$cpid/$3/devicetree.dec "$dir"/$1/$cpid/$3/DeviceTree.patched -n
-            "$bin"/img4 -i "$dir"/$1/$cpid/$3/DeviceTree.patched -o "$dir"/$1/$cpid/$3/devicetree.img4 -A -M IM4M -T rdtr
-        elif [[ "$3" == "9.3" ]]; then
-            "$bin"/img4 -i "$dir"/$1/$cpid/$3/iBSS.patched -o "$dir"/$1/$cpid/$3/iBSS.img4 -M IM4M -A -T ibss
-            "$bin"/img4 -i "$dir"/$1/$cpid/$3/iBEC.patched -o "$dir"/$1/$cpid/$3/iBEC.img4 -M IM4M -A -T ibec
-            # seprmvr64lite2 is seprmvr64lite but with only these patches
-            # \x1b[35m ***** SEP Panicked! dumping log. *****\x1b[0m
-            # AppleKeyStore: operation failed (pid: %d sel: %d ret: %x)
-            # AssertMacros: %s (value = 0x%lx), %s file: %s, line: %d
-            # "SEP/OS failed to boot"
-            # "REQUIRE fail: %s @ %s:%u:%s: "
-            "$bin"/seprmvr64lite2 "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache.patched
-            # -e is vm_map_enter, -l is vm_map_protect, -f is vm_fault_enter, -t is tfp0, -m is mount_common, -a is mapIO, -s is PE_i_can_has_debugger, -p is sandbox_trace, and -k is sks timeout strike
-            "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched -f -m -a -k
-            "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache2.patched "$dir"/$1/$cpid/$3/kc.bpatch
+            "$bin"/cp64patcher "$dir"/$1/$cpid/$3/kcache2.patched "$dir"/$1/$cpid/$3/kcache3.patched
+            "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache3.patched "$dir"/$1/$cpid/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$cpid/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$cpid/$3/kc.bpatch
             "$bin"/dtree_patcher "$dir"/$1/$cpid/$3/devicetree.dec "$dir"/$1/$cpid/$3/DeviceTree.patched -n
@@ -623,8 +618,9 @@ _download_boot_files() {
             # "REQUIRE fail: %s @ %s:%u:%s: "
             "$bin"/seprmvr64lite2 "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache.patched
             # -e is vm_map_enter, -l is vm_map_protect, -f is vm_fault_enter, -t is tfp0, -m is mount_common, -a is mapIO, -s is PE_i_can_has_debugger, -p is sandbox_trace, and -j is sandbox patch
-            "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched -e -l -f -t -m -a -s -p -j
-            "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache2.patched "$dir"/$1/$cpid/$3/kc.bpatch
+            "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched -f -m -a -k -y
+            "$bin"/cp64patcher "$dir"/$1/$cpid/$3/kcache2.patched "$dir"/$1/$cpid/$3/kcache3.patched
+            "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache3.patched "$dir"/$1/$cpid/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$cpid/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$cpid/$3/kc.bpatch
             "$bin"/dtree_patcher "$dir"/$1/$cpid/$3/devicetree.dec "$dir"/$1/$cpid/$3/DeviceTree.patched -n
@@ -666,8 +662,9 @@ _download_boot_files() {
             # seprmvr64lite5 fixes "SEP ROM boot panic. 0x%s" on a8 devices
             "$bin"/seprmvr64lite5 "$dir"/$1/$cpid/$3/kcache4.patched "$dir"/$1/$cpid/$3/kcache5.patched
             # -a is mapIO, -f is vm_fault_enter, -h is sandbox patch, and -q is image4 validation patches
-            "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache5.patched "$dir"/$1/$cpid/$3/kcache6.patched -a -f -h -q
-            "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache6.patched "$dir"/$1/$cpid/$3/kc.bpatch
+            "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache5.patched "$dir"/$1/$cpid/$3/kcache6.patched -a -f -k -q
+            "$bin"/cp64patcher "$dir"/$1/$cpid/$3/kcache6.patched "$dir"/$1/$cpid/$3/kcache7.patched
+            "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache7.patched "$dir"/$1/$cpid/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$cpid/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$cpid/$3/kc.bpatch
             if [ -e "$dir"/$1/$cpid/$3/trustcache.im4p ]; then
@@ -861,10 +858,10 @@ _download_boot_files() {
 _download_root_fs() {
     ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$bin"/jq '.firmwares | .[] | select(.version=="'$3'")' | "$bin"/jq -s '.[0] | .url' --raw-output)
     buildid="$3"
-    if [[ "$3" == "9.3" ]]; then
-        ipswurl="http://appldnld.apple.com/ios9.3seed/031-45306-20160111-5D2D5728-B590-11E5-ADDE-25238FD31F8F/iPhone6,1_9.3_13E5181d_Restore.ipsw"
-        buildid="13E5181d"
-    fi
+    #if [[ "$3" == "9.3" ]]; then
+    #    ipswurl="http://appldnld.apple.com/ios9.3seed/031-51522-20160222-4D0EDA22-D67B-11E5-A9AB-1E6E919DCAD8/iPhone6,1_9.3_13E5214d_Restore.ipsw"
+    #    buildid="13E5214d"
+    #fi
     rm -rf BuildManifest.plist
     mkdir -p "$dir"/$1/$cpid/$3
     rm -rf "$dir"/work
@@ -1044,6 +1041,11 @@ if [ "$serial" = "1" ]; then
     boot_args="serial=3"
 else
     boot_args="-v"
+fi
+if [[ "$version" == "9."* || "$version" == "10."* ]]; then
+    if [[ ! "$ramdisk" == 1 ]]; then
+        force_activation=1
+    fi
 fi
 _wait_for_dfu
 if [[ "$deviceid" == "iPad"* && ! "$deviceid" == "iPad4"* ]]; then
@@ -1949,8 +1951,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                     }
                 }
             }
-            #if [[ "$version" == "7."* || "$version" == "8."* || "$version" == "9."* ]]; then
-            if [[ "$version" == "7."* || "$version" == "8."* ]]; then
+            if [[ "$version" == "7."* || "$version" == "8."* || "$version" == "9."* ]]; then
                 "$bin"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P 2222 "$dir"/jb/cydia_ios7.tar.gz root@localhost:/mnt2 2> /dev/null
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xzvf /mnt2/cydia_ios7.tar.gz -C /mnt1"
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/cydia_ios7.tar.gz" 2> /dev/null
@@ -2065,7 +2066,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xvf /mnt2/data_ark.plist_ios7.tar -C /mnt2" 2> /dev/null
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/data_ark.plist_ios7.tar" 2> /dev/null  
             fi
-            if [[ "$version" == "7."* || "$version" == "8."* || "$version" == "9."* ]]; then
+            if [[ "$version" == "7."* || "$version" == "8."* ]]; then
                     "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/jb/fstab_rw root@localhost:/mnt1/etc/fstab 2> /dev/null
             else
                 "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/jb/fstab root@localhost:/mnt1/etc/ 2> /dev/null
@@ -2115,9 +2116,9 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt2/mobile/Media/" 2> /dev/null
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt2/mobile/Media/.evasi0n7_installed" 2> /dev/null
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chmod 777 /mnt2/mobile/Media/.evasi0n7_installed" 2> /dev/null
-            #elif [[ "$version" == "9."*  ]]; then
-            #    "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/jb/launchctl.tar.gz root@localhost:/mnt1/ 2> /dev/null
-            #    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xzvf /mnt1/launchctl.tar.gz -C /mnt1/' 2> /dev/null
+            elif [[ "$version" == "9."*  ]]; then
+                "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/jb/launchctl.tar.gz root@localhost:/mnt1/ 2> /dev/null
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xzvf /mnt1/launchctl.tar.gz -C /mnt1/' 2> /dev/null
             fi
             if [ -e "$dir"/jb/Evermusic_Free.app.tar ]; then
                 if [[ "$version" == "10."* || "$version" == "9."* || "$version" == "8."* ]]; then
@@ -2130,8 +2131,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 fi
             fi
             "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/$deviceid/$cpid/$version/kernelcache root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches 2> /dev/null
-            #if [[ ! "$version" == "10."* ]]; then
-            if [[ ! "$version" == "10."* && ! "$version" == "9."* ]]; then
+            if [[ ! "$version" == "10."* ]]; then
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt1/.cydia_no_stash" 2> /dev/null
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/chown root:wheel /mnt1/.cydia_no_stash" 2> /dev/null
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chmod 777 /mnt1/.cydia_no_stash" 2> /dev/null
@@ -2157,6 +2157,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/MobileAsset.migrator/' 2> /dev/null
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/HealthMigrator.migrator/' 2> /dev/null
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/MobileSlideShow.migrator/' 2> /dev/null
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/rolldMigrator.migrator/' 2> /dev/null
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/MobileSafari.migrator/' 2> /dev/null
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/MapsDataClassMigrator.migrator/' 2> /dev/null
                 "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 root@localhost:/mnt1/System/Library/PrivateFrameworks/DataMigration.framework/XPCServices/com.apple.datamigrator.xpc/com.apple.datamigrator "$dir"/$deviceid/$cpid/$version/com.apple.datamigrator 2> /dev/null
@@ -2213,16 +2214,6 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/iapmigrator.migrator/' 2> /dev/null
                 "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 root@localhost:/mnt1/usr/libexec/lockdownd "$dir"/$deviceid/$cpid/$version/lockdownd.raw 2> /dev/null
                 "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 root@localhost:/mnt1/System/Library/PrivateFrameworks/MobileActivation.framework/Support/mobactivationd "$dir"/$deviceid/$cpid/$version/mobactivationd.raw 2> /dev/null
-                "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/jb/UnlimFileManager.app.tar.gz root@localhost:/mnt1/
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xzvf /mnt1/UnlimFileManager.app.tar.gz -C /mnt1/Applications' 2> /dev/null
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt1/Applications/UnlimFileManager.app'
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/UnlimFileManager.app.tar.gz' 2> /dev/null
-                "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/jb/kok3shi9.app.tar.gz root@localhost:/mnt1/
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xzvf /mnt1/kok3shi9.app.tar.gz -C /mnt1/Applications' 2> /dev/null
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt1/Applications/kok3shi9.app'
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/kok3shi9.app.tar.gz' 2> /dev/null
-                #"$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'cp /mnt1/usr/libexec/CrashHousekeeping /mnt1/usr/libexec/CrashHousekeeping_o' 2> /dev/null
-                #"$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/jb/startup_ios9.sh root@localhost:/mnt1/usr/libexec/CrashHousekeeping 2> /dev/null
             fi
             if [[ -e "$dir"/$deviceid/0.0/activation_records/activation_record.plist && ! "$force_activation" == 1 ]]; then
                 if [ -e "$dir"/$deviceid/0.0/data_ark.plist ]; then
@@ -2231,7 +2222,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 fi
             fi
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/chflags -R schg /mnt1/usr/standalone/firmware/FUD"
-            if [[ "$version" == "9.3"* || "$version" == "10."* ]]; then
+            if [[ "$version" == "10."* ]]; then
                 # fix Sandbox: hook..execve() killing %s pid %ld[UID: %d]: failure in upcall to containermanagerd for a platform app\n 
                 "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 root@localhost:/mnt1/System/Library/PrivateFrameworks/MobileContainerManager.framework/Support/containermanagerd "$dir"/$deviceid/$cpid/$version/containermanagerd.raw 2> /dev/null
                 "$bin"/containermanagerd64patcher "$dir"/$deviceid/$cpid/$version/containermanagerd.raw "$dir"/$deviceid/$cpid/$version/containermanagerd.patched -f -d 2> /dev/null
