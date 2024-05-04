@@ -17,8 +17,10 @@
 | 7.0.4                  | &#9745; | &#9744;    | &#9744;    | &#9744; | &#9744;  | &#9744; |
 | 7.0.6                  | &#9745; | &#9744;    | &#9744;    | &#9744; | &#9744;  | &#9744; |
 | 7.1.2                  | &#9745; | &#9744;    | &#9744;    | &#9744; | &#9744;  | &#9744; |
-| 8.0b4                  | &#9745; | &#9744;    | &#9744;    | &#9744; | &#9744;  | &#9744; |
-| 9.3.2                  | &#9745; | &#9745;    | &#9744;    | &#9744; | &#9744;  | &#9744; |
+| 8.2                    | &#9745; | &#9745;    | &#9744;    | &#9744; | &#9744;  | &#9744; |
+| 8.3                    | &#9745; | &#9745;    | &#9744;    | &#9744; | &#9744;  | &#9744; |
+| 9.3.3                  | &#9745; | &#9745;    | &#9744;    | &#9744; | &#9744;  | &#9744; |
+| 10.2.1                 | &#9745; | &#9745;    | &#9745;    | &#9745; | &#9744;  | &#9744; |
 | 10.3.3                 | &#9745; | &#9745;    | &#9745;    | &#9745; | &#9744;  | &#9744; |
 | 11.1                   | &#9745; | &#9745;    | &#9745;    | &#9745; | &#9744;  | &#9744; |
 | 12.1.2                 | &#9745; | &#9745;    | &#9745;    | &#9745; | &#9744;  | &#9744; |
@@ -31,8 +33,10 @@
 | 7.0.4**     | &#9745;   | &#9745;      | &#9745;     | &#9745;   | &#9745; | &#9744;  | &#9745;  | &#9745;    | &#9745;|
 | 7.0.6**     | &#9745;   | &#9745;      | &#9745;     | &#9745;   | &#9745; | &#9744;  | &#9745;  | &#9745;    | &#9745;|
 | 7.1.2**     | &#9745;   | &#9745;      | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9745;    | &#9745;|
-| 8.0b4**     | &#9744;   | &#9745;      | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9745;    | &#9745;|
-| 9.3.2**     | &#9744;   | &#9745;      | &#9745;     | &#9745;   | &#9744; | &#9745;  | &#9745;  | &#9744;    | &#9744;|
+| 8.2**       | &#9745;   | &#9745;      | &#9745;     | &#9745;   | &#9744; | &#9745;  | &#9745;  | &#9745;    | &#9745;|
+| 8.3**       | &#9745;   | &#9745;      | &#9745;     | &#9745;   | &#9744; | &#9745;  | &#9745;  | &#9745;    | &#9745;|
+| 9.3.3**     | &#9745;   | &#9745;      | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9744;    | &#9744;|
+| 10.2.1**    | &#9745;   | &#9745;      | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9744;    | &#9744;|
 | 10.3.3      | &#9745;   | &#9745;      | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9744;    | &#9744;|
 | 11.1        | &#9745;   | &#9745;      | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9744;    | &#9744;|
 | 12.1.2      | &#9745;   | &#9745;      | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9744;    | &#9744;|
@@ -134,11 +138,6 @@ Linux and Windows support is not planned either, do not ask about this either.
 
    Be careful when doing this since *anyone* can connect to the open network you created. We are not responsible for **any** damages caused by doing this.
 
-   ### No apps on the Home Screen (iOS 8.0 beta 4)
-   This is a weird issue with iOS 8 beta 4. The workaround is easy, however.
-
-   After you unlock your device for the first time post setup, there will be no apps on the Home Screen. The workaround is, once you're on the Home Screen, to open the Control Center (swipe up) and press the Calculator icon. Once open, you can exit out of Calculator. This should make all icons appear.
-
    ### Cydia is absent (on iPads)
    iPads have uicache issues with most jailbreaking tools. To open Cydia, enter `cydia://` in Safari's address bar and press Enter.  
 
@@ -148,18 +147,6 @@ Linux and Windows support is not planned either, do not ask about this either.
    ### Safari and others apps not opening (iOS 7)
    Uninstall Cydia Substrate from within Cydia, and then reboot your device using semaphorin. When the device boots back up, reinstall your tweaks, but when Cydia asks you to "restart springboard" do not hit that button! Hit the home button on your device instead, and open Safari and type `wtfis://` in Safari's address bar and press Enter. Hit "go" inside the wtfis app. This will properly respring your device. All the apps on your device should now be working properly if you follow these steps.
  
-### iOS 9.3 Support
-
-There are still some bugs left with iOS 9.3 downgrades. Due to the nature of hfs limitations on iOS 9.3-10.2.1, there is `Sandbox: hook..execve() killing %s pid %ld[UID: %d]: failure in upcall to containermanagerd for a platform app\n` errors during boot when using seprmvr64.
-
-This is because hfs on iOS 9.3-10.2.1 requires the `/dev/disk0s1s2` partition to have a `protect` flag, otherwise sandbox complains. But the `protect` flag ensures that `/dev/disk0s1s2` is encrypted, but file system encryption is not possible because we have sep patched out. So we have to work around the issue. We patched out the sandbox eval function, but we are still getting that aforementioned error.
-
-Most system apps can read/write to var just fine, but most if not all platformized apps cannot read/write to var and until we fix that issue we will have a lot of bugs on iOS 9.3. I made [containermanagerd64patcher](https://github.com/y08wilm/containermanagerd64patcher) which "patches" it but at the same time doesn't fix the actual issue. Most system apps crash on launch because they can not read or write to var. Oddly enough, those apps can create files just fine, just not open them.
-
-See [here](https://files.catbox.moe/wn83g9.mp4) for a video example of why we need sandbox patches for iOS 9.
-
-iOS 8.0 GM - 9.2.1 support will never be possible because keybags do not unlock on those versions which means nearly the entire OS is nonfunctional.
-
 ## Credits
 
 - [PsychoTea](https://github.com/PsychoTea/) for [MeridianJB](https://github.com/PsychoTea/MeridianJB/) which we use for iOS 10.3.3 downgrades

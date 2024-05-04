@@ -6,7 +6,9 @@ iPhone_4.7_11.0_15A5278f_Restore.ipsw
 Carrier_Bundles.tar
 data_ark.plist
 trustcache
+dyld_shared_cache_arm64.*
 trustcache.*
+avefw.*
 aopfw.*
 homerfw.*
 multitouch.*
@@ -54,6 +56,8 @@ kcache2.patched
 kcache3.patched
 kcache4.patched
 kcache5.patched
+kcache6.patched
+kcache7.patched
 beta2*
 full*
 NoMoreSIGABRT*
