@@ -1,0 +1,12 @@
+n       # new partition
+1       # partition number 1
++0      # first sector start at beginning of disk
+1742688 # last sector
+AF00
+n       # new partition
+2       # partion number 2
++0      # hit enter to use default first sector
++0      # hit enter again to extend partition to end of disk
+AF00
+w       # write changes to disk
+y       # confirm changes
