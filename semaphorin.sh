@@ -632,9 +632,15 @@ _download_boot_files() {
         elif [[ "$3" == "9."* ]]; then
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/iBSS.patched -o "$dir"/$1/$cpid/$3/iBSS.img4 -M IM4M -A -T ibss
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/iBEC.patched -o "$dir"/$1/$cpid/$3/iBEC.img4 -M IM4M -A -T ibec
-            "$bin"/seprmvr64lite "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache.patched
+            # seprmvr64lite2 is seprmvr64lite but with only these patches
+            # \x1b[35m ***** SEP Panicked! dumping log. *****\x1b[0m
+            # AppleKeyStore: operation failed (pid: %d sel: %d ret: %x)
+            # AssertMacros: %s (value = 0x%lx), %s file: %s, line: %d
+            # "SEP/OS failed to boot"
+            # "REQUIRE fail: %s @ %s:%u:%s: "
+            "$bin"/seprmvr64lite2 "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache.patched
             # -e is vm_map_enter, -l is vm_map_protect, -f is vm_fault_enter, -t is tfp0, -m is mount_common, -a is mapIO, -s is PE_i_can_has_debugger, -p is sandbox_trace, and -j is sandbox patch
-            "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched -f -m -a -k -y -v
+            "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched -f -m -a -k -y
             "$bin"/cp64patcher "$dir"/$1/$cpid/$3/kcache2.patched "$dir"/$1/$cpid/$3/kcache3.patched
             "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache3.patched "$dir"/$1/$cpid/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$cpid/$3/kc.bpatch
