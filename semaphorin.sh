@@ -1276,8 +1276,10 @@ if [ -z "$r" ]; then
     fi
     if [[ "$r" == "10."* || "$r" == "9."* ]]; then
         if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
-            echo "[*] Enabling --dualboot-hfs"
-            dualboot_hfs=1
+            if [[ "$version" == "7."* || "$version" == "8."* || "$version" == "9."* ]]; then
+                echo "[*] Enabling --dualboot-hfs"
+                dualboot_hfs=1
+            fi
         fi
     fi
 fi
