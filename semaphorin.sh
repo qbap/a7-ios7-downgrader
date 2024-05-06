@@ -166,6 +166,12 @@ parse_arg() {
             if [[ "$version" == "11.4.1" ]]; then
                 version="11.4"
             fi
+            if [[ "$version" == "9.3."* ]]; then
+                version="9.3"
+            fi
+            if [[ "$version" == "12.1."* ]]; then
+                version="12.1"
+            fi
             ;;
     esac
 }
@@ -1263,12 +1269,105 @@ if [[ "$clean" == 1 ]]; then
     echo "[*] Removed the created boot files"
     exit 0
 fi
+if [ -z "$r" ]; then
+    read -p "what ios version is or was installed on this device prior to downgrade? " r
+    if [[ "$r" == "11.4.1"* ]]; then
+        r="11.4"
+    fi
+    if [[ "$r" == "10."* || "$r" == "9."* ]]; then
+        if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
+            echo "[*] Enabling --dualboot-hfs"
+            dualboot_hfs = 1
+        fi
+    fi
+fi
 if [[ "$boot" == 1 ]]; then
     if [[ "$version" == "8.0" || "$version" == "11.0" ]]; then
         # required to get ios 8 beta 4 or ios 11 beta 1 kernel
         _download_root_fs $deviceid $replace $version
     fi
     _download_boot_files $deviceid $replace $version
+    if [[ "$version" == "7."* && "$dualboot_hfs" == 1 ]]; then
+        _kill_if_running iproxy
+        sudo killall -STOP -c usbd
+        read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
+        if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
+            read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+            echo "[*] Waiting 10 seconds before continuing.."
+            sleep 10
+        elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
+            echo "[*] Ok no problem, continuing.."
+        else
+            echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
+            read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+            echo "[*] Waiting 10 seconds before continuing.."
+            sleep 10
+        fi
+        _download_ramdisk_boot_files $deviceid $replace 8.4.1
+        cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
+        if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
+            "$bin"/ipwnder -p
+        else
+            "$bin"/gaster pwn
+            "$bin"/gaster reset
+        fi
+        "$bin"/irecovery -f iBSS.img4
+        "$bin"/irecovery -f iBSS.img4
+        "$bin"/irecovery -f iBEC.img4
+        if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
+            sleep 1
+            "$bin"/irecovery -c go
+            sleep 2
+        fi
+        "$bin"/irecovery -f ramdisk.img4
+        "$bin"/irecovery -c ramdisk
+        "$bin"/irecovery -f devicetree.img4
+        "$bin"/irecovery -c devicetree
+        if [ -e ./trustcache.img4 ]; then
+            "$bin"/irecovery -f trustcache.img4
+            "$bin"/irecovery -c firmware
+        fi
+        "$bin"/irecovery -f kernelcache.img4
+        "$bin"/irecovery -c bootx &
+        cd "$dir"/
+        read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk " r1
+        echo "[*] Waiting 6 seconds before continuing.."
+        sleep 6
+        sudo killall -STOP -c usbd
+        read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
+        if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
+            read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+            echo "[*] Waiting 10 seconds before continuing.."
+            sleep 10
+        elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
+            echo "[*] Ok no problem, continuing.."
+        else
+            echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
+            read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+            echo "[*] Waiting 10 seconds before continuing.."
+            sleep 10
+        fi
+        "$bin"/iproxy 2222 22 &
+        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/sbin/fsck'
+        echo "[*] Done"
+        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram auto-boot=false" 2> /dev/null
+        $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
+        echo "[*] The device should now boot into recovery mode"
+        echo "[*] Please follow the on screen instructions to put your device back into dfu mode"
+        echo "[*] We will try to boot iOS $version on your device"
+        echo "[*] You can enable auto-boot again at any time by running $0 $version --fix-auto-boot"
+        sleep 5
+        if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+            if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                "$bin"/dfuhelper.sh
+            elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                "$bin"/dfuhelper2.sh
+            else
+                "$bin"/dfuhelper3.sh
+            fi
+        fi
+        _wait_for_dfu
+    fi
     _kill_if_running iproxy
     sudo killall -STOP -c usbd
     read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
@@ -1386,10 +1485,6 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
             _download_ramdisk_boot_files $deviceid $replace 11.4
         fi
         if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
-            read -p "[*] Please enter the iOS version that is currently installed on your device  " r
-            if [[ "$r" == "11.4.1"* ]]; then
-                r="11.4"
-            fi
             _download_ramdisk_boot_files $deviceid $replace $r
 			if [[ "$r" == "9."* ]]; then
 				fuck=1
@@ -1398,22 +1493,10 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
 			fi
         fi
         if [[ "$version" == "10.3"* || "$version" == "11."* || "$version" == "12."* ]]; then
-            if [ -z "$r" ]; then
-                read -p "what ios version was installed on this device prior to downgrade? " r
-                if [[ "$r" == "11.4.1"* ]]; then
-                    r="11.4"
-                fi
-                _download_ramdisk_boot_files $deviceid $replace $r
-            fi
+            _download_ramdisk_boot_files $deviceid $replace $r
         elif [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
             if [[ "$dualboot_hfs" == 1 ]]; then
-                if [ -z "$r" ]; then
-                    read -p "what ios version was installed on this device prior to downgrade? " r
-                    if [[ "$r" == "11.4.1"* ]]; then
-                        r="11.4"
-                    fi
-                    _download_ramdisk_boot_files $deviceid $replace $r
-                fi
+                _download_ramdisk_boot_files $deviceid $replace $r
             fi
         fi
         if [[ "$version" == "8.0" && "$restore" == 1 ]]; then
@@ -2358,13 +2441,12 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/HealthMigrator.migrator/' 2> /dev/null
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/rolldMigrator.migrator//' 2> /dev/null
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/BuddyMigrator.migrator/' 2> /dev/null
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/RestorePostProcess.migrator/' 2> /dev/null
                 "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 root@localhost:/mnt1/System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64 "$dir"/$deviceid/$cpid/$version/dyld_shared_cache_arm64.raw 2> /dev/null
                 "$bin"/dsc64patcher "$dir"/$deviceid/$cpid/$version/dyld_shared_cache_arm64.raw "$dir"/$deviceid/$cpid/$version/dyld_shared_cache_arm64.patched -8
                 "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/$deviceid/$cpid/$version/dyld_shared_cache_arm64.patched root@localhost:/mnt1/System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64 2> /dev/null
-                if [[ "$version" == "8.3"* || "$version" == "8.4"* ]]; then
-                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/chflags schg /mnt2/root/Library/Lockdown/data_ark.plist"
-                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/chflags schg /mnt2/mobile/Library/mad/data_ark.plist"
-                fi
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/chflags schg /mnt2/root/Library/Lockdown/data_ark.plist"
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/chflags schg /mnt2/mobile/Library/mad/data_ark.plist"
                 #"$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'cp /mnt1/usr/libexec/keybagd /mnt1/usr/libexec/keybagd.bak' 2> /dev/null
                 #"$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/jb/fixkeybag root@localhost:/mnt1/usr/libexec/keybagd 2> /dev/null
             elif [[ "$version" == "7."* ]]; then
@@ -2416,6 +2498,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                     "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/rolldMigrator.migrator//' 2> /dev/null
                     "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/BuddyMigrator.migrator/' 2> /dev/null
                     "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/Calendar.migrator/' 2> /dev/null
+                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/RestorePostProcess.migrator/' 2> /dev/null
                     "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/chflags schg /mnt2/root/Library/Lockdown/data_ark.plist"
                     "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/chflags schg /mnt2/mobile/Library/mad/data_ark.plist"
                 fi
@@ -2640,11 +2723,105 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 "$bin"/irecovery -f kernelcache.img4
                 "$bin"/irecovery -c bootx &
                 cd "$dir"/
-                echo "[*] Step 4 of dualbooting to iOS $version is now done"
-                echo "[*] The device should now boot into the setup screen on iOS $r"
-                echo "[*] Please follow the on screen instructions to put your device back into dfu mode"
-                echo "[*] We will try to boot iOS $version for the first time on your device"
-                sleep 5
+                if [[ "$version" == "7."* ]]; then
+                    echo "[*] Step 4 of dualbooting to iOS $version is now done"
+                    echo "[*] The device should now boot into the setup screen on iOS $r"
+                    echo "[*] You should wait until you get to setup screen before next step"
+                    echo "[*] Then follow the on screen instructions to put your device back into dfu mode"
+                    echo "[*] We will then boot into a ramdisk to run fsck before booting iOS $version"
+                    sleep 5
+                    if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+                        if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                            "$bin"/dfuhelper.sh
+                        elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                            "$bin"/dfuhelper2.sh
+                        else
+                            "$bin"/dfuhelper3.sh
+                        fi
+                    fi
+                    _wait_for_dfu
+                    sudo killall -STOP -c usbd
+                    read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
+                    if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
+                        read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                        echo "[*] Waiting 10 seconds before continuing.."
+                        sleep 10
+                    elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
+                        echo "[*] Ok no problem, continuing.."
+                    else
+                        echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
+                        read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                        echo "[*] Waiting 10 seconds before continuing.."
+                        sleep 10
+                    fi
+                    if [[ "$version" == "7."* || "$version" == "8."* ]]; then
+                        cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
+                    elif [[ "$version" == "10.3"* || "$version" == "11."* ||  "$version" == "12."* ]]; then
+                        cd "$dir"/$deviceid/$cpid/ramdisk/$r
+                    else
+                        cd "$dir"/$deviceid/$cpid/ramdisk/11.4
+                    fi
+                    if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
+                        "$bin"/ipwnder -p
+                    else
+                        "$bin"/gaster pwn
+                        "$bin"/gaster reset
+                    fi
+                    "$bin"/irecovery -f iBSS.img4
+                    "$bin"/irecovery -f iBSS.img4
+                    "$bin"/irecovery -f iBEC.img4
+                    if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
+                        sleep 1
+                        "$bin"/irecovery -c go
+                        sleep 2
+                    fi
+                    "$bin"/irecovery -f ramdisk.img4
+                    "$bin"/irecovery -c ramdisk
+                    "$bin"/irecovery -f devicetree.img4
+                    "$bin"/irecovery -c devicetree
+                    if [ -e ./trustcache.img4 ]; then
+                        "$bin"/irecovery -f trustcache.img4
+                        "$bin"/irecovery -c firmware
+                    fi
+                    "$bin"/irecovery -f kernelcache.img4
+                    "$bin"/irecovery -c bootx &
+                    cd "$dir"/
+                    read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk " r1
+                    echo "[*] Waiting 6 seconds before continuing.."
+                    sleep 6
+                    sudo killall -STOP -c usbd
+                    read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
+                    if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
+                        read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                        echo "[*] Waiting 10 seconds before continuing.."
+                        sleep 10
+                    elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
+                        echo "[*] Ok no problem, continuing.."
+                    else
+                        echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
+                        read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                        echo "[*] Waiting 10 seconds before continuing.."
+                        sleep 10
+                    fi
+                    "$bin"/iproxy 2222 22 &
+                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/sbin/fsck'
+                    echo "[*] Done"
+                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram auto-boot=false" 2> /dev/null
+                    $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
+                    echo "[*] Step 5 of dualbooting to iOS $version is now done"
+                    echo "[*] The device should now boot into recovery mode"
+                    echo "[*] Please follow the on screen instructions to put your device back into dfu mode"
+                    echo "[*] We will try to boot iOS $version for the first time on your device"
+                    echo "[*] You can enable auto-boot again at any time by running $0 $r --fix-auto-boot"
+                    sleep 5
+                else
+                    echo "[*] Step 4 of dualbooting to iOS $version is now done"
+                    echo "[*] The device should now boot into the setup screen on iOS $r"
+                    echo "[*] Please follow the on screen instructions to put your device back into dfu mode"
+                    echo "[*] We will try to boot iOS $version for the first time on your device"
+                    sleep 5
+                fi
+
             fi
         fi
         if [[ ! "$dualboot_hfs" == 1 ]]; then
@@ -2774,8 +2951,13 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 fi
                 "$bin"/iproxy 2222 22 &
                 if [[ "$version" == "9.3"* || "$version" == "10.0"* || "$version" == "10.1"* || "$version" == "10.2"* ]]; then
-                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1" 2> /dev/null
-                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s2 /mnt2" 2> /dev/null
+                    if [[ "$dualboot_hfs" == 1 ]]; then
+                        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s3 /mnt1" 2> /dev/null
+                        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s4 /mnt2" 2> /dev/null
+                    else
+                        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1" 2> /dev/null
+                        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s2 /mnt2" 2> /dev/null
+                    fi
                     # /mnt2/containers/Data/System/58954F59-3AA2-4005-9C5B-172BE4ADEC98/Library/internal/data_ark.plist
                     dataarkplist=$(remote_cmd "/usr/bin/find /mnt2/containers/Data/System -name 'internal'" 2> /dev/null)
                     dataarkplist="$dataarkplist/data_ark.plist"
@@ -2882,10 +3064,11 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt1" 2> /dev/null
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt2" 2> /dev/null
             if [[ "$version" == "7."* || "$version" == "8."* || "$version" == "9."* || "$version" == "10.0"* || "$version" == "10.1"* || "$version" == "10.2"* ]]; then
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1" 2> /dev/null
-                if [[ "$version" == "9.0"* || "$version" == "9.1"* || "$version" == "9.2"* ]]; then
-                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -t hfs /dev/disk0s1s2 /mnt2" 2> /dev/null
+                 if [[ "$dualboot_hfs" == 1 ]]; then
+                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s3 /mnt1" 2> /dev/null
+                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s4 /mnt2" 2> /dev/null
                 else
+                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s1 /mnt1" 2> /dev/null
                     "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs /dev/disk0s1s2 /mnt2" 2> /dev/null
                 fi
             else
