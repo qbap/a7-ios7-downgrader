@@ -9,6 +9,8 @@ trustcache
 dyld_shared_cache_arm64.*
 trustcache.*
 mnt1.*
+mnt2.*
+mnt3.*
 avefw.*
 aopfw.*
 homerfw.*
