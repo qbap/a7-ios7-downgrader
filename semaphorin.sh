@@ -170,9 +170,6 @@ parse_arg() {
             if [[ "$version" == "11.4.1" ]]; then
                 version="11.4"
             fi
-            if [[ "$version" == "9.3."* ]]; then
-                version="9.3"
-            fi
             if [[ "$version" == "12.1."* ]]; then
                 version="12.1"
             fi
@@ -341,8 +338,8 @@ _download_ramdisk_boot_files() {
             "$bin"/img4tool -c "$dir"/$1/$cpid/ramdisk/$3/ramdisk.im4p -t rdsk "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg
             "$bin"/img4tool -c "$dir"/$1/$cpid/ramdisk/$3/ramdisk.img4 -p "$dir"/$1/$cpid/ramdisk/$3/ramdisk.im4p -m IM4M
             if [[ "$3" == "9."* ]]; then
-                "$bin"/iBoot64Patcher "$dir"/$1/$cpid/ramdisk/$3/iBSS.dec "$dir"/$1/$cpid/ramdisk/$3/iBSS.patched
-                "$bin"/iBoot64Patcher "$dir"/$1/$cpid/ramdisk/$3/iBEC.dec "$dir"/$1/$cpid/ramdisk/$3/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 $boot_args rd=md0 nand-enable-reformat=1 -progress"
+                "$bin"/kairos "$dir"/$1/$cpid/ramdisk/$3/iBSS.dec "$dir"/$1/$cpid/ramdisk/$3/iBSS.patched
+                "$bin"/kairos "$dir"/$1/$cpid/ramdisk/$3/iBEC.dec "$dir"/$1/$cpid/ramdisk/$3/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 $boot_args rd=md0 nand-enable-reformat=1 -progress" -n
             else
                 "$bin"/ipatcher "$dir"/$1/$cpid/ramdisk/$3/iBSS.dec "$dir"/$1/$cpid/ramdisk/$3/iBSS.patched
                 "$bin"/ipatcher "$dir"/$1/$cpid/ramdisk/$3/iBEC.dec "$dir"/$1/$cpid/ramdisk/$3/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 $boot_args rd=md0 nand-enable-reformat=1 -progress"
@@ -570,8 +567,8 @@ _download_boot_files() {
                 "$bin"/ipatcher "$dir"/$1/$cpid/$3/iBSS.dec "$dir"/$1/$cpid/$3/iBSS.patched
                 "$bin"/ipatcher "$dir"/$1/$cpid/$3/iBEC.dec "$dir"/$1/$cpid/$3/iBEC.patched -b "$boot_args rd=disk0s1s3 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1"
             elif [[ "$3" == "9."* ]]; then
-                "$bin"/iBoot64Patcher "$dir"/$1/$cpid/$3/iBSS.dec "$dir"/$1/$cpid/$3/iBSS.patched
-                "$bin"/iBoot64Patcher "$dir"/$1/$cpid/$3/iBEC.dec "$dir"/$1/$cpid/$3/iBEC.patched -b "$boot_args rd=disk0s1s3 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1 amfi_get_out_of_my_way=1 amfi_allow_any_signature=1"
+                "$bin"/kairos "$dir"/$1/$cpid/$3/iBSS.dec "$dir"/$1/$cpid/$3/iBSS.patched
+                "$bin"/kairos "$dir"/$1/$cpid/$3/iBEC.dec "$dir"/$1/$cpid/$3/iBEC.patched -b "$boot_args rd=disk0s1s3 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1 amfi_get_out_of_my_way=1 amfi_allow_any_signature=1" -n
             fi
         else
             if [[ "$3" == "7."* ]]; then
@@ -581,8 +578,8 @@ _download_boot_files() {
                 "$bin"/ipatcher "$dir"/$1/$cpid/$3/iBSS.dec "$dir"/$1/$cpid/$3/iBSS.patched
                 "$bin"/ipatcher "$dir"/$1/$cpid/$3/iBEC.dec "$dir"/$1/$cpid/$3/iBEC.patched -b "$boot_args rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1"
             elif [[ "$3" == "9."* ]]; then
-                "$bin"/iBoot64Patcher "$dir"/$1/$cpid/$3/iBSS.dec "$dir"/$1/$cpid/$3/iBSS.patched
-                "$bin"/iBoot64Patcher "$dir"/$1/$cpid/$3/iBEC.dec "$dir"/$1/$cpid/$3/iBEC.patched -b "$boot_args rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1 amfi_get_out_of_my_way=1 amfi_allow_any_signature=1"
+                "$bin"/kairos "$dir"/$1/$cpid/$3/iBSS.dec "$dir"/$1/$cpid/$3/iBSS.patched
+                "$bin"/kairos "$dir"/$1/$cpid/$3/iBEC.dec "$dir"/$1/$cpid/$3/iBEC.patched -b "$boot_args rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1 amfi_get_out_of_my_way=1 amfi_allow_any_signature=1" -n
             else
                 "$bin"/iBoot64Patcher "$dir"/$1/$cpid/$3/iBSS.dec "$dir"/$1/$cpid/$3/iBSS.patched
                 if [[ "$3" == "10.3"* || "$3" == "11."* || "$3" == "12."* ]]; then
@@ -1014,8 +1011,13 @@ _download_clean_boot_files() {
             fi
         fi
         rm -rf BuildManifest.plist
-        "$bin"/iBoot64Patcher "$dir"/$1/clean/$cpid/$3/iBSS.dec "$dir"/$1/clean/$cpid/$3/iBSS.patched
-        "$bin"/iBoot64Patcher "$dir"/$1/clean/$cpid/$3/iBEC.dec "$dir"/$1/clean/$cpid/$3/iBEC.patched -b "$boot_args rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1 amfi_get_out_of_my_way=1 amfi_allow_any_signature=1" -n
+        if [[ "$3" == "9."* ]]; then
+            "$bin"/kairos "$dir"/$1/clean/$cpid/$3/iBSS.dec "$dir"/$1/clean/$cpid/$3/iBSS.patched
+            "$bin"/kairos "$dir"/$1/clean/$cpid/$3/iBEC.dec "$dir"/$1/clean/$cpid/$3/iBEC.patched -b "$boot_args rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1 amfi_get_out_of_my_way=1 amfi_allow_any_signature=1" -n
+        else
+            "$bin"/iBoot64Patcher "$dir"/$1/clean/$cpid/$3/iBSS.dec "$dir"/$1/clean/$cpid/$3/iBSS.patched
+            "$bin"/iBoot64Patcher "$dir"/$1/clean/$cpid/$3/iBEC.dec "$dir"/$1/clean/$cpid/$3/iBEC.patched -b "$boot_args rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1 amfi_get_out_of_my_way=1 amfi_allow_any_signature=1" -n
+        fi
         "$bin"/img4 -i "$dir"/$1/clean/$cpid/$3/iBSS.patched -o "$dir"/$1/clean/$cpid/$3/iBSS.img4 -M IM4M -A -T ibss
         "$bin"/img4 -i "$dir"/$1/clean/$cpid/$3/iBEC.patched -o "$dir"/$1/clean/$cpid/$3/iBEC.img4 -M IM4M -A -T ibec
         "$bin"/img4 -i "$dir"/$1/clean/$cpid/$3/aopfw.dec -o "$dir"/$1/clean/$cpid/$3/aopfw.img4 -M IM4M -T aopf
@@ -1464,9 +1466,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
     _kill_if_running iproxy
     if [[ "$ramdisk" == 1 || "$dump_blobs" == 1 || "$dump_nand" == 1 || "$restore_activation" == 1 || "$restore_nand" == 1 || "$restore_mnt1" == 1 || "$restore_mnt2" == 1 || "$disable_NoMoreSIGABRT" == 1 || "$NoMoreSIGABRT" == 1 ]]; then
         rdversion="$version"
-        if [[ "$version" == "9."* ]]; then
-            rdversion="11.4"
-        elif [[ "$version" == "10."* || "$version" == "11.0" ]]; then
+        if [[ "$version" == "10."* || "$version" == "11.0" ]]; then
             rdversion="10.3.3"
         elif [[ "$deviceid" == "iPhone8,1" && "$version" == "11.0" ]]; then
             rdversion="10.3.3"
