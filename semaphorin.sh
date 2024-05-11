@@ -1317,6 +1317,10 @@ done
 if [ "$cmd_not_found" = "1" ]; then
     exit 1
 fi
+if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+    "$bin"/irecovery -c "setenv auto-boot true"
+    "$bin"/irecovery -c "saveenv"
+fi
 if [[ "$*" == *"--fix-auto-boot"* ]]; then
     "$bin"/irecovery -c "setenv auto-boot true"
     "$bin"/irecovery -c "saveenv"
