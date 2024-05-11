@@ -21,7 +21,7 @@ arg_count=0
 if [[ $os =~ Darwin ]]; then
         echo "[*] Running on Darwin..."
 elif [[ $os =~ Linux ]]; then
-        echo "[!] This tool does not support Linux. Please use this with macOS High Sierra, Mojave, or Catalina to continue."
+        echo "[!] This tool does not support Linux. Please use this with macOS 10.15 (Catalina) to continue."
         exit 1
 else
         echo "[!] What operating system are you even using..."
@@ -34,9 +34,8 @@ if [[ $os_ver =~ ^10\.1[3-4]\.* ]]; then
 	exit 1
 elif [[ $os_ver == 10.15.* ]] || (( $maj_ver >= 11 )); then
 	echo "[*] You are running macOS $os_ver. Continuing..."
-
 else    
-        echo "[!] macOS/OS X $os_ver is not supported by this script. Please install macOS High Sierra, Mojave, or Catalina to continue if possible." 
+        echo "[!] macOS/OS X $os_ver is not supported by this script. Please install macOS 10.15 (Catalina) to continue if possible." 
         read -p "[*] You can press the enter key on your keyboard to skip this warning  " r1
 fi
 
