@@ -1317,6 +1317,10 @@ done
 if [ "$cmd_not_found" = "1" ]; then
     exit 1
 fi
+if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+    "$bin"/irecovery -c "setenv auto-boot true"
+    "$bin"/irecovery -c "saveenv"
+fi
 if [[ "$*" == *"--fix-auto-boot"* ]]; then
     "$bin"/irecovery -c "setenv auto-boot true"
     "$bin"/irecovery -c "saveenv"
@@ -1864,6 +1868,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
         fi
         if [ ! -e "$dir"/$deviceid/0.0/activation_records/activation_record.plist ]; then
             read -p "missing ./activation_records/activation_record.plist, which is recommended in order to proceed. press enter to continue.. " r1
+            force_activation=1
         fi
         if [[ "$version" == "10.3"* || "$version" == "11."* || "$version" == "12."* || "$version" == "13."* ]]; then
             if [[ "$hit" == 1 ]]; then
@@ -2228,6 +2233,9 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
             echo "[*] Device should boot to Recovery mode. Please wait..."
             if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
                 if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                    sleep 5
+                    "$bin"/irecovery -c "setenv auto-boot true"
+                    "$bin"/irecovery -c "saveenv"
                     "$bin"/dfuhelper.sh
                 elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
                     "$bin"/dfuhelper2.sh
@@ -2492,7 +2500,13 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xzvf /mnt4/apfs.fs_ios14.tar.gz -C /mnt4"
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt4/apfs.fs_ios14.tar.gz"
             fi
+            if [[ "$deviceid" == "iPhone10"* || "clean/$cpid" == "0x8015"* ]]; then
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram auto-boot=false" 2> /dev/null
+            fi
             if [[ "$r" == "16."* || "$r" == "17."* ]]; then
+                if [[ "$deviceid" == "iPhone10"* || "clean/$cpid" == "0x8015"* ]]; then
+                    pongo=0
+                fi
                 $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
                 echo "[*] Step 1 of dualbooting to iOS $version is now done"
                 echo "[*] The device should now boot into recovery mode"
@@ -3387,6 +3401,9 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
         if [ -e "$dir"/$deviceid/$cpid/$version/iBSS.img4 ]; then
             if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
                 if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                    sleep 5
+                    "$bin"/irecovery -c "setenv auto-boot true"
+                    "$bin"/irecovery -c "saveenv"
                     "$bin"/dfuhelper.sh
                 elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
                     "$bin"/dfuhelper2.sh
