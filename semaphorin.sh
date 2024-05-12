@@ -2061,6 +2061,67 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 datafs=disk1s$datadisk
             fi
         else
+            if [[ "$hit" == 1 ]]; then
+                if [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
+                    $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
+                    sleep 5
+                    _kill_if_running iproxy
+                    echo "[*] Device should boot to Recovery mode. Please wait..."
+                    if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+                        if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                            "$bin"/dfuhelper.sh
+                        elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                            "$bin"/dfuhelper2.sh
+                        else
+                            "$bin"/dfuhelper3.sh
+                        fi
+                    fi
+                    _wait_for_dfu
+                    sudo killall -STOP -c usbd
+                    read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
+                    if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
+                        read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                        echo "[*] Waiting 10 seconds before continuing.."
+                        sleep 10
+                    elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
+                        echo "[*] Ok no problem, continuing.."
+                    else
+                        echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
+                        read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                        echo "[*] Waiting 10 seconds before continuing.."
+                        sleep 10
+                    fi
+                    if [[ "$version" == "7."* || "$version" == "8."* ]]; then
+                        cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
+                    elif [[ "$version" == "10.3"* || "$version" == "11."* ||  "$version" == "12."* || "$version" == "13."* ]]; then
+                        cd "$dir"/$deviceid/$cpid/ramdisk/$r
+                    elif [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
+                        cd "$dir"/$deviceid/$cpid/ramdisk/9.3
+                    else
+                        cd "$dir"/$deviceid/$cpid/ramdisk/11.4
+                    fi
+                    _boot_ramdisk
+                    cd "$dir"/
+                    read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk. " r1
+                    echo "[*] Waiting 6 seconds before continuing.."
+                    sleep 6
+                    sudo killall -STOP -c usbd
+                    read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
+                    if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
+                        read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                        echo "[*] Waiting 10 seconds before continuing.."
+                        sleep 10
+                    elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
+                        echo "[*] Ok no problem, continuing.."
+                    else
+                        echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
+                        read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                        echo "[*] Waiting 10 seconds before continuing.."
+                        sleep 10
+                    fi
+                    "$bin"/iproxy 2222 22 &
+                fi
+            fi
             if [[ "$dualboot_hfs" == 1 ]]; then
                 if [[ ! -e "$dir"/$deviceid/0.0/mnt1.tar.gz ]]; then
                     "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s1 /mnt1"
@@ -2145,65 +2206,6 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                     "$bin"/iproxy 2222 22 &
                 }
             else
-                if [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
-                    $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
-                    sleep 5
-                    _kill_if_running iproxy
-                    echo "[*] Device should boot to Recovery mode. Please wait..."
-                    if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                        if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
-                            "$bin"/dfuhelper.sh
-                        elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
-                            "$bin"/dfuhelper2.sh
-                        else
-                            "$bin"/dfuhelper3.sh
-                        fi
-                    fi
-                    _wait_for_dfu
-                    sudo killall -STOP -c usbd
-                    read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
-                    if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
-                        read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                        echo "[*] Waiting 10 seconds before continuing.."
-                        sleep 10
-                    elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
-                        echo "[*] Ok no problem, continuing.."
-                    else
-                        echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
-                        read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                        echo "[*] Waiting 10 seconds before continuing.."
-                        sleep 10
-                    fi
-                    if [[ "$version" == "7."* || "$version" == "8."* ]]; then
-                        cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
-                    elif [[ "$version" == "10.3"* || "$version" == "11."* ||  "$version" == "12."* || "$version" == "13."* ]]; then
-                        cd "$dir"/$deviceid/$cpid/ramdisk/$r
-                    elif [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
-                        cd "$dir"/$deviceid/$cpid/ramdisk/9.3
-                    else
-                        cd "$dir"/$deviceid/$cpid/ramdisk/11.4
-                    fi
-                    _boot_ramdisk
-                    cd "$dir"/
-                    read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk. " r1
-                    echo "[*] Waiting 6 seconds before continuing.."
-                    sleep 6
-                    sudo killall -STOP -c usbd
-                    read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
-                    if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
-                        read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                        echo "[*] Waiting 10 seconds before continuing.."
-                        sleep 10
-                    elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
-                        echo "[*] Ok no problem, continuing.."
-                    else
-                        echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
-                        read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                        echo "[*] Waiting 10 seconds before continuing.."
-                        sleep 10
-                    fi
-                    "$bin"/iproxy 2222 22 &
-                fi
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "lwvm init" 2> /dev/null
                 sleep 1
                 echo "[*] Wiped the device"
