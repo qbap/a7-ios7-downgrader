@@ -35,7 +35,7 @@ if [[ $os_ver =~ ^10\.1[3-4]\.* ]]; then
 elif [[ $os_ver == 10.15.* ]] || (( $maj_ver >= 11 )); then
 	echo "[*] You are running macOS $os_ver. Continuing..."
 else    
-        echo "[!] macOS/OS X $os_ver is not supported by this script. Please install macOS 10.15 (Catalina) to continue if possible." 
+        echo "[!] macOS/OS X $os_ver is not supported by this script. Please install macOS 10.15 (Catalina) or later to continue if possible." 
         read -p "[*] You can press the enter key on your keyboard to skip this warning  " r1
 fi
 
