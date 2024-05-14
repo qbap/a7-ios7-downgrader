@@ -2572,13 +2572,11 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xzvf /mnt4/apfs.fs_ios14.tar.gz -C /mnt4"
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt4/apfs.fs_ios14.tar.gz"
             fi
-            if [[ "$deviceid" == "iPhone10"* || "clean/$cpid" == "0x8015"* ]]; then
+            if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram auto-boot=false" 2> /dev/null
+                pongo=0
             fi
             if [[ "$r" == "16."* || "$r" == "17."* ]]; then
-                if [[ "$deviceid" == "iPhone10"* || "clean/$cpid" == "0x8015"* ]]; then
-                    pongo=0
-                fi
                 $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
                 echo "[*] Step 1 of dualbooting to iOS $version is now done"
                 echo "[*] The device should now boot into recovery mode"
@@ -2587,7 +2585,11 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 sleep 5
                 _kill_if_running iproxy
                 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                    if [[ "$deviceid" == "iPhone10"* || "clean/$cpid" == "0x8015"* ]]; then
+                    if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                        "$bin"/dfuhelper4.sh
+                        sleep 5
+                        "$bin"/irecovery -c "setenv auto-boot false"
+                        "$bin"/irecovery -c "saveenv"
                         "$bin"/dfuhelper.sh
                     elif [[ "clean/$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
                         "$bin"/dfuhelper2.sh
@@ -2641,6 +2643,10 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 sleep 5
                 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
                     if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                        "$bin"/dfuhelper4.sh
+                        sleep 5
+                        "$bin"/irecovery -c "setenv auto-boot false"
+                        "$bin"/irecovery -c "saveenv"
                         "$bin"/dfuhelper.sh
                     elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
                         "$bin"/dfuhelper2.sh
@@ -2663,16 +2669,10 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                     echo "[*] Waiting 10 seconds before continuing.."
                     sleep 10
                 fi
-                if [[ "$version" == "7."* || "$version" == "8."* ]]; then
-                    cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
-                elif [[ "$version" == "10.3"* || "$version" == "11."* ||  "$version" == "12."* ||  "$version" == "13."* ]]; then
-                    cd "$dir"/$deviceid/$cpid/ramdisk/$r
-                elif [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
-                    cd "$dir"/$deviceid/$cpid/ramdisk/9.3
-                else
-                    cd "$dir"/$deviceid/$cpid/ramdisk/11.4
-                fi
-                _boot_ramdisk $deviceid $replace $r
+                _download_ramdisk_boot_files $deviceid $replace 14.3
+                cd "$dir"/$deviceid/$cpid/ramdisk/14.3
+                pongo=0
+                _boot_ramdisk $deviceid $replace 14.3
                 cd "$dir"/
                 read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk " r1
                 echo "[*] Waiting 6 seconds before continuing.."
@@ -2692,11 +2692,23 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                     sleep 10
                 fi
                 "$bin"/iproxy 2222 22 &
+                if [[ "$r" == "16"* || "$r" == "17"* ]]; then
+                    systemdisk=9
+                    datadisk=10
+                    systemfs=disk0s1s$systemdisk
+                    datafs=disk0s1s$datadisk
+                else
+                    systemdisk=8
+                    datadisk=9
+                    systemfs=disk0s1s$systemdisk
+                    datafs=disk0s1s$datadisk
+                fi
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/$systemfs /mnt4" 2> /dev/null
                 echo "[*] Disabling fixkeybag and putting back stock /usr/libexec/keybagd.."
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv /mnt4/usr/libexec/keybagd /mnt4/usr/libexec/fixkeybag' 2> /dev/null
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv /mnt4/usr/libexec/keybagd.bak /mnt4/usr/libexec/keybagd' 2> /dev/null
                 echo "[*] Done"
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram auto-boot=false" 2> /dev/null
                 $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
                 echo "[*] Step 3 of dualbooting to iOS $version is now done"
                 echo "[*] The device should now boot into recovery mode"
@@ -3072,7 +3084,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 sleep 5
                 _kill_if_running iproxy
                 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                    if [[ "$deviceid" == "iPhone10"* || "clean/$cpid" == "0x8015"* ]]; then
+                    if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
                         "$bin"/dfuhelper.sh
                     elif [[ "clean/$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
                         "$bin"/dfuhelper2.sh
@@ -3191,7 +3203,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 sleep 5
                 _kill_if_running iproxy
                 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                    if [[ "$deviceid" == "iPhone10"* || "clean/$cpid" == "0x8015"* ]]; then
+                    if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
                         "$bin"/dfuhelper.sh
                     elif [[ "clean/$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
                         "$bin"/dfuhelper2.sh
