@@ -2,7 +2,6 @@
 
 os=$(uname)
 dir="$(pwd)/$(uname)"
-
 step() {
     for i in $(seq "$1" -1 1); do
         printf '\r\e[1;36m%s (%d) ' "$2" "$i"
@@ -11,6 +10,21 @@ step() {
     printf '\r\e[0m%s (0)\n' "$2"
 }
 
+step2() {
+    rm -f .entered_dfu
+    for i in $(seq "$1" -1 0); do
+        if [[ -e .entered_dfu ]]; then
+            rm -f .entered_dfu
+            break
+        fi
+        if [[ $(get_device_mode) == "recovery" || ($1 == "10" && $(get_device_mode) != "none") ]]; then
+            touch .entered_dfu
+        fi &
+        printf '\r\e[K\e[1;36m%s (%d)' "$2" "$i"
+        sleep 1
+    done
+    printf '\e[0m\n'
+}
 _info() {
     if [ "$1" = 'recovery' ]; then
         echo $("$dir"/irecovery -q | grep "$2" | sed "s/$2: //")
@@ -74,22 +88,32 @@ get_device_mode() {
 }
 
 _dfuhelper() {
-    echo "[*] Press any key when ready for DFU mode"
-    read -n 1 -s
+    if [ "$(get_device_mode)" = "recovery" ]; then
+        echo "[*] Device is already in Recovery"
+        return
+    fi
+
+    local step_one;
+        step_one="Press volume up"
+        echo "[*] Press any key when ready for Recovery mode"
+        read -n 1 -s
     step 3 "Get ready"
-    step_one="Hold volume down + side button"
-    step 8 "$step_one" &
-    sleep 9
-    step 10 'Release side button, but keep holding volume down'
+    step 1 "$step_one" &
+    sleep 2
+wait
+        step_one="Release volume up, then press volume down"
+    step 1 "$step_one" &
+    sleep 2
+wait
+        step2 35 'Release volume down, and then press and hold the side button'
     sleep 1
     
-    if [ "$(get_device_mode)" = "dfu" ]; then
-        echo "[*] Device entered DFU!"
+    if [ "$(get_device_mode)" = "recovery" ]; then
+        echo "[*] Device entered Recovery!"
 return
     else
-        echo "[-] Device did not enter DFU mode"
+        echo "[-] Device did not enter Recovery mode"
 _dfuhelper
     fi
 }
-
 _dfuhelper

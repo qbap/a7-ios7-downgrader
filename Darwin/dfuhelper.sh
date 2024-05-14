@@ -98,8 +98,10 @@ _dfuhelper() {
     
     if [ "$(get_device_mode)" = "dfu" ]; then
         echo "[*] Device entered DFU!"
+return
     else
         echo "[-] Device did not enter DFU mode"
+_dfuhelper
     fi
 }
 
