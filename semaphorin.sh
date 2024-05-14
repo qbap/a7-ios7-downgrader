@@ -1285,41 +1285,48 @@ _kill_if_running() {
         fi
     fi
 }
+_boot_ramdisk2() {
+    if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
+        "$bin"/ipwnder -p
+    else
+        "$bin"/gaster pwn
+        "$bin"/gaster reset
+    fi
+    "$bin"/irecovery -f iBSS.img4
+    "$bin"/irecovery -f iBSS.img4
+    "$bin"/irecovery -f iBEC.img4
+    if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
+        sleep 1
+        "$bin"/irecovery -c go
+        sleep 2
+    fi
+    "$bin"/irecovery -f ramdisk.img4
+    "$bin"/irecovery -c ramdisk
+    "$bin"/irecovery -f devicetree.img4
+    "$bin"/irecovery -c devicetree
+    if [ -e ./trustcache.img4 ]; then
+        "$bin"/irecovery -f trustcache.img4
+        "$bin"/irecovery -c firmware
+    fi
+    "$bin"/irecovery -f kernelcache.img4
+    "$bin"/irecovery -c bootx &
+}
 _boot_ramdisk() {
     if [[ "$pongo" == 1 ]]; then
-        _download_ramdisk_boot_files $deviceid $replace $r
-        cd "$dir"/$deviceid/$cpid/ramdisk/$r
-        cp "$bin"/checkra1n-kpf-pongo .
-        if [ -e ./RestoreRamDisk1.dmg ]; then
-            "$bin"/palera1n -r RestoreRamDisk1.dmg -K checkra1n-kpf-pongo
+        if [[ "$3" == "16."* || "$3" == "17."* ]]; then
+            _download_ramdisk_boot_files $deviceid $replace $3
+            cd "$dir"/$deviceid/$cpid/ramdisk/$3
+            cp "$bin"/checkra1n-kpf-pongo .
+            if [ -e ./RestoreRamDisk1.dmg ]; then
+                "$bin"/palera1n -r RestoreRamDisk1.dmg -K checkra1n-kpf-pongo
+            else
+                "$bin"/palera1n -r RestoreRamDisk.dmg -K checkra1n-kpf-pongo
+            fi
         else
-            "$bin"/palera1n -r RestoreRamDisk.dmg -K checkra1n-kpf-pongo
+            _boot_ramdisk2
         fi
     else
-        if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
-            "$bin"/ipwnder -p
-        else
-            "$bin"/gaster pwn
-            "$bin"/gaster reset
-        fi
-        "$bin"/irecovery -f iBSS.img4
-        "$bin"/irecovery -f iBSS.img4
-        "$bin"/irecovery -f iBEC.img4
-        if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
-            sleep 1
-            "$bin"/irecovery -c go
-            sleep 2
-        fi
-        "$bin"/irecovery -f ramdisk.img4
-        "$bin"/irecovery -c ramdisk
-        "$bin"/irecovery -f devicetree.img4
-        "$bin"/irecovery -c devicetree
-        if [ -e ./trustcache.img4 ]; then
-            "$bin"/irecovery -f trustcache.img4
-            "$bin"/irecovery -c firmware
-        fi
-        "$bin"/irecovery -f kernelcache.img4
-        "$bin"/irecovery -c bootx &
+        _boot_ramdisk2
     fi
 }
 if [ ! -e java/bin/java ]; then
@@ -1355,6 +1362,7 @@ if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (D
     "$bin"/dfuhelper.sh
 fi
 _wait_for_dfu
+sudo killall -STOP -c usbd
 rm -rf work
 check=$("$bin"/irecovery -q | grep CPID | sed 's/CPID: //')
 cpid=$("$bin"/irecovery -q | grep CPID | sed 's/CPID: //')
@@ -1721,7 +1729,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
             cd "$dir"/$deviceid/$cpid/ramdisk/11.4
         fi
     fi
-    _boot_ramdisk
+    _boot_ramdisk $deviceid $replace $r
     if [[ "$hit2" == 1 ]]; then
         hit2=0
         pongo=1
@@ -1917,7 +1925,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                     hit2=1
                     pongo=0
                 fi
-                _boot_ramdisk
+                _boot_ramdisk $deviceid $replace $r
                 if [[ "$hit2" == 1 ]]; then
                     hit2=0
                     pongo=1
@@ -2131,7 +2139,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                     else
                         cd "$dir"/$deviceid/$cpid/ramdisk/11.4
                     fi
-                    _boot_ramdisk
+                    _boot_ramdisk $deviceid $replace $r
                     cd "$dir"/
                     read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk. " r1
                     echo "[*] Waiting 6 seconds before continuing.."
@@ -2201,7 +2209,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                     else
                         cd "$dir"/$deviceid/$cpid/ramdisk/11.4
                     fi
-                    _boot_ramdisk
+                    _boot_ramdisk $deviceid $replace $r
                     cd "$dir"/
                     read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk. " r1
                     echo "[*] Waiting 6 seconds before continuing.."
@@ -2263,7 +2271,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 else
                     cd "$dir"/$deviceid/$cpid/ramdisk/11.4
                 fi
-                _boot_ramdisk
+                _boot_ramdisk $deviceid $replace $r
                 cd "$dir"/
                 read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk. " r1
                 echo "[*] Waiting 6 seconds before continuing.."
@@ -2326,7 +2334,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
             else
                 cd "$dir"/$deviceid/$cpid/ramdisk/11.4
             fi
-            _boot_ramdisk
+            _boot_ramdisk $deviceid $replace $r
             cd "$dir"/
             read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk. " r1
             echo "[*] Waiting 6 seconds before continuing.."
@@ -2664,7 +2672,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 else
                     cd "$dir"/$deviceid/$cpid/ramdisk/11.4
                 fi
-                _boot_ramdisk
+                _boot_ramdisk $deviceid $replace $r
                 cd "$dir"/
                 read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk " r1
                 echo "[*] Waiting 6 seconds before continuing.."
@@ -3149,7 +3157,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 else
                     cd "$dir"/$deviceid/$cpid/ramdisk/11.4
                 fi
-                _boot_ramdisk
+                _boot_ramdisk $deviceid $replace $r
                 cd "$dir"/
                 read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk " r1
                 echo "[*] Waiting 6 seconds before continuing.."
@@ -3270,7 +3278,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                     else
                         cd "$dir"/$deviceid/$cpid/ramdisk/11.4
                     fi
-                    _boot_ramdisk
+                    _boot_ramdisk $deviceid $replace $r
                     cd "$dir"/
                     read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk " r1
                     echo "[*] Waiting 6 seconds before continuing.."
@@ -3395,7 +3403,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 else
                     cd "$dir"/$deviceid/$cpid/ramdisk/11.4
                 fi
-                _boot_ramdisk
+                _boot_ramdisk $deviceid $replace $r
                 cd "$dir"/
                 read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk " r1
                 echo "[*] Waiting 6 seconds before continuing.."
