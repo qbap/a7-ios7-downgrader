@@ -59,6 +59,7 @@ Main operation mode:
     --dump-nand                Backs up the entire contents of your iOS device to disk0.gz
     --dualboot-hfs             This is an experimental dualboot feature for iOS 10.3.3 devices only
     --appleinternal            Enables internalization during restore
+    --tethered                 Disables dualbooting
     --NoMoreSIGABRT            Adds the "protect" flag to /dev/disk0s1s2
     --disable-NoMoreSIGABRT    Removes the "protect" flag from /dev/disk0s1s2
     --restore-nand             Copies the contents of disk0.gz to /dev/disk0 of the iOS device
@@ -89,6 +90,9 @@ parse_opt() {
             ;;
         --serial)
             serial=1
+            ;;
+        --tethered)
+            tethered=1
             ;;
         --dump-nand)
             dump_nand=1
@@ -1429,6 +1433,14 @@ if [ -z "$r" ]; then
         r="11.4"
     fi
 fi
+if [[ "$r" == "14."* || "$r" == "15."* || "$r" == "16."* || "$r" == "17."* ]]; then
+    if [[ ! "$version" == "7."* && ! "$version" == "8."* && ! "$version" == "8."* && ! "$version" == "10."* ]]; then
+        tethered=1
+    fi
+fi
+if [[ "$version" == "13."* || "$version" == "14."* ]]; then
+    tethered=1
+fi
 if [[ "$boot_clean" == 1 ]]; then
     _download_clean_boot_files $deviceid $replace $version
     _kill_if_running iproxy
@@ -1964,6 +1976,12 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
             fi
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt4" 2> /dev/null
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt5" 2> /dev/null
+            if [[ "$tethered" == 1 ]]; then
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/apfs_deletefs /dev/disk0s1s1"
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -v SystemX /dev/disk0s1"
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/apfs_deletefs /dev/disk0s1s2"
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -v DataX /dev/disk0s1"
+            fi
             echo "[*] Deleting /dev/$systemfs"
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/apfs_deletefs /dev/$systemfs"
             sleep 1
