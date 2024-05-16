@@ -2407,22 +2407,25 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
             fi
             "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/$deviceid/$cpid/$version/kernelcache root@localhost:/mnt4/System/Library/Caches/com.apple.kernelcaches
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt4/usr/lib/libmis.dylib"
-            if [[ ! "$deviceid" == "iPad"* ]]; then
+            if [[ ! "$version" == "11.3"* && ! "$version" == "11.4"* ]]; then
                 "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/$deviceid/$cpid/$version/aopfw.img4 root@localhost:/mnt4/usr/standalone/firmware/FUD/AOP.img4
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/chflags schg /mnt4/usr/standalone/firmware/FUD/AOP.img4"
             else
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt4/usr/standalone/firmware/FUD/AOP.img4"
             fi
             "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/$deviceid/$cpid/$version/homerfw.img4 root@localhost:/mnt4/usr/standalone/firmware/FUD/Homer.img4
-            "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/$deviceid/$cpid/$version/avefw.img4 root@localhost:/mnt4/usr/standalone/firmware/FUD/AVE.img4
             "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/$deviceid/$cpid/$version/trustcache root@localhost:/mnt4/usr/standalone/firmware/FUD/StaticTrustCache.img4
             "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/$deviceid/$cpid/$version/multitouch.img4 root@localhost:/mnt4/usr/standalone/firmware/FUD/Multitouch.img4
             "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/$deviceid/$cpid/$version/audiocodecfirmware.img4 root@localhost:/mnt4/usr/standalone/firmware/FUD/AudioCodecFirmware.img4
+            # ios 13
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt4/usr/standalone/firmware/FUD/ISP.img4"
+            # ios 15
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt4/usr/standalone/firmware/FUD/AVE.img4"
+            # fix stuck on apple logo after long progress bar on a11
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt4/System/Library/DataClassMigrators/CoreLocationMigrator.migrator/"
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt4/System/Library/DataClassMigrators/PassbookDataMigrator.migrator/"
+            # stop ios from deleting our files
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/chflags schg /mnt4/usr/standalone/firmware/FUD/Homer.img4"
-            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/chflags schg /mnt4/usr/standalone/firmware/FUD/AVE.img4"
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/chflags schg /mnt4/usr/standalone/firmware/FUD/StaticTrustCache.img4"
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/chflags schg /mnt4/usr/standalone/firmware/FUD/Multitouch.img4"
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/chflags schg /mnt4/usr/standalone/firmware/FUD/AudioCodecFirmware.img4"
