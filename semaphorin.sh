@@ -247,10 +247,11 @@ _download_ramdisk_boot_files() {
                 fi
                 "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/ramdisk/$3/iBSS.dec -k $ivkey
             else
-                fn2="$fn.dec"
-                "$bin"/gaster decrypt $fn $fn2
-                fn="$fn2"
-                cp $fn "$dir"/$1/$cpid/ramdisk/$3/iBSS.dec
+                kbag=$("$bin"/img4 -i $fn -b | head -n 1)
+                iv=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ',' -f 1 | cut -d ' ' -f 2)
+                key=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ' ' -f 4)
+                ivkey="$iv$key"
+                "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/ramdisk/$3/iBSS.dec -k $ivkey
             fi
         fi
         if [ ! -e "$dir"/$1/$cpid/ramdisk/$3/iBEC.dec ]; then
@@ -268,10 +269,11 @@ _download_ramdisk_boot_files() {
                 fi
                 "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/ramdisk/$3/iBEC.dec -k $ivkey
             else
-                fn2="$fn.dec"
-                "$bin"/gaster decrypt $fn $fn2
-                fn="$fn2"
-                cp $fn "$dir"/$1/$cpid/ramdisk/$3/iBEC.dec
+                kbag=$("$bin"/img4 -i $fn -b | head -n 1)
+                iv=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ',' -f 1 | cut -d ' ' -f 2)
+                key=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ' ' -f 4)
+                ivkey="$iv$key"
+                "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/ramdisk/$3/iBEC.dec -k $ivkey
             fi
         fi
         if [[ "$3" == "10."* ]]; then
@@ -283,9 +285,18 @@ _download_ramdisk_boot_files() {
             "$bin"/pzb -g $(awk "/""$replace""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) "$ipswurl"
             if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* ]]; then
                 fn="$(awk "/""$replace""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)"
-                ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
-                "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/ramdisk/$3/kcache.raw -k $ivkey
-                "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/ramdisk/$3/kernelcache.dec -k $ivkey -D
+                if [[ "$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e $3 $1)" == "true" ]]; then
+                    ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
+                    "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/ramdisk/$3/kcache.raw -k $ivkey
+                    "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/ramdisk/$3/kernelcache.dec -k $ivkey -D
+                else
+                    kbag=$("$bin"/img4 -i $fn -b | head -n 1)
+                    iv=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ',' -f 1 | cut -d ' ' -f 2)
+                    key=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ' ' -f 4)
+                    ivkey="$iv$key"
+                    "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/ramdisk/$3/kcache.raw -k $ivkey
+                    "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/ramdisk/$3/kernelcache.dec -k $ivkey -D
+                fi
             else
                 "$bin"/img4 -i $(awk "/""$replace""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) -o "$dir"/$1/$cpid/ramdisk/$3/kcache.raw
                 "$bin"/img4 -i $(awk "/""$replace""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) -o "$dir"/$1/$cpid/ramdisk/$3/kernelcache.dec -D
@@ -295,8 +306,16 @@ _download_ramdisk_boot_files() {
             "$bin"/pzb -g $(awk "/""$replace""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
             if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* ]]; then
                 fn="$(awk "/""$replace""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]all_flash.*production[/]//' | sed 's/Firmware[/]all_flash[/]//')"
-                ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
-                "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/ramdisk/$3/DeviceTree.dec -k $ivkey
+                if [[ "$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e $3 $1)" == "true" ]]; then
+                    ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
+                    "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/ramdisk/$3/DeviceTree.dec -k $ivkey
+                else
+                    kbag=$("$bin"/img4 -i $fn -b | head -n 1)
+                    iv=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ',' -f 1 | cut -d ' ' -f 2)
+                    key=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ' ' -f 4)
+                    ivkey="$iv$key"
+                    "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/ramdisk/$3/DeviceTree.dec -k $ivkey
+                fi
             else
                 mv $(awk "/""$replace""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]all_flash.*production[/]//' | sed 's/Firmware[/]all_flash[/]//') "$dir"/$1/$cpid/ramdisk/$3/DeviceTree.dec
             fi
@@ -305,8 +324,16 @@ _download_ramdisk_boot_files() {
             "$bin"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
             if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* ]]; then
                 fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
-                ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
-                "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg -k $ivkey
+                if [[ "$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e $3 $1)" == "true" ]]; then
+                    ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
+                    "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg -k $ivkey
+                else
+                    kbag=$("$bin"/img4 -i $fn -b | head -n 1)
+                    iv=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ',' -f 1 | cut -d ' ' -f 2)
+                    key=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ' ' -f 4)
+                    ivkey="$iv$key"
+                    "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg -k $ivkey
+                fi
             else
                 "$bin"/img4 -i "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -o "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg
             fi
@@ -454,10 +481,11 @@ _download_boot_files() {
                 fi
                 "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/$3/iBSS.dec -k $ivkey
             else
-                fn2="$fn.dec"
-                "$bin"/gaster decrypt $fn $fn2
-                fn="$fn2"
-                cp $fn "$dir"/$1/$cpid/$3/iBSS.dec
+                kbag=$("$bin"/img4 -i $fn -b | head -n 1)
+                iv=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ',' -f 1 | cut -d ' ' -f 2)
+                key=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ' ' -f 4)
+                ivkey="$iv$key"
+                "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/$3/iBSS.dec -k $ivkey
             fi
         fi
         if [ ! -e "$dir"/$1/$cpid/$3/iBEC.dec ]; then
@@ -477,10 +505,11 @@ _download_boot_files() {
                 fi
                 "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/$3/iBEC.dec -k $ivkey
             else
-                fn2="$fn.dec"
-                "$bin"/gaster decrypt $fn $fn2
-                fn="$fn2"
-                cp $fn "$dir"/$1/$cpid/$3/iBEC.dec
+                kbag=$("$bin"/img4 -i $fn -b | head -n 1)
+                iv=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ',' -f 1 | cut -d ' ' -f 2)
+                key=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ' ' -f 4)
+                ivkey="$iv$key"
+                "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/$3/iBEC.dec -k $ivkey
             fi
         fi
         if [[ "$3" == "10."* || "$3" == "9."* ]]; then
@@ -492,9 +521,18 @@ _download_boot_files() {
             "$bin"/pzb -g $(awk "/""$replace""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) "$ipswurl"
             if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* ]]; then
                 fn="$(awk "/""$replace""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)"
-                ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $buildid $1)"
-                "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/$3/kcache.raw -k $ivkey
-                "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/$3/kernelcache.dec -k $ivkey -D
+                if [[ "$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e $buildid $1)" == "true" ]]; then
+                    ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $buildid $1)"
+                    "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/$3/kcache.raw -k $ivkey
+                    "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/$3/kernelcache.dec -k $ivkey -D
+                else
+                    kbag=$("$bin"/img4 -i $fn -b | head -n 1)
+                    iv=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ',' -f 1 | cut -d ' ' -f 2)
+                    key=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ' ' -f 4)
+                    ivkey="$iv$key"
+                    "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/$3/kcache.raw -k $ivkey
+                    "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/$3/kernelcache.dec -k $ivkey -D
+                fi
             else
                 "$bin"/img4 -i $(awk "/""$replace""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) -o "$dir"/$1/$cpid/$3/kcache.raw
                 "$bin"/img4 -i $(awk "/""$replace""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) -o "$dir"/$1/$cpid/$3/kernelcache.dec -D
@@ -504,8 +542,16 @@ _download_boot_files() {
             "$bin"/pzb -g $(awk "/""$replace""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
             if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* ]]; then
                 fn="$(awk "/""$replace""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]all_flash.*production[/]//' | sed 's/Firmware[/]all_flash[/]//')"
-                ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $buildid $1)"
-                "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/$3/DeviceTree.dec -k $ivkey
+                if [[ "$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e $buildid $1)" == "true" ]]; then
+                    ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $buildid $1)"
+                    "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/$3/DeviceTree.dec -k $ivkey
+                else
+                    kbag=$("$bin"/img4 -i $fn -b | head -n 1)
+                    iv=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ',' -f 1 | cut -d ' ' -f 2)
+                    key=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ' ' -f 4)
+                    ivkey="$iv$key"
+                    "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/$3/DeviceTree.dec -k $ivkey
+                fi
             else
                 mv $(awk "/""$replace""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]all_flash.*production[/]//' | sed 's/Firmware[/]all_flash[/]//') "$dir"/$1/$cpid/$3/DeviceTree.dec
             fi
@@ -586,8 +632,16 @@ _download_boot_files() {
             "$bin"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
             if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* ]]; then
                 fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
-                ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $buildid $1)"
-                "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/$3/RestoreRamDisk.dmg -k $ivkey
+                if [[ "$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e $buildid $1)" == "true" ]]; then
+                    ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $buildid $1)"
+                    "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/$3/RestoreRamDisk.dmg -k $ivkey
+                else
+                    kbag=$("$bin"/img4 -i $fn -b | head -n 1)
+                    iv=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ',' -f 1 | cut -d ' ' -f 2)
+                    key=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ' ' -f 4)
+                    ivkey="$iv$key"
+                    "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/$3/RestoreRamDisk.dmg -k $ivkey
+                fi
             else
                 "$bin"/img4 -i "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -o "$dir"/$1/$cpid/$3/RestoreRamDisk.dmg
             fi
@@ -600,11 +654,16 @@ _download_boot_files() {
         fi
         rm -rf BuildManifest.plist
         if [[ "$r" == "16"* || "$r" == "17"* ]]; then
-            "$bin"/iBoot64Patcher "$dir"/$1/$cpid/$3/iBSS.dec "$dir"/$1/$cpid/$3/iBSS.patched
-            if [[ "$3" == "10.3"* || "$3" == "11."* || "$3" == "12."* ||  "$3" == "13."* ]]; then
-                "$bin"/iBoot64Patcher "$dir"/$1/$cpid/$3/iBEC.dec "$dir"/$1/$cpid/$3/iBEC.patched -b "$boot_args rd=disk0s1s9 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x100 PE_i_can_has_debugger=1 amfi_get_out_of_my_way=1 amfi_allow_any_signature=1" -n
+            if [[ "$3" == "9."* ]]; then
+                "$bin"/kairos "$dir"/$1/$cpid/$3/iBSS.dec "$dir"/$1/$cpid/$3/iBSS.patched
+                "$bin"/kairos "$dir"/$1/$cpid/$3/iBEC.dec "$dir"/$1/$cpid/$3/iBEC.patched -b "$boot_args rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1 amfi_get_out_of_my_way=1 amfi_allow_any_signature=1" -n
             else
-                "$bin"/iBoot64Patcher "$dir"/$1/$cpid/$3/iBEC.dec "$dir"/$1/$cpid/$3/iBEC.patched -b "$boot_args rd=disk0s1s9 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1 amfi_get_out_of_my_way=1 amfi_allow_any_signature=1" -n
+                "$bin"/iBoot64Patcher "$dir"/$1/$cpid/$3/iBSS.dec "$dir"/$1/$cpid/$3/iBSS.patched
+                if [[ "$3" == "10.3"* || "$3" == "11."* || "$3" == "12."* ||  "$3" == "13."* ]]; then
+                    "$bin"/iBoot64Patcher "$dir"/$1/$cpid/$3/iBEC.dec "$dir"/$1/$cpid/$3/iBEC.patched -b "$boot_args rd=disk0s1s9 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x100 PE_i_can_has_debugger=1 amfi_get_out_of_my_way=1 amfi_allow_any_signature=1" -n
+                else
+                    "$bin"/iBoot64Patcher "$dir"/$1/$cpid/$3/iBEC.dec "$dir"/$1/$cpid/$3/iBEC.patched -b "$boot_args rd=disk0s1s9 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1 amfi_get_out_of_my_way=1 amfi_allow_any_signature=1" -n
+                fi
             fi
         else
             if [[ "$dualboot_hfs" == 1 ]]; then
@@ -969,10 +1028,11 @@ _download_clean_boot_files() {
                 fi
                 "$bin"/img4 -i $fn -o "$dir"/$1/clean/$cpid/$3/iBSS.dec -k $ivkey
             else
-                fn2="$fn.dec"
-                "$bin"/gaster decrypt $fn $fn2
-                fn="$fn2"
-                cp $fn "$dir"/$1/clean/$cpid/$3/iBSS.dec
+                kbag=$("$bin"/img4 -i $fn -b | head -n 1)
+                iv=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ',' -f 1 | cut -d ' ' -f 2)
+                key=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ' ' -f 4)
+                ivkey="$iv$key"
+                "$bin"/img4 -i $fn -o "$dir"/$1/clean/$cpid/$3/iBSS.dec -k $ivkey
             fi
         fi
         if [ ! -e "$dir"/$1/clean/$cpid/$3/iBEC.dec ]; then
@@ -990,10 +1050,11 @@ _download_clean_boot_files() {
                 fi
                 "$bin"/img4 -i $fn -o "$dir"/$1/clean/$cpid/$3/iBEC.dec -k $ivkey
             else
-                fn2="$fn.dec"
-                "$bin"/gaster decrypt $fn $fn2
-                fn="$fn2"
-                cp $fn "$dir"/$1/clean/$cpid/$3/iBEC.dec
+                kbag=$("$bin"/img4 -i $fn -b | head -n 1)
+                iv=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ',' -f 1 | cut -d ' ' -f 2)
+                key=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ' ' -f 4)
+                ivkey="$iv$key"
+                "$bin"/img4 -i $fn -o "$dir"/$1/clean/$cpid/$3/iBEC.dec -k $ivkey
             fi
         fi
         if [[ "$3" == "10."* ]]; then
@@ -1005,9 +1066,18 @@ _download_clean_boot_files() {
             "$bin"/pzb -g $(awk "/""$replace""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) "$ipswurl"
             if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* ]]; then
                 fn="$(awk "/""$replace""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)"
-                ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $buildid $1)"
-                "$bin"/img4 -i $fn -o "$dir"/$1/clean/$cpid/$3/kcache.raw -k $ivkey
-                "$bin"/img4 -i $fn -o "$dir"/$1/clean/$cpid/$3/kernelcache.dec -k $ivkey -D
+                if [[ "$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e $buildid $1)" == "true" ]]; then
+                    ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $buildid $1)"
+                    "$bin"/img4 -i $fn -o "$dir"/$1/clean/$cpid/$3/kcache.raw -k $ivkey
+                    "$bin"/img4 -i $fn -o "$dir"/$1/clean/$cpid/$3/kernelcache.dec -k $ivkey -D
+                else
+                    kbag=$("$bin"/img4 -i $fn -b | head -n 1)
+                    iv=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ',' -f 1 | cut -d ' ' -f 2)
+                    key=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ' ' -f 4)
+                    ivkey="$iv$key"
+                    "$bin"/img4 -i $fn -o "$dir"/$1/clean/$cpid/$3/kcache.raw -k $ivkey
+                    "$bin"/img4 -i $fn -o "$dir"/$1/clean/$cpid/$3/kernelcache.dec -k $ivkey -D
+                fi
             else
                 "$bin"/img4 -i $(awk "/""$replace""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) -o "$dir"/$1/clean/$cpid/$3/kcache.raw
                 "$bin"/img4 -i $(awk "/""$replace""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) -o "$dir"/$1/clean/$cpid/$3/kernelcache.dec -D
@@ -1017,8 +1087,16 @@ _download_clean_boot_files() {
             "$bin"/pzb -g $(awk "/""$replace""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
             if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* ]]; then
                 fn="$(awk "/""$replace""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]all_flash.*production[/]//' | sed 's/Firmware[/]all_flash[/]//')"
-                ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $buildid $1)"
-                "$bin"/img4 -i $fn -o "$dir"/$1/clean/$cpid/$3/DeviceTree.dec -k $ivkey
+                if [[ "$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e $buildid $1)" == "true" ]]; then
+                    ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $buildid $1)"
+                    "$bin"/img4 -i $fn -o "$dir"/$1/clean/$cpid/$3/DeviceTree.dec -k $ivkey
+                else
+                    kbag=$("$bin"/img4 -i $fn -b | head -n 1)
+                    iv=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ',' -f 1 | cut -d ' ' -f 2)
+                    key=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ' ' -f 4)
+                    ivkey="$iv$key"
+                    "$bin"/img4 -i $fn -o "$dir"/$1/clean/$cpid/$3/DeviceTree.dec -k $ivkey
+                fi
             else
                 mv $(awk "/""$replace""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]all_flash.*production[/]//' | sed 's/Firmware[/]all_flash[/]//') "$dir"/$1/clean/$cpid/$3/DeviceTree.dec
             fi
@@ -1087,8 +1165,16 @@ _download_clean_boot_files() {
             "$bin"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
             if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* ]]; then
                 fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
-                ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $buildid $1)"
-                "$bin"/img4 -i $fn -o "$dir"/$1/clean/$cpid/$3/RestoreRamDisk.dmg -k $ivkey
+                if [[ "$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e $buildid $1)" == "true" ]]; then
+                    ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $buildid $1)"
+                    "$bin"/img4 -i $fn -o "$dir"/$1/clean/$cpid/$3/RestoreRamDisk.dmg -k $ivkey
+                else
+                    kbag=$("$bin"/img4 -i $fn -b | head -n 1)
+                    iv=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ',' -f 1 | cut -d ' ' -f 2)
+                    key=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ' ' -f 4)
+                    ivkey="$iv$key"
+                    "$bin"/img4 -i $fn -o "$dir"/$1/clean/$cpid/$3/RestoreRamDisk.dmg -k $ivkey
+                fi
             else
                 "$bin"/img4 -i "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -o "$dir"/$1/clean/$cpid/$3/RestoreRamDisk.dmg
             fi
@@ -1178,87 +1264,113 @@ _download_root_fs() {
     else
         if [ ! -e "$dir"/$1/$cpid/$3/OS.tar ]; then
             if [ ! -e "$dir"/$1/$cpid/$3/OS.dmg ]; then
-                if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" || ! "$3" == "8.0" ]]; then
-                    "$bin"/pzb -g BuildManifest.plist "$ipswurl"
-                    "$bin"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
-                    fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
-                    ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $buildid $1)"
-                    "$bin"/dmg extract $fn "$dir"/$1/$cpid/$3/OS.dmg -k $ivkey
-                elif [[ "$deviceid" == "iPhone6,1" || "$deviceid" == "iPhone6,2" ]]; then
-                    # https://archive.org/download/Apple_iPhone_Firmware/Apple%20iPhone%206.1%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/
-                    cd "$dir"/$1/$cpid/$3
-                    "$bin"/aria2c https://ia903400.us.archive.org/4/items/Apple_iPhone_Firmware/Apple%20iPhone%206.1%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
-                    "$bin"/7z x media_ipsw.rar
-                    "$bin"/7z x $(find . -name '*.ipsw*')
-                    "$bin"/dmg extract 058-01244-053.dmg OS.dmg -k 5c8b481822b91861c1d19590e790b306daaab2230f89dd275c18356d28fdcd47436a0737
-                    "$bin"/img4 -i kernelcache.release.n51 -o "$dir"/$1/$cpid/$3/kcache_12A4331d.raw -k fdee9545abf38072bb54d6cc46aeb44cc0ab44308fdccce0a0adc4f2c02c531339c2acd2d7c1e099abb298a63730967a
-                    "$bin"/img4 -i kernelcache.release.n51 -o "$dir"/$1/$cpid/$3/kernelcache_12A4331d.dec -k fdee9545abf38072bb54d6cc46aeb44cc0ab44308fdccce0a0adc4f2c02c531339c2acd2d7c1e099abb298a63730967a -D
-                    cd "$dir"/work/
-                elif [[ "$deviceid" == "iPad4,4" ]]; then
-                    # https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.4%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
-                    cd "$dir"/$1/$cpid/$3
-                    "$bin"/aria2c https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.4%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
-                    "$bin"/7z x media_ipsw.rar
-                    "$bin"/7z x $(find . -name '*.ipsw*')
-                    "$bin"/dmg extract 058-01149-054.dmg OS.dmg -k b62a823a1b5355e1e8211db6441e4384f92e8b47407837afadf24facab5c7b0320f61a4f
-                    "$bin"/img4 -i kernelcache.release.j85 -o "$dir"/$1/$cpid/$3/kcache_12A4331d.raw -k e64f85ed518a3747d5b04c9d703dd96b92df85410ace43dbed85b7fa66c186e002d59fd2812910e7326ef173cb1c5a8f
-                    "$bin"/img4 -i kernelcache.release.j85 -o "$dir"/$1/$cpid/$3/kernelcache_12A4331d.dec -k e64f85ed518a3747d5b04c9d703dd96b92df85410ace43dbed85b7fa66c186e002d59fd2812910e7326ef173cb1c5a8f -D
-                    cd "$dir"/work/
-                elif [[ "$deviceid" == "iPad4,5" ]]; then
-                    # https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.5%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
-                    cd "$dir"/$1/$cpid/$3
-                    "$bin"/aria2c https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.5%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
-                    "$bin"/7z x media_ipsw.rar
-                    "$bin"/7z x $(find . -name '*.ipsw*')
-                    "$bin"/dmg extract 058-01282-053.dmg OS.dmg -k 67a958bddcc762e21702583b20b87caad97ed96433e9e7e8a57ef4ea53d71549f030c125
-                    "$bin"/img4 -i kernelcache.release.j86 -o "$dir"/$1/$cpid/$3/kcache_12A4331d.raw -k 4c70597be8d32ab7c7177e1b1e3f1ba00065ed0b2222d0c9c8484a7dada36f2165037fa3324ee5e8aa2bd198a56fd2d9
-                    "$bin"/img4 -i kernelcache.release.j86 -o "$dir"/$1/$cpid/$3/kernelcache_12A4331d.dec -k 4c70597be8d32ab7c7177e1b1e3f1ba00065ed0b2222d0c9c8484a7dada36f2165037fa3324ee5e8aa2bd198a56fd2d9 -D
-                    cd "$dir"/work/
-                elif [[ "$deviceid" == "iPad4,2" ]]; then
-                    # https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.2%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
-                    cd "$dir"/$1/$cpid/$3
-                    "$bin"/aria2c https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.2%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
-                    "$bin"/7z x media_ipsw.rar
-                    "$bin"/7z x $(find . -name '*.ipsw*')
-                    "$bin"/dmg extract 058-01330-053.dmg OS.dmg -k 65e1ae6a877652010bcafd88c1b882494b66bd9c2dc3ebbe35d0ebc42466be1a3956c6cc
-                    "$bin"/img4 -i kernelcache.release.j72 -o "$dir"/$1/$cpid/$3/kcache_12A4331d.raw -k 93c94a8186de108199771d504c753ecf397433be91c748045b026631d976ac6fe80a2c196db01e6eef506ce231a3fb44
-                    "$bin"/img4 -i kernelcache.release.j72 -o "$dir"/$1/$cpid/$3/kernelcache_12A4331d.dec -k 93c94a8186de108199771d504c753ecf397433be91c748045b026631d976ac6fe80a2c196db01e6eef506ce231a3fb44 -D
-                    cd "$dir"/work/
-                elif [[ "$deviceid" == "iPad4,1" ]]; then
-                    # https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.1%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
-                    cd "$dir"/$1/$cpid/$3
-                    "$bin"/aria2c https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.1%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
-                    "$bin"/7z x media_ipsw.rar
-                    "$bin"/7z x $(find . -name '*.ipsw*')
-                    "$bin"/dmg extract 058-01219-053.dmg OS.dmg -k c6017d6da64083eddbbf01c80f4dc6f84c1d935cec206d60116e7177255f2b677ac2d077
-                    "$bin"/img4 -i kernelcache.release.j71 -o "$dir"/$1/$cpid/$3/kcache_12A4331d.raw -k 5ea29d371ad06c6e7fb0cd904779cd34f21385cc504f178fb5a9b2d4066703c816208e8f6d9479dd1b49d4d6a2460b02
-                    "$bin"/img4 -i kernelcache.release.j71 -o "$dir"/$1/$cpid/$3/kernelcache_12A4331d.dec -k 5ea29d371ad06c6e7fb0cd904779cd34f21385cc504f178fb5a9b2d4066703c816208e8f6d9479dd1b49d4d6a2460b02 -D
-                    cd "$dir"/work/
-                elif [[ "$deviceid" == "iPad4,6" ]]; then
-                    # https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.6%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
-                    cd "$dir"/$1/$cpid/$3
-                    "$bin"/aria2c https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.6%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
-                    "$bin"/7z x media_ipsw.rar
-                    "$bin"/7z x $(find . -name '*.ipsw*')
-                    "$bin"/dmg extract 058-01099-053.dmg OS.dmg -k 3746eef01500a81f45d7ceed3c35ed02ad7b9d7da26e7fa4a27a84a1a53a224e65ab8ba8
-                    "$bin"/img4 -i kernelcache.release.j87 -o "$dir"/$1/$cpid/$3/kcache_12A4331d.raw -k c17906bdffdf40b6f9c0656c6b7d585449e6eb495439f9cae8faee3a466e75de248c2ce176cddc3a1ca4de73be0baeef
-                    "$bin"/img4 -i kernelcache.release.j87 -o "$dir"/$1/$cpid/$3/kernelcache_12A4331d.dec -k c17906bdffdf40b6f9c0656c6b7d585449e6eb495439f9cae8faee3a466e75de248c2ce176cddc3a1ca4de73be0baeef -D
-                    cd "$dir"/work/
-                elif [[ "$deviceid" == "iPad4,3" ]]; then
-                    # https://ia903400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.3%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
-                    cd "$dir"/$1/$cpid/$3
-                    "$bin"/aria2c https://ia903400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.3%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
-                    "$bin"/7z x media_ipsw.rar
-                    "$bin"/7z x $(find . -name '*.ipsw*')
-                    "$bin"/dmg extract 058-01287-053.dmg OS.dmg -k f593490d57e2c6a01bbfee212c83f711a8e80e6366107803ff3a933850b48ed68f495014
-                    "$bin"/img4 -i kernelcache.release.j73 -o "$dir"/$1/$cpid/$3/kcache_12A4331d.raw -k fc44a450a05e812125e93ff45c820a90cd11f08347133cc03a9b4bed23a1ec16c509c58d3b0f3083640d62edc56eee10
-                    "$bin"/img4 -i kernelcache.release.j73 -o "$dir"/$1/$cpid/$3/kernelcache_12A4331d.dec -k fc44a450a05e812125e93ff45c820a90cd11f08347133cc03a9b4bed23a1ec16c509c58d3b0f3083640d62edc56eee10 -D
-                    cd "$dir"/work/
+                if [[ "$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e $buildid $1)" == "true" ]]; then
+                    if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" || ! "$3" == "8.0" ]]; then
+                        "$bin"/pzb -g BuildManifest.plist "$ipswurl"
+                        "$bin"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
+                        fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
+                        ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $buildid $1)"
+                        "$bin"/dmg extract $fn "$dir"/$1/$cpid/$3/OS.dmg -k $ivkey
+                    elif [[ "$deviceid" == "iPhone6,1" || "$deviceid" == "iPhone6,2" ]]; then
+                        # https://archive.org/download/Apple_iPhone_Firmware/Apple%20iPhone%206.1%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/
+                        cd "$dir"/$1/$cpid/$3
+                        "$bin"/aria2c https://ia903400.us.archive.org/4/items/Apple_iPhone_Firmware/Apple%20iPhone%206.1%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
+                        "$bin"/7z x media_ipsw.rar
+                        "$bin"/7z x $(find . -name '*.ipsw*')
+                        "$bin"/dmg extract 058-01244-053.dmg OS.dmg -k 5c8b481822b91861c1d19590e790b306daaab2230f89dd275c18356d28fdcd47436a0737
+                        "$bin"/img4 -i kernelcache.release.n51 -o "$dir"/$1/$cpid/$3/kcache_12A4331d.raw -k fdee9545abf38072bb54d6cc46aeb44cc0ab44308fdccce0a0adc4f2c02c531339c2acd2d7c1e099abb298a63730967a
+                        "$bin"/img4 -i kernelcache.release.n51 -o "$dir"/$1/$cpid/$3/kernelcache_12A4331d.dec -k fdee9545abf38072bb54d6cc46aeb44cc0ab44308fdccce0a0adc4f2c02c531339c2acd2d7c1e099abb298a63730967a -D
+                        cd "$dir"/work/
+                    elif [[ "$deviceid" == "iPad4,4" ]]; then
+                        # https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.4%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
+                        cd "$dir"/$1/$cpid/$3
+                        "$bin"/aria2c https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.4%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
+                        "$bin"/7z x media_ipsw.rar
+                        "$bin"/7z x $(find . -name '*.ipsw*')
+                        "$bin"/dmg extract 058-01149-054.dmg OS.dmg -k b62a823a1b5355e1e8211db6441e4384f92e8b47407837afadf24facab5c7b0320f61a4f
+                        "$bin"/img4 -i kernelcache.release.j85 -o "$dir"/$1/$cpid/$3/kcache_12A4331d.raw -k e64f85ed518a3747d5b04c9d703dd96b92df85410ace43dbed85b7fa66c186e002d59fd2812910e7326ef173cb1c5a8f
+                        "$bin"/img4 -i kernelcache.release.j85 -o "$dir"/$1/$cpid/$3/kernelcache_12A4331d.dec -k e64f85ed518a3747d5b04c9d703dd96b92df85410ace43dbed85b7fa66c186e002d59fd2812910e7326ef173cb1c5a8f -D
+                        cd "$dir"/work/
+                    elif [[ "$deviceid" == "iPad4,5" ]]; then
+                        # https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.5%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
+                        cd "$dir"/$1/$cpid/$3
+                        "$bin"/aria2c https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.5%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
+                        "$bin"/7z x media_ipsw.rar
+                        "$bin"/7z x $(find . -name '*.ipsw*')
+                        "$bin"/dmg extract 058-01282-053.dmg OS.dmg -k 67a958bddcc762e21702583b20b87caad97ed96433e9e7e8a57ef4ea53d71549f030c125
+                        "$bin"/img4 -i kernelcache.release.j86 -o "$dir"/$1/$cpid/$3/kcache_12A4331d.raw -k 4c70597be8d32ab7c7177e1b1e3f1ba00065ed0b2222d0c9c8484a7dada36f2165037fa3324ee5e8aa2bd198a56fd2d9
+                        "$bin"/img4 -i kernelcache.release.j86 -o "$dir"/$1/$cpid/$3/kernelcache_12A4331d.dec -k 4c70597be8d32ab7c7177e1b1e3f1ba00065ed0b2222d0c9c8484a7dada36f2165037fa3324ee5e8aa2bd198a56fd2d9 -D
+                        cd "$dir"/work/
+                    elif [[ "$deviceid" == "iPad4,2" ]]; then
+                        # https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.2%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
+                        cd "$dir"/$1/$cpid/$3
+                        "$bin"/aria2c https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.2%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
+                        "$bin"/7z x media_ipsw.rar
+                        "$bin"/7z x $(find . -name '*.ipsw*')
+                        "$bin"/dmg extract 058-01330-053.dmg OS.dmg -k 65e1ae6a877652010bcafd88c1b882494b66bd9c2dc3ebbe35d0ebc42466be1a3956c6cc
+                        "$bin"/img4 -i kernelcache.release.j72 -o "$dir"/$1/$cpid/$3/kcache_12A4331d.raw -k 93c94a8186de108199771d504c753ecf397433be91c748045b026631d976ac6fe80a2c196db01e6eef506ce231a3fb44
+                        "$bin"/img4 -i kernelcache.release.j72 -o "$dir"/$1/$cpid/$3/kernelcache_12A4331d.dec -k 93c94a8186de108199771d504c753ecf397433be91c748045b026631d976ac6fe80a2c196db01e6eef506ce231a3fb44 -D
+                        cd "$dir"/work/
+                    elif [[ "$deviceid" == "iPad4,1" ]]; then
+                        # https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.1%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
+                        cd "$dir"/$1/$cpid/$3
+                        "$bin"/aria2c https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.1%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
+                        "$bin"/7z x media_ipsw.rar
+                        "$bin"/7z x $(find . -name '*.ipsw*')
+                        "$bin"/dmg extract 058-01219-053.dmg OS.dmg -k c6017d6da64083eddbbf01c80f4dc6f84c1d935cec206d60116e7177255f2b677ac2d077
+                        "$bin"/img4 -i kernelcache.release.j71 -o "$dir"/$1/$cpid/$3/kcache_12A4331d.raw -k 5ea29d371ad06c6e7fb0cd904779cd34f21385cc504f178fb5a9b2d4066703c816208e8f6d9479dd1b49d4d6a2460b02
+                        "$bin"/img4 -i kernelcache.release.j71 -o "$dir"/$1/$cpid/$3/kernelcache_12A4331d.dec -k 5ea29d371ad06c6e7fb0cd904779cd34f21385cc504f178fb5a9b2d4066703c816208e8f6d9479dd1b49d4d6a2460b02 -D
+                        cd "$dir"/work/
+                    elif [[ "$deviceid" == "iPad4,6" ]]; then
+                        # https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.6%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
+                        cd "$dir"/$1/$cpid/$3
+                        "$bin"/aria2c https://ia803400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.6%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
+                        "$bin"/7z x media_ipsw.rar
+                        "$bin"/7z x $(find . -name '*.ipsw*')
+                        "$bin"/dmg extract 058-01099-053.dmg OS.dmg -k 3746eef01500a81f45d7ceed3c35ed02ad7b9d7da26e7fa4a27a84a1a53a224e65ab8ba8
+                        "$bin"/img4 -i kernelcache.release.j87 -o "$dir"/$1/$cpid/$3/kcache_12A4331d.raw -k c17906bdffdf40b6f9c0656c6b7d585449e6eb495439f9cae8faee3a466e75de248c2ce176cddc3a1ca4de73be0baeef
+                        "$bin"/img4 -i kernelcache.release.j87 -o "$dir"/$1/$cpid/$3/kernelcache_12A4331d.dec -k c17906bdffdf40b6f9c0656c6b7d585449e6eb495439f9cae8faee3a466e75de248c2ce176cddc3a1ca4de73be0baeef -D
+                        cd "$dir"/work/
+                    elif [[ "$deviceid" == "iPad4,3" ]]; then
+                        # https://ia903400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.3%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
+                        cd "$dir"/$1/$cpid/$3
+                        "$bin"/aria2c https://ia903400.us.archive.org/4/items/Apple_iPad_Firmware_Part_1/Apple%20iPad%204.3%20Firmware%208.0%20%288.0.12A4331d%29%20%28beta4%29/media_ipsw.rar
+                        "$bin"/7z x media_ipsw.rar
+                        "$bin"/7z x $(find . -name '*.ipsw*')
+                        "$bin"/dmg extract 058-01287-053.dmg OS.dmg -k f593490d57e2c6a01bbfee212c83f711a8e80e6366107803ff3a933850b48ed68f495014
+                        "$bin"/img4 -i kernelcache.release.j73 -o "$dir"/$1/$cpid/$3/kcache_12A4331d.raw -k fc44a450a05e812125e93ff45c820a90cd11f08347133cc03a9b4bed23a1ec16c509c58d3b0f3083640d62edc56eee10
+                        "$bin"/img4 -i kernelcache.release.j73 -o "$dir"/$1/$cpid/$3/kernelcache_12A4331d.dec -k fc44a450a05e812125e93ff45c820a90cd11f08347133cc03a9b4bed23a1ec16c509c58d3b0f3083640d62edc56eee10 -D
+                        cd "$dir"/work/
+                    else
+                        "$bin"/pzb -g BuildManifest.plist "$ipswurl"
+                        "$bin"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
+                        fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
+                        ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
+                        "$bin"/dmg extract $fn "$dir"/$1/$cpid/$3/OS.dmg -k $ivkey
+                    fi
                 else
                     "$bin"/pzb -g BuildManifest.plist "$ipswurl"
                     "$bin"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
+                    if [ ! -e "$dir"/$1/$cpid/$3/RestoreRamDisk.dmg ]; then
+                        "$bin"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
+                        if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* ]]; then
+                            fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
+                            if [[ "$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e $buildid $1)" == "true" ]]; then
+                                ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $buildid $1)"
+                                "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/$3/RestoreRamDisk.dmg -k $ivkey
+                            else
+                                kbag=$("$bin"/img4 -i $fn -b | head -n 1)
+                                iv=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ',' -f 1 | cut -d ' ' -f 2)
+                                key=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ' ' -f 4)
+                                ivkey="$iv$key"
+                                "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/$3/RestoreRamDisk.dmg -k $ivkey
+                            fi
+                        else
+                            "$bin"/img4 -i "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -o "$dir"/$1/$cpid/$3/RestoreRamDisk.dmg
+                        fi
+                    fi
                     fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
-                    ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
+                    ivkey=$("$bin"/pass2key $scid "$dir"/$1/$cpid/$3/RestoreRamDisk.dmg $fn | tail -n 1 | cut -d ' ' -f 3)
                     "$bin"/dmg extract $fn "$dir"/$1/$cpid/$3/OS.dmg -k $ivkey
                 fi
             fi
@@ -1286,6 +1398,14 @@ _kill_if_running() {
     fi
 }
 _boot_ramdisk2() {
+    if [[ "$cpid" == "0x8001" || "$cpid" == "0x8000" || "$cpid" == "0x8003" ]]; then
+        kbag="24A0F3547373C6FED863FC0F321D7FEA216D0258B48413903939DF968CC2C0E571949EFB72DED8B55B8670932CA7A039"
+        iv=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ',' -f 1 | cut -d ' ' -f 2)
+        key=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ' ' -f 4)
+        ivkey="$iv$key"
+        pwd
+        echo "$ivkey"
+    fi
     if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
         "$bin"/ipwnder -p
     else
@@ -1318,9 +1438,23 @@ _boot_ramdisk() {
             cd "$dir"/$deviceid/$cpid/ramdisk/$3
             cp "$bin"/checkra1n-kpf-pongo .
             if [ -e ./RestoreRamDisk1.dmg ]; then
-                "$bin"/palera1n -r RestoreRamDisk1.dmg -K checkra1n-kpf-pongo
+                if [[ "$cpid" == "0x8001" || "$cpid" == "0x8000" || "$cpid" == "0x8003" ]]; then
+                    "$bin"/palera1n -r RestoreRamDisk1.dmg -K checkra1n-kpf-pongo &
+                    echo "Waiting 10 seconds.."
+                    sleep 10
+                    "$bin"/palera1n -r RestoreRamDisk1.dmg -K checkra1n-kpf-pongo
+                else
+                    "$bin"/palera1n -r RestoreRamDisk1.dmg -K checkra1n-kpf-pongo
+                fi
             else
-                "$bin"/palera1n -r RestoreRamDisk.dmg -K checkra1n-kpf-pongo
+                if [[ "$cpid" == "0x8001" || "$cpid" == "0x8000" || "$cpid" == "0x8003" ]]; then
+                    "$bin"/palera1n -r RestoreRamDisk.dmg -K checkra1n-kpf-pongo &
+                    echo "Waiting 10 seconds.."
+                    sleep 10
+                    "$bin"/palera1n -r RestoreRamDisk.dmg -K checkra1n-kpf-pongo
+                else
+                    "$bin"/palera1n -r RestoreRamDisk.dmg -K checkra1n-kpf-pongo
+                fi
             fi
         else
             _boot_ramdisk2
@@ -1368,7 +1502,14 @@ check=$("$bin"/irecovery -q | grep CPID | sed 's/CPID: //')
 cpid=$("$bin"/irecovery -q | grep CPID | sed 's/CPID: //')
 replace=$("$bin"/irecovery -q | grep MODEL | sed 's/MODEL: //')
 deviceid=$("$bin"/irecovery -q | grep PRODUCT | sed 's/PRODUCT: //')
+echo $cpid
+echo $replace
 echo $deviceid
+scid="$cpid"
+if [[ "$cpid" == "0x8000" || "$cpid" == "0x8001" || "$cpid" == 8003 ]]; then
+    scid=$(echo $cpid | sed 's/0x/s/g')
+    echo $scid
+fi
 if [[ "$deviceid" == "iPhone10"* || "$deviceid" == "iPad6"* || "$deviceid" == "iPad7"* ]]; then
     pongo=1
     if [[ ! -e "$bin"/checkra1n-kpf-pongo ]]; then
@@ -1392,14 +1533,6 @@ if [[ "$version" == "9.3"* || "$version" == "10."* ]]; then
     fi
 fi
 _wait_for_dfu
-if [[ "$deviceid" == "iPad"* && ! "$deviceid" == "iPad4"* ]]; then
-    if [[ "$version" == "8."* || "$version" == "9."* ]]; then
-        if [[ ! "$(./java/bin/java -jar ./Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e 9.3.2 $deviceid)" == "true" ]]; then
-            echo "[-] No firmware keys exist on https://theapplewiki.com/wiki/ for your device"
-            exit 0
-        fi
-    fi
-fi
 if [[ "$clean" == 1 ]]; then
     rm -rf "$dir"/$deviceid/$cpid/$version/iBSS*
     rm -rf "$dir"/$deviceid/$cpid/$version/iBEC*
@@ -1448,6 +1581,14 @@ if [[ "$boot_clean" == 1 ]]; then
     fi
     if [ -e "$dir"/$deviceid/clean/$cpid/$version/iBSS.img4 ]; then
         cd "$dir"/$deviceid/clean/$cpid/$version
+        if [[ "$cpid" == "0x8001" || "$cpid" == "0x8000" || "$cpid" == "0x8003" ]]; then
+            kbag="24A0F3547373C6FED863FC0F321D7FEA216D0258B48413903939DF968CC2C0E571949EFB72DED8B55B8670932CA7A039"
+            iv=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ',' -f 1 | cut -d ' ' -f 2)
+            key=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ' ' -f 4)
+            ivkey="$iv$key"
+            pwd
+            echo "$ivkey"
+        fi
         if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
             "$bin"/ipwnder -p
         else
@@ -1556,6 +1697,14 @@ if [[ "$boot" == 1 ]]; then
     fi
     if [ -e "$dir"/$deviceid/$cpid/$version/iBSS.img4 ]; then
         cd "$dir"/$deviceid/$cpid/$version
+        if [[ "$cpid" == "0x8001" || "$cpid" == "0x8000" || "$cpid" == "0x8003" ]]; then
+            kbag="24A0F3547373C6FED863FC0F321D7FEA216D0258B48413903939DF968CC2C0E571949EFB72DED8B55B8670932CA7A039"
+            iv=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ',' -f 1 | cut -d ' ' -f 2)
+            key=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ' ' -f 4)
+            ivkey="$iv$key"
+            pwd
+            echo "$ivkey"
+        fi
         if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
             "$bin"/ipwnder -p
         else
@@ -1719,20 +1868,44 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
             else
                 cd "$dir"/$deviceid/$cpid/ramdisk/12.5.4
             fi
-            if [[ "$pongo" == 1 ]]; then
-                hit2=1
-                pongo=0
-            fi
         elif [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
             cd "$dir"/$deviceid/$cpid/ramdisk/9.3
         else
             cd "$dir"/$deviceid/$cpid/ramdisk/11.4
         fi
+        if [[ "$pongo" == 1 ]]; then
+            if [[ -e "$dir"/$deviceid/0.0/apticket.der && -e "$dir"/$deviceid/0.0/sep-firmware.img4 && -e "$dir"/$deviceid/0.0/keybags ]]; then
+                hit2=1
+                pongo=0
+            fi
+        fi
     fi
+    wd="$(pwd)"
+    if [[ -e "$dir"/$deviceid/0.0/apticket.der && -e "$dir"/$deviceid/0.0/sep-firmware.img4 && -e "$dir"/$deviceid/0.0/keybags ]]; then
+        if [[ "$cpid" == "0x8000" || "$cpid" == "0x8001" || "$cpid" == "0x8003" ]]; then
+            if [[ "$pongo" == 1 ]]; then
+                _download_ramdisk_boot_files $deviceid $replace 14.3
+                pongo=0
+                r="14.3"
+                fuck=1
+            fi
+        fi
+    fi
+    cd "$wd"
     _boot_ramdisk $deviceid $replace $r
     if [[ "$hit2" == 1 ]]; then
         hit2=0
         pongo=1
+    fi
+    if [[ -e "$dir"/$deviceid/0.0/apticket.der && -e "$dir"/$deviceid/0.0/sep-firmware.img4 && -e "$dir"/$deviceid/0.0/keybags ]]; then
+        if [[ "$cpid" == "0x8000" || "$cpid" == "0x8001" || "$cpid" == "0x8003" ]]; then
+            if [[ "$pongo" == 1 ]]; then
+                _download_ramdisk_boot_files $deviceid $replace 14.3
+                pongo=0
+                r="14.3"
+                fuck=1
+            fi
+        fi
     fi
     cd "$dir"/
     read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk " r1
@@ -1868,6 +2041,14 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
         if [ ! -e "$dir"/$deviceid/0.0/activation_records/activation_record.plist ]; then
             read -p "missing ./activation_records/activation_record.plist, which is recommended in order to proceed. press enter to continue.. " r1
             force_activation=1
+        fi
+        if [[ "$cpid" == "0x8000" || "$cpid" == "0x8001" || "$cpid" == "0x8003" ]]; then
+            if [[ "$pongo" == 1 ]]; then
+                _download_ramdisk_boot_files $deviceid $replace 14.3
+                pongo=0
+                r="14.3"
+                fuck=1
+            fi
         fi
         if [[ "$version" == "10.3"* || "$version" == "11."* || "$version" == "12."* || "$version" == "13."* ]]; then
             if [[ "$hit" == 1 ]]; then
@@ -2421,7 +2602,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt4/usr/standalone/firmware/FUD/ISP.img4"
             # ios 15
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt4/usr/standalone/firmware/FUD/AVE.img4"
-            # fix stuck on apple logo after long progress bar on a11
+            # fix stuck on apple logo after long progress bar
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt4/System/Library/DataClassMigrators/CoreLocationMigrator.migrator/"
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt4/System/Library/DataClassMigrators/PassbookDataMigrator.migrator/"
             # stop ios from deleting our files
@@ -2579,146 +2760,6 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram auto-boot=false" 2> /dev/null
                 pongo=0
             fi
-            if [[ "$r" == "16."* || "$r" == "17."* ]]; then
-                $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
-                echo "[*] Step 1 of dualbooting to iOS $version is now done"
-                echo "[*] The device should now boot into recovery mode"
-                echo "[*] Please follow the on screen instructions to put your device back into dfu mode"
-                echo "[*] We will try to boot iOS $version to generate new keybags for your device"
-                sleep 5
-                _kill_if_running iproxy
-                if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                    if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
-                        "$bin"/dfuhelper4.sh
-                        sleep 5
-                        "$bin"/irecovery -c "setenv auto-boot false"
-                        "$bin"/irecovery -c "saveenv"
-                        "$bin"/dfuhelper.sh
-                    elif [[ "clean/$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
-                        "$bin"/dfuhelper2.sh
-                    else
-                        "$bin"/dfuhelper3.sh
-                    fi
-                fi
-                _wait_for_dfu
-                sudo killall -STOP -c usbd
-                read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
-                if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
-                    read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                    echo "[*] Waiting 10 seconds before continuing.."
-                    sleep 10
-                elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
-                    echo "[*] Ok no problem, continuing.."
-                else
-                    echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
-                    read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                    echo "[*] Waiting 10 seconds before continuing.."
-                    sleep 10
-                fi
-                cd "$dir"/$deviceid/$cpid/$version
-                if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
-                    "$bin"/ipwnder -p
-                else
-                    "$bin"/gaster pwn
-                    "$bin"/gaster reset
-                fi
-                "$bin"/irecovery -f iBSS.img4
-                "$bin"/irecovery -f iBSS.img4
-                "$bin"/irecovery -f iBEC.img4
-                if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
-                    sleep 1
-                    "$bin"/irecovery -c go
-                    sleep 2
-                fi
-                "$bin"/irecovery -f devicetree.img4
-                "$bin"/irecovery -c devicetree
-                if [ -e ./trustcache.img4 ]; then
-                    "$bin"/irecovery -f trustcache.img4
-                    "$bin"/irecovery -c firmware
-                fi
-                "$bin"/irecovery -f kernelcache.img4
-                "$bin"/irecovery -c bootx &
-                cd "$dir"/
-                echo "[*] Step 2 of dualbooting to iOS $version is now done"
-                echo '[*] The device should get stuck on apple logo with no progress bar on the screen'
-                echo "[*] Please follow the on screen instructions to put your device back into dfu mode"
-                echo "[*] We will then boot into a ramdisk to fixup iOS $version to allow it to be booted again as normal"
-                sleep 5
-                if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                    if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
-                        "$bin"/dfuhelper4.sh
-                        sleep 5
-                        "$bin"/irecovery -c "setenv auto-boot false"
-                        "$bin"/irecovery -c "saveenv"
-                        "$bin"/dfuhelper.sh
-                    elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
-                        "$bin"/dfuhelper2.sh
-                    else
-                        "$bin"/dfuhelper3.sh
-                    fi
-                fi
-                _wait_for_dfu
-                sudo killall -STOP -c usbd
-                read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
-                if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
-                    read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                    echo "[*] Waiting 10 seconds before continuing.."
-                    sleep 10
-                elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
-                    echo "[*] Ok no problem, continuing.."
-                else
-                    echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
-                    read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                    echo "[*] Waiting 10 seconds before continuing.."
-                    sleep 10
-                fi
-                _download_ramdisk_boot_files $deviceid $replace 14.3
-                cd "$dir"/$deviceid/$cpid/ramdisk/14.3
-                pongo=0
-                _boot_ramdisk $deviceid $replace 14.3
-                cd "$dir"/
-                read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk " r1
-                echo "[*] Waiting 6 seconds before continuing.."
-                sleep 6
-                sudo killall -STOP -c usbd
-                read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
-                if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
-                    read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                    echo "[*] Waiting 10 seconds before continuing.."
-                    sleep 10
-                elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
-                    echo "[*] Ok no problem, continuing.."
-                else
-                    echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
-                    read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                    echo "[*] Waiting 10 seconds before continuing.."
-                    sleep 10
-                fi
-                "$bin"/iproxy 2222 22 &
-                if [[ "$r" == "16"* || "$r" == "17"* ]]; then
-                    systemdisk=9
-                    datadisk=10
-                    systemfs=disk0s1s$systemdisk
-                    datafs=disk0s1s$datadisk
-                else
-                    systemdisk=8
-                    datadisk=9
-                    systemfs=disk0s1s$systemdisk
-                    datafs=disk0s1s$datadisk
-                fi
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/$systemfs /mnt4" 2> /dev/null
-                echo "[*] Disabling fixkeybag and putting back stock /usr/libexec/keybagd.."
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv /mnt4/usr/libexec/keybagd /mnt4/usr/libexec/fixkeybag' 2> /dev/null
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv /mnt4/usr/libexec/keybagd.bak /mnt4/usr/libexec/keybagd' 2> /dev/null
-                echo "[*] Done"
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram auto-boot=false" 2> /dev/null
-                $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
-                echo "[*] Step 3 of dualbooting to iOS $version is now done"
-                echo "[*] The device should now boot into recovery mode"
-                echo "[*] Please follow the on screen instructions to put your device back into dfu mode"
-                echo "[*] We will try to boot iOS $version for the first time on your device"
-                sleep 5
-            fi
             #"$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram oblit-inprogress=5"
         else
             if [[ "$dualboot_hfs" == 1 ]]; then
@@ -2783,7 +2824,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                     echo "[*] Done"
                     echo "[*] Enabling fixkeybag and putting it where /usr/libexec/keybagd should be.."
                     "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'cp /mnt1/usr/libexec/keybagd /mnt1/usr/libexec/keybagd.bak' 2> /dev/null
-                    "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/jb/fixkeybag root@localhost:/mnt1/usr/libexec/keybagd 2> /dev/null
+                    "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/jb/fixkeybag.bak root@localhost:/mnt1/usr/libexec/keybagd 2> /dev/null
                     echo "[*] Done"
                     "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt3/mnt1.tar.gz' 2> /dev/null
                     "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt3/var.tar.gz' 2> /dev/null
@@ -2808,7 +2849,14 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt1/usr/local/standalone/firmware/Baseband" 2> /dev/null
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir /mnt2/keybags" 2> /dev/null
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt2/wireless/baseband_data" 2> /dev/null
-            "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -r -P 2222 "$dir"/$deviceid/0.0/keybags root@localhost:/mnt2 2> /dev/null
+            if [[ "$fuck" == 1 || "$r" == "16."* || "$r" == "17."* ]]; then
+                echo "[*] Enabling fixkeybag and putting it where /usr/libexec/keybagd should be.."
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'cp /mnt1/usr/libexec/keybagd /mnt1/usr/libexec/keybagd.bak' 2> /dev/null
+                "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/jb/fixkeybag root@localhost:/mnt1/usr/libexec/keybagd 2> /dev/null
+                echo "[*] Done"
+            else
+                "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -r -P 2222 "$dir"/$deviceid/0.0/keybags root@localhost:/mnt2 2> /dev/null
+            fi
             if [ -e "$dir"/$deviceid/0.0/Baseband ]; then
                 "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -r -P 2222 "$dir"/$deviceid/0.0/Baseband root@localhost:/mnt1/usr/local/standalone/firmware 2> /dev/null
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/chflags -R schg /mnt1/usr/local/standalone/firmware/Baseband"
@@ -2942,6 +2990,9 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/Library/PreinstalledAssets/*" 2> /dev/null
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/Library/Preferences/.GlobalPreferences.plist" 2> /dev/null
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/mobile/.forward" 2> /dev/null
+            # fix stuck on apple logo after long progress bar
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt4/System/Library/DataClassMigrators/CoreLocationMigrator.migrator/"
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt4/System/Library/DataClassMigrators/PassbookDataMigrator.migrator/"
             if [[ "$version" == "7."*  ]]; then
                 "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/jb/untether_ios7.tar root@localhost:/mnt1/ 2> /dev/null
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xvf /mnt1/untether_ios7.tar -C /mnt1/' 2> /dev/null
@@ -3111,6 +3162,14 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                     sleep 10
                 fi
                 cd "$dir"/$deviceid/clean/$cpid/$r
+                if [[ "$cpid" == "0x8001" || "$cpid" == "0x8000" || "$cpid" == "0x8003" ]]; then
+                    kbag="24A0F3547373C6FED863FC0F321D7FEA216D0258B48413903939DF968CC2C0E571949EFB72DED8B55B8670932CA7A039"
+                    iv=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ',' -f 1 | cut -d ' ' -f 2)
+                    key=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ' ' -f 4)
+                    ivkey="$iv$key"
+                    pwd
+                    echo "$ivkey"
+                fi
                 if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
                     "$bin"/ipwnder -p
                 else
@@ -3230,6 +3289,14 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                     sleep 10
                 fi
                 cd "$dir"/$deviceid/clean/$cpid/$r
+                if [[ "$cpid" == "0x8001" || "$cpid" == "0x8000" || "$cpid" == "0x8003" ]]; then
+                    kbag="24A0F3547373C6FED863FC0F321D7FEA216D0258B48413903939DF968CC2C0E571949EFB72DED8B55B8670932CA7A039"
+                    iv=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ',' -f 1 | cut -d ' ' -f 2)
+                    key=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ' ' -f 4)
+                    ivkey="$iv$key"
+                    pwd
+                    echo "$ivkey"
+                fi
                 if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
                     "$bin"/ipwnder -p
                 else
@@ -3365,6 +3432,14 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                         sleep 10
                     fi
                     cd "$dir"/$deviceid/$cpid/$version
+                    if [[ "$cpid" == "0x8001" || "$cpid" == "0x8000" || "$cpid" == "0x8003" ]]; then
+                        kbag="24A0F3547373C6FED863FC0F321D7FEA216D0258B48413903939DF968CC2C0E571949EFB72DED8B55B8670932CA7A039"
+                        iv=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ',' -f 1 | cut -d ' ' -f 2)
+                        key=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ' ' -f 4)
+                        ivkey="$iv$key"
+                        pwd
+                        echo "$ivkey"
+                    fi
                     if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
                         "$bin"/ipwnder -p
                     else
@@ -3394,6 +3469,20 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 echo "[*] The device should now boot without any issue and show a progress bar"
                 echo "[*] When your device gets to the setup screen, put the device back into dfu mode"
                 echo "[*] We will then activate your device to allow you to navigate to the home screen"
+                sleep 5
+                if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+                    if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                        "$bin"/dfuhelper4.sh
+                        sleep 5
+                        "$bin"/irecovery -c "setenv auto-boot false"
+                        "$bin"/irecovery -c "saveenv"
+                        "$bin"/dfuhelper.sh
+                    elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                        "$bin"/dfuhelper2.sh
+                    else
+                        "$bin"/dfuhelper3.sh
+                    fi
+                fi
                 _wait_for_dfu
                 sudo killall -STOP -c usbd
                 read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
@@ -3523,6 +3612,14 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 sleep 10
             fi
             cd "$dir"/$deviceid/$cpid/$version
+            if [[ "$cpid" == "0x8001" || "$cpid" == "0x8000" || "$cpid" == "0x8003" ]]; then
+                kbag="24A0F3547373C6FED863FC0F321D7FEA216D0258B48413903939DF968CC2C0E571949EFB72DED8B55B8670932CA7A039"
+                iv=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ',' -f 1 | cut -d ' ' -f 2)
+                key=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ' ' -f 4)
+                ivkey="$iv$key"
+                pwd
+                echo "$ivkey"
+            fi
             if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
                 "$bin"/ipwnder -p
             else
@@ -3567,8 +3664,8 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 if [[ "$r" == "16"* || "$r" == "17"* ]]; then
                     systemdisk=9
                     datadisk=10
-                    systemfs=disk1s$systemdisk
-                    datafs=disk1s$datadisk
+                    systemfs=disk0s1s$systemdisk
+                    datafs=disk0s1s$datadisk
                 else
                     systemdisk=8
                     datadisk=9
