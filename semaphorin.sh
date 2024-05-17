@@ -59,7 +59,6 @@ Main operation mode:
     --dump-nand                Backs up the entire contents of your iOS device to disk0.gz
     --dualboot-hfs             This is an experimental dualboot feature for iOS 10.3.3 devices only
     --appleinternal            Enables internalization during restore
-    --tethered                 Disables dualbooting
     --NoMoreSIGABRT            Adds the "protect" flag to /dev/disk0s1s2
     --disable-NoMoreSIGABRT    Removes the "protect" flag from /dev/disk0s1s2
     --restore-nand             Copies the contents of disk0.gz to /dev/disk0 of the iOS device
@@ -90,9 +89,6 @@ parse_opt() {
             ;;
         --serial)
             serial=1
-            ;;
-        --tethered)
-            tethered=1
             ;;
         --dump-nand)
             dump_nand=1
@@ -1070,9 +1066,18 @@ _download_clean_boot_files() {
             "$bin"/pzb -g $(awk "/""$replace""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) "$ipswurl"
             if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* ]]; then
                 fn="$(awk "/""$replace""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)"
-                ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $buildid $1)"
-                "$bin"/img4 -i $fn -o "$dir"/$1/clean/$cpid/$3/kcache.raw -k $ivkey
-                "$bin"/img4 -i $fn -o "$dir"/$1/clean/$cpid/$3/kernelcache.dec -k $ivkey -D
+                if [[ "$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e $buildid $1)" == "true" ]]; then
+                    ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $buildid $1)"
+                    "$bin"/img4 -i $fn -o "$dir"/$1/clean/$cpid/$3/kcache.raw -k $ivkey
+                    "$bin"/img4 -i $fn -o "$dir"/$1/clean/$cpid/$3/kernelcache.dec -k $ivkey -D
+                else
+                    kbag=$("$bin"/img4 -i $fn -b | head -n 1)
+                    iv=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ',' -f 1 | cut -d ' ' -f 2)
+                    key=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ' ' -f 4)
+                    ivkey="$iv$key"
+                    "$bin"/img4 -i $fn -o "$dir"/$1/clean/$cpid/$3/kcache.raw -k $ivkey
+                    "$bin"/img4 -i $fn -o "$dir"/$1/clean/$cpid/$3/kernelcache.dec -k $ivkey -D
+                fi
             else
                 "$bin"/img4 -i $(awk "/""$replace""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) -o "$dir"/$1/clean/$cpid/$3/kcache.raw
                 "$bin"/img4 -i $(awk "/""$replace""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1) -o "$dir"/$1/clean/$cpid/$3/kernelcache.dec -D
@@ -1082,8 +1087,16 @@ _download_clean_boot_files() {
             "$bin"/pzb -g $(awk "/""$replace""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1) "$ipswurl"
             if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* ]]; then
                 fn="$(awk "/""$replace""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]all_flash.*production[/]//' | sed 's/Firmware[/]all_flash[/]//')"
-                ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $buildid $1)"
-                "$bin"/img4 -i $fn -o "$dir"/$1/clean/$cpid/$3/DeviceTree.dec -k $ivkey
+                if [[ "$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e $buildid $1)" == "true" ]]; then
+                    ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $buildid $1)"
+                    "$bin"/img4 -i $fn -o "$dir"/$1/clean/$cpid/$3/DeviceTree.dec -k $ivkey
+                else
+                    kbag=$("$bin"/img4 -i $fn -b | head -n 1)
+                    iv=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ',' -f 1 | cut -d ' ' -f 2)
+                    key=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ' ' -f 4)
+                    ivkey="$iv$key"
+                    "$bin"/img4 -i $fn -o "$dir"/$1/clean/$cpid/$3/DeviceTree.dec -k $ivkey
+                fi
             else
                 mv $(awk "/""$replace""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]all_flash.*production[/]//' | sed 's/Firmware[/]all_flash[/]//') "$dir"/$1/clean/$cpid/$3/DeviceTree.dec
             fi
@@ -1152,8 +1165,16 @@ _download_clean_boot_files() {
             "$bin"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
             if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* ]]; then
                 fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
-                ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $buildid $1)"
-                "$bin"/img4 -i $fn -o "$dir"/$1/clean/$cpid/$3/RestoreRamDisk.dmg -k $ivkey
+                if [[ "$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e $buildid $1)" == "true" ]]; then
+                    ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $buildid $1)"
+                    "$bin"/img4 -i $fn -o "$dir"/$1/clean/$cpid/$3/RestoreRamDisk.dmg -k $ivkey
+                else
+                    kbag=$("$bin"/img4 -i $fn -b | head -n 1)
+                    iv=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ',' -f 1 | cut -d ' ' -f 2)
+                    key=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ' ' -f 4)
+                    ivkey="$iv$key"
+                    "$bin"/img4 -i $fn -o "$dir"/$1/clean/$cpid/$3/RestoreRamDisk.dmg -k $ivkey
+                fi
             else
                 "$bin"/img4 -i "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -o "$dir"/$1/clean/$cpid/$3/RestoreRamDisk.dmg
             fi
@@ -1349,7 +1370,7 @@ _download_root_fs() {
                         fi
                     fi
                     fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
-                    ivkey=$("$bin"/pass2key s8001 "$dir"/$1/$cpid/$3/RestoreRamDisk.dmg $fn | tail -n 1 | cut -d ' ' -f 3)
+                    ivkey=$("$bin"/pass2key $scid "$dir"/$1/$cpid/$3/RestoreRamDisk.dmg $fn | tail -n 1 | cut -d ' ' -f 3)
                     "$bin"/dmg extract $fn "$dir"/$1/$cpid/$3/OS.dmg -k $ivkey
                 fi
             fi
@@ -1481,7 +1502,14 @@ check=$("$bin"/irecovery -q | grep CPID | sed 's/CPID: //')
 cpid=$("$bin"/irecovery -q | grep CPID | sed 's/CPID: //')
 replace=$("$bin"/irecovery -q | grep MODEL | sed 's/MODEL: //')
 deviceid=$("$bin"/irecovery -q | grep PRODUCT | sed 's/PRODUCT: //')
+echo $cpid
+echo $replace
 echo $deviceid
+scid="$cpid"
+if [[ "$cpid" == "0x8000" || "$cpid" == "0x8001" || "$cpid" == 8003 ]]; then
+    scid=$(echo $cpid | sed 's/0x/s/g')
+    echo $scid
+fi
 if [[ "$deviceid" == "iPhone10"* || "$deviceid" == "iPad6"* || "$deviceid" == "iPad7"* ]]; then
     pongo=1
     if [[ ! -e "$bin"/checkra1n-kpf-pongo ]]; then
@@ -1533,14 +1561,6 @@ if [ -z "$r" ]; then
     if [[ "$r" == "11.4.1"* ]]; then
         r="11.4"
     fi
-fi
-if [[ "$r" == "14."* || "$r" == "15."* || "$r" == "16."* || "$r" == "17."* ]]; then
-    if [[ ! "$version" == "7."* && ! "$version" == "8."* && ! "$version" == "8."* && ! "$version" == "10."* ]]; then
-        tethered=1
-    fi
-fi
-if [[ "$version" == "13."* || "$version" == "14."* ]]; then
-    tethered=1
 fi
 if [[ "$boot_clean" == 1 ]]; then
     _download_clean_boot_files $deviceid $replace $version
@@ -1848,14 +1868,16 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
             else
                 cd "$dir"/$deviceid/$cpid/ramdisk/12.5.4
             fi
-            if [[ "$pongo" == 1 ]]; then
-                hit2=1
-                pongo=0
-            fi
         elif [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
             cd "$dir"/$deviceid/$cpid/ramdisk/9.3
         else
             cd "$dir"/$deviceid/$cpid/ramdisk/11.4
+        fi
+        if [[ "$pongo" == 1 ]]; then
+            if [[ -e "$dir"/$deviceid/0.0/apticket.der && -e "$dir"/$deviceid/0.0/sep-firmware.img4 && -e "$dir"/$deviceid/0.0/keybags ]]; then
+                hit2=1
+                pongo=0
+            fi
         fi
     fi
     wd="$(pwd)"
@@ -2123,12 +2145,6 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
             fi
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt4" 2> /dev/null
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt5" 2> /dev/null
-            if [[ "$tethered" == 1 ]]; then
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/apfs_deletefs /dev/disk0s1s1"
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -v SystemX /dev/disk0s1"
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/apfs_deletefs /dev/disk0s1s2"
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -v DataX /dev/disk0s1"
-            fi
             echo "[*] Deleting /dev/$systemfs"
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/apfs_deletefs /dev/$systemfs"
             sleep 1
@@ -2744,154 +2760,6 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram auto-boot=false" 2> /dev/null
                 pongo=0
             fi
-            if [[ "$r" == "16."* || "$r" == "17."* ]]; then
-                $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
-                echo "[*] Step 1 of dualbooting to iOS $version is now done"
-                echo "[*] The device should now boot into recovery mode"
-                echo "[*] Please follow the on screen instructions to put your device back into dfu mode"
-                echo "[*] We will try to boot iOS $version to generate new keybags for your device"
-                sleep 5
-                _kill_if_running iproxy
-                if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                    if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
-                        "$bin"/dfuhelper4.sh
-                        sleep 5
-                        "$bin"/irecovery -c "setenv auto-boot false"
-                        "$bin"/irecovery -c "saveenv"
-                        "$bin"/dfuhelper.sh
-                    elif [[ "clean/$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
-                        "$bin"/dfuhelper2.sh
-                    else
-                        "$bin"/dfuhelper3.sh
-                    fi
-                fi
-                _wait_for_dfu
-                sudo killall -STOP -c usbd
-                read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
-                if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
-                    read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                    echo "[*] Waiting 10 seconds before continuing.."
-                    sleep 10
-                elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
-                    echo "[*] Ok no problem, continuing.."
-                else
-                    echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
-                    read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                    echo "[*] Waiting 10 seconds before continuing.."
-                    sleep 10
-                fi
-                cd "$dir"/$deviceid/$cpid/$version
-                if [[ "$cpid" == "0x8001" || "$cpid" == "0x8000" || "$cpid" == "0x8003" ]]; then
-                    kbag="24A0F3547373C6FED863FC0F321D7FEA216D0258B48413903939DF968CC2C0E571949EFB72DED8B55B8670932CA7A039"
-                    iv=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ',' -f 1 | cut -d ' ' -f 2)
-                    key=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ' ' -f 4)
-                    ivkey="$iv$key"
-                    pwd
-                    echo "$ivkey"
-                fi
-                if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
-                    "$bin"/ipwnder -p
-                else
-                    "$bin"/gaster pwn
-                    "$bin"/gaster reset
-                fi
-                "$bin"/irecovery -f iBSS.img4
-                "$bin"/irecovery -f iBSS.img4
-                "$bin"/irecovery -f iBEC.img4
-                if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
-                    sleep 1
-                    "$bin"/irecovery -c go
-                    sleep 2
-                fi
-                "$bin"/irecovery -f devicetree.img4
-                "$bin"/irecovery -c devicetree
-                if [ -e ./trustcache.img4 ]; then
-                    "$bin"/irecovery -f trustcache.img4
-                    "$bin"/irecovery -c firmware
-                fi
-                "$bin"/irecovery -f kernelcache.img4
-                "$bin"/irecovery -c bootx &
-                cd "$dir"/
-                echo "[*] Step 2 of dualbooting to iOS $version is now done"
-                echo '[*] The device should get stuck on apple logo with no progress bar on the screen'
-                echo "[*] Please follow the on screen instructions to put your device back into dfu mode"
-                echo "[*] We will then boot into a ramdisk to fixup iOS $version to allow it to be booted again as normal"
-                sleep 5
-                if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                    if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
-                        "$bin"/dfuhelper4.sh
-                        sleep 5
-                        "$bin"/irecovery -c "setenv auto-boot false"
-                        "$bin"/irecovery -c "saveenv"
-                        "$bin"/dfuhelper.sh
-                    elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
-                        "$bin"/dfuhelper2.sh
-                    else
-                        "$bin"/dfuhelper3.sh
-                    fi
-                fi
-                _wait_for_dfu
-                sudo killall -STOP -c usbd
-                read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
-                if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
-                    read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                    echo "[*] Waiting 10 seconds before continuing.."
-                    sleep 10
-                elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
-                    echo "[*] Ok no problem, continuing.."
-                else
-                    echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
-                    read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                    echo "[*] Waiting 10 seconds before continuing.."
-                    sleep 10
-                fi
-                _download_ramdisk_boot_files $deviceid $replace 14.3
-                cd "$dir"/$deviceid/$cpid/ramdisk/14.3
-                pongo=0
-                _boot_ramdisk $deviceid $replace 14.3
-                cd "$dir"/
-                read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk " r1
-                echo "[*] Waiting 6 seconds before continuing.."
-                sleep 6
-                sudo killall -STOP -c usbd
-                read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
-                if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
-                    read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                    echo "[*] Waiting 10 seconds before continuing.."
-                    sleep 10
-                elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
-                    echo "[*] Ok no problem, continuing.."
-                else
-                    echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
-                    read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                    echo "[*] Waiting 10 seconds before continuing.."
-                    sleep 10
-                fi
-                "$bin"/iproxy 2222 22 &
-                if [[ "$r" == "16"* || "$r" == "17"* ]]; then
-                    systemdisk=9
-                    datadisk=10
-                    systemfs=disk0s1s$systemdisk
-                    datafs=disk0s1s$datadisk
-                else
-                    systemdisk=8
-                    datadisk=9
-                    systemfs=disk0s1s$systemdisk
-                    datafs=disk0s1s$datadisk
-                fi
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/$systemfs /mnt4" 2> /dev/null
-                echo "[*] Disabling fixkeybag and putting back stock /usr/libexec/keybagd.."
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv /mnt4/usr/libexec/keybagd /mnt4/usr/libexec/fixkeybag' 2> /dev/null
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv /mnt4/usr/libexec/keybagd.bak /mnt4/usr/libexec/keybagd' 2> /dev/null
-                echo "[*] Done"
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram auto-boot=false" 2> /dev/null
-                $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
-                echo "[*] Step 3 of dualbooting to iOS $version is now done"
-                echo "[*] The device should now boot into recovery mode"
-                echo "[*] Please follow the on screen instructions to put your device back into dfu mode"
-                echo "[*] We will try to boot iOS $version for the first time on your device"
-                sleep 5
-            fi
             #"$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram oblit-inprogress=5"
         else
             if [[ "$dualboot_hfs" == 1 ]]; then
@@ -2956,7 +2824,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                     echo "[*] Done"
                     echo "[*] Enabling fixkeybag and putting it where /usr/libexec/keybagd should be.."
                     "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'cp /mnt1/usr/libexec/keybagd /mnt1/usr/libexec/keybagd.bak' 2> /dev/null
-                    "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/jb/fixkeybag root@localhost:/mnt1/usr/libexec/keybagd 2> /dev/null
+                    "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/jb/fixkeybag.bak root@localhost:/mnt1/usr/libexec/keybagd 2> /dev/null
                     echo "[*] Done"
                     "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt3/mnt1.tar.gz' 2> /dev/null
                     "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt3/var.tar.gz' 2> /dev/null
@@ -3255,144 +3123,6 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/usr/lib/libmis.dylib" 2> /dev/null
             if [[ "$version" == "9."* ]]; then
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram -c" 2> /dev/null
-            fi
-            if [[ "$fuck" == 1 || "$r" == "16."* || "$r" == "17."* ]]; then
-                $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
-                echo "[*] Step 1 of downgrading to iOS $version is now done"
-                echo "[*] The device should now boot into recovery mode"
-                echo "[*] Please follow the on screen instructions to put your device back into dfu mode"
-                echo "[*] We will try to boot iOS $version to generate new keybags for your device"
-                sleep 5
-                _kill_if_running iproxy
-                if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                    if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
-                        "$bin"/dfuhelper4.sh
-                        sleep 5
-                        "$bin"/irecovery -c "setenv auto-boot false"
-                        "$bin"/irecovery -c "saveenv"
-                        "$bin"/dfuhelper.sh
-                    elif [[ "clean/$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
-                        "$bin"/dfuhelper2.sh
-                    else
-                        "$bin"/dfuhelper3.sh
-                    fi
-                fi
-                _wait_for_dfu
-                sudo killall -STOP -c usbd
-                read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
-                if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
-                    read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                    echo "[*] Waiting 10 seconds before continuing.."
-                    sleep 10
-                elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
-                    echo "[*] Ok no problem, continuing.."
-                else
-                    echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
-                    read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                    echo "[*] Waiting 10 seconds before continuing.."
-                    sleep 10
-                fi
-                cd "$dir"/$deviceid/$cpid/$version
-                if [[ "$cpid" == "0x8001" || "$cpid" == "0x8000" || "$cpid" == "0x8003" ]]; then
-                    kbag="24A0F3547373C6FED863FC0F321D7FEA216D0258B48413903939DF968CC2C0E571949EFB72DED8B55B8670932CA7A039"
-                    iv=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ',' -f 1 | cut -d ' ' -f 2)
-                    key=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ' ' -f 4)
-                    ivkey="$iv$key"
-                    pwd
-                    echo "$ivkey"
-                fi
-                if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
-                    "$bin"/ipwnder -p
-                else
-                    "$bin"/gaster pwn
-                    "$bin"/gaster reset
-                fi
-                "$bin"/irecovery -f iBSS.img4
-                "$bin"/irecovery -f iBSS.img4
-                "$bin"/irecovery -f iBEC.img4
-                if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
-                    sleep 1
-                    "$bin"/irecovery -c go
-                    sleep 2
-                fi
-                "$bin"/irecovery -f devicetree.img4
-                "$bin"/irecovery -c devicetree
-                if [ -e ./trustcache.img4 ]; then
-                    "$bin"/irecovery -f trustcache.img4
-                    "$bin"/irecovery -c firmware
-                fi
-                "$bin"/irecovery -f kernelcache.img4
-                "$bin"/irecovery -c bootx &
-                cd "$dir"/
-                echo "[*] Step 2 of downgrading to iOS $version is now done"
-                echo '[*] The device should get stuck on apple logo with no progress bar on the screen'
-                echo "[*] Please follow the on screen instructions to put your device back into dfu mode"
-                echo "[*] We will then boot into a ramdisk to fixup iOS $version to allow it to be booted again as normal"
-                sleep 5
-                if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                    if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
-                        "$bin"/dfuhelper4.sh
-                        sleep 5
-                        "$bin"/irecovery -c "setenv auto-boot false"
-                        "$bin"/irecovery -c "saveenv"
-                        "$bin"/dfuhelper.sh
-                    elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
-                        "$bin"/dfuhelper2.sh
-                    else
-                        "$bin"/dfuhelper3.sh
-                    fi
-                fi
-                _wait_for_dfu
-                sudo killall -STOP -c usbd
-                read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
-                if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
-                    read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                    echo "[*] Waiting 10 seconds before continuing.."
-                    sleep 10
-                elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
-                    echo "[*] Ok no problem, continuing.."
-                else
-                    echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
-                    read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                    echo "[*] Waiting 10 seconds before continuing.."
-                    sleep 10
-                fi
-                _download_ramdisk_boot_files $deviceid $replace 14.3
-                cd "$dir"/$deviceid/$cpid/ramdisk/14.3
-                pongo=0
-                _boot_ramdisk $deviceid $replace 14.3
-                cd "$dir"/
-                read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk " r1
-                echo "[*] Waiting 6 seconds before continuing.."
-                sleep 6
-                sudo killall -STOP -c usbd
-                read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
-                if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
-                    read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                    echo "[*] Waiting 10 seconds before continuing.."
-                    sleep 10
-                elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
-                    echo "[*] Ok no problem, continuing.."
-                else
-                    echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
-                    read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
-                    echo "[*] Waiting 10 seconds before continuing.."
-                    sleep 10
-                fi
-                "$bin"/iproxy 2222 22 &
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_hfs /dev/disk0s1s1 /mnt1" 2> /dev/null
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs -o suid,dev /dev/disk0s1s2 /mnt2" 2> /dev/null
-                echo "[*] Disabling fixkeybag and putting back stock /usr/libexec/keybagd.."
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv /mnt1/usr/libexec/keybagd /mnt1/usr/libexec/fixkeybag' 2> /dev/null
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'mv /mnt1/usr/libexec/keybagd.bak /mnt1/usr/libexec/keybagd' 2> /dev/null
-                echo "[*] Done"
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram auto-boot=false" 2> /dev/null
-                $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
-                echo "[*] Step 3 of downgrading to iOS $version is now done"
-                echo "[*] The device should now boot into recovery mode"
-                echo "[*] Please follow the on screen instructions to put your device back into dfu mode"
-                echo "[*] We will try to boot iOS $version for the first time on your device"
-                sleep 5
             fi
             if [[ "$dualboot_hfs" == 1 && ! "$hit" == 1 ]]; then
                 _download_clean_boot_files $deviceid $replace $r
@@ -3736,6 +3466,20 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 echo "[*] The device should now boot without any issue and show a progress bar"
                 echo "[*] When your device gets to the setup screen, put the device back into dfu mode"
                 echo "[*] We will then activate your device to allow you to navigate to the home screen"
+                sleep 5
+                if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+                    if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                        "$bin"/dfuhelper4.sh
+                        sleep 5
+                        "$bin"/irecovery -c "setenv auto-boot false"
+                        "$bin"/irecovery -c "saveenv"
+                        "$bin"/dfuhelper.sh
+                    elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                        "$bin"/dfuhelper2.sh
+                    else
+                        "$bin"/dfuhelper3.sh
+                    fi
+                fi
                 _wait_for_dfu
                 sudo killall -STOP -c usbd
                 read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
@@ -3917,8 +3661,8 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 if [[ "$r" == "16"* || "$r" == "17"* ]]; then
                     systemdisk=9
                     datadisk=10
-                    systemfs=disk1s$systemdisk
-                    datafs=disk1s$datadisk
+                    systemfs=disk0s1s$systemdisk
+                    datafs=disk0s1s$datadisk
                 else
                     systemdisk=8
                     datadisk=9
