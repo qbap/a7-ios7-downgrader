@@ -6,46 +6,25 @@
 </div>
 
 <h4 align="center"> Uses seprmvr64 by mineek<h4>
-<h6 align="center"> Supports* iOS 7.0.4-12.1.2 as well as A7-A10 devices </h6>
+<h6 align="center"> Supports* iOS 7.0.6-12.1 as well as A7-A11 devices </h6>
 
 # IF YOUR DEVICE SUPPORTS [LEGACY-IOS-KIT](https://github.com/LukeZGD/Legacy-iOS-Kit), YOU SHOULD REALLY USE THAT OVER THIS.
 
-# Chart of device compatibility
+# Chart of compatibility
 
-| iOS                    | A7 SoC  | A8/A8X SoC | A9/A9X SoC | A10 SoC | A10X SoC | A11 SoC |
-|------------------------|---------|------------|------------|---------|----------|---------|
-| 7.0.4                  | &#9745; | &#9744;    | &#9744;    | &#9744; | &#9744;  | &#9744; |
-| 7.0.6                  | &#9745; | &#9744;    | &#9744;    | &#9744; | &#9744;  | &#9744; |
-| 7.1.2                  | &#9745; | &#9744;    | &#9744;    | &#9744; | &#9744;  | &#9744; |
-| 8.2                    | &#9745; | &#9745;    | &#9744;    | &#9744; | &#9744;  | &#9744; |
-| 8.3                    | &#9745; | &#9745;    | &#9744;    | &#9744; | &#9744;  | &#9744; |
-| 9.3.3                  | &#9745; | &#9745;    | &#9744;    | &#9744; | &#9744;  | &#9744; |
-| 10.2.1                 | &#9745; | &#9745;    | &#9745;    | &#9745; | &#9744;  | &#9744; |
-| 10.3.3                 | &#9745; | &#9745;    | &#9745;    | &#9745; | &#9744;  | &#9744; |
-| 11.1                   | &#9745; | &#9745;    | &#9745;    | &#9745; | &#9744;  | &#9744; |
-| 12.1.2                 | &#9745; | &#9745;    | &#9745;    | &#9745; | &#9744;  | &#9744; |
-
-
-# Chart of feature compatibility
-
-| iOS         | App Store | Home button  | Volume keys | Cydia     | Tweaks  | Respring | Cellular | Sideloadly | iTunes |
-|-------------|-----------|--------------|-------------|-----------|---------|----------|----------|------------|--------|
-| 7.0.4**     | &#9745;   | &#9745;      | &#9745;     | &#9745;   | &#9745; | &#9744;  | &#9745;  | &#9745;    | &#9745;|
-| 7.0.6**     | &#9745;   | &#9745;      | &#9745;     | &#9745;   | &#9745; | &#9744;  | &#9745;  | &#9745;    | &#9745;|
-| 7.1.2**     | &#9745;   | &#9745;      | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9745;    | &#9745;|
-| 8.2**       | &#9745;   | &#9745;      | &#9745;     | &#9745;   | &#9744; | &#9745;  | &#9745;  | &#9745;    | &#9745;|
-| 8.3**       | &#9745;   | &#9745;      | &#9745;     | &#9745;   | &#9744; | &#9745;  | &#9745;  | &#9745;    | &#9745;|
-| 9.3.3**     | &#9745;   | &#9745;      | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9744;    | &#9744;|
-| 10.2.1**    | &#9745;   | &#9745;      | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9744;    | &#9744;|
-| 10.3.3      | &#9745;   | &#9745;      | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9744;    | &#9744;|
-| 11.1        | &#9745;   | &#9745;      | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9744;    | &#9744;|
-| 12.1.2      | &#9745;   | &#9745;      | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9745;  | &#9744;    | &#9744;|
-
-** These versions can only be tether booted with semaphorin, dualboot is only supported when downgrading to iOS 10.3.3 or later. You will lose all your data on your device if you downgrade to any of these versions, please keep that in mind before using this tool.
+| iOS         | App Store | Cydia       | Tweaks    | Respring| Cellular | Sideloadly | iTunes     |
+|-------------|-----------|-------------|-----------|---------|----------|------------|------------|
+| 7.0.6       | &#9745;   | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9745;    | &#9745;    | 
+| 7.1.2       | &#9745;   | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9745;    | &#9745;    |
+| 8.2         | &#9745;   | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9745;    | &#9745;    |
+| 9.3         | &#9745;   | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9744;    | &#9744;    |
+| 10.3.3      | &#9745;   | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9744;    | &#9744;    |
+| 11.1        | &#9745;   | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9744;    | &#9744;    |
+| 12.1        | &#9745;   | &#9745;     | &#9745;   | &#9745; | &#9745;  | &#9744;    | &#9744;    |
 
 ## How do I use this?
 
-This script deletes everything on your phone, including the main OS if you are not downgrading to iOS 10.3.3 or later. Make sure to backup all of your data before using this script as **anything on the device prior to running this script will be UNRECOVERABLE afterwards**. Use this script at your own risk. We are not responsible for any damages caused by you using this script.
+This script deletes everything on your phone, including the main OS if you are not downgrading to iOS 10.3.3 or later. Make sure to backup all of your data before using this script as **anything on the device prior to running this script will be unrecoverable afterwards**. Use this script at your own risk. We are not responsible for any damages caused by you using this script.
 
 To use this app, you need to downgrade to a supported version, and have a supported device.
 
@@ -57,7 +36,7 @@ Connect device in DFU mode
 
 `sudo ./semaphorin.sh <the version you are downgrading to> --restore`
 
-For example you may write `sudo ./semaphorin.sh 11.1 --restore`
+For example you may write `sudo ./semaphorin.sh 9.3 --restore`
 
 The script has to backup important files from your current iOS version before you can downgrade.
 
@@ -67,13 +46,15 @@ It should then begin the process of downgrading your device. Please follow the o
 
 If you downgraded to iOS 10 or later, please use the jailbreak app on your home screen to begin jailbreaking your device.
 
+If you downgraded to iOS 9, please use https://jbme.ddw.nu from safari to begin jailbreaking your device.
+
 ## Subsequent runs after downgrade is finished
 
 Connect device in DFU mode
 
 `sudo ./semaphorin.sh <the version you downgraded to previously> --boot`
 
-For example, if you downgraded to iOS 11.1, you would run `sudo ./semaphorin.sh 11.1 --boot`.
+For example, if you downgraded to iOS 9.3, you would run `sudo ./semaphorin.sh 9.3 --boot`.
 
 It should just boot to your requested iOS version normally.
 
@@ -138,14 +119,26 @@ Linux and Windows support is not planned either, do not ask about this either.
 
    Be careful when doing this since *anyone* can connect to the open network you created. We are not responsible for **any** damages caused by doing this.
 
+   ### Safari does not work (iOS 10)
+   Use the FileManager app on the home screen instead. It is a drop in replacement for Safari, and has a built in download manager also. Until further notice, this does not work on iPads, due to it being missing from the home screen and not being able to launch the app from Safari. This may be fixed at a later date. Sorry for the inconvenience. As a workaround, for iPads only, you can sign into App Store and download https://apps.apple.com/us/app/unlimfilemanager/id456683394 from there.
+
    ### Cydia is absent (on iPads)
-   iPads have uicache issues with most jailbreaking tools. To open Cydia, enter `cydia://` in Safari's address bar and press Enter.  
+   iPads have uicache issues with most jailbreaking tools. To open Cydia, enter `cydia://` in Safari's address bar and press Enter.
 
-   ### wtfis.app is absent (on iPads)
-   iPads have uicache issues with most jailbreaking tools. To open wtfis, enter `wtfis://` in Safari's address bar and press Enter.  
+   ### Meridian is absent (on iPads)
+   iPads have uicache issues with most jailbreaking tools. To open Meridian, enter `meridian://` in Safari's address bar and press Enter. Until further notice, this does not work, due to Safari not working on that version of iOS. This may be fixed at a later date. Sorry for the inconvenience.
 
-   ### Safari and others apps not opening (iOS 7)
-   Uninstall Cydia Substrate from within Cydia, and then reboot your device using semaphorin. When the device boots back up, reinstall your tweaks, but when Cydia asks you to "restart springboard" do not hit that button! Hit the home button on your device instead, and open Safari and type `wtfis://` in Safari's address bar and press Enter. Hit "go" inside the wtfis app. This will properly respring your device. All the apps on your device should now be working properly if you follow these steps.
+   ### Chimera is absent (on iPads)
+   iPads have uicache issues with most jailbreaking tools. To open Chimera, enter `chimera://` in Safari's address bar and press Enter.
+
+   ### Electra is absent (on iPads)
+   iPads have uicache issues with most jailbreaking tools. To open Electra, enter `electra://` in Safari's address bar and press Enter.
+
+   ### Terminal is absent (on iPads)
+   iPads have uicache issues with most jailbreaking tools. To open Terminal, enter `mterminal://` in Safari's address bar and press Enter.  
+
+   ### Safari and others apps broken (iOS 7)
+   Reboot your device using Semaphorin. When the device boots back up, open the Terminal app on your home screen, and type `su -` and press Enter. When it asks for you for a password, type `alpine` and hit Enter. Then you can type `reload` and hit Enter. This will patch sandbox and load all your tweaks to allow all your apps and tweaks to work as normal. It may fail the first time due to a malloc error, just close out of Terminal and re open the app. Do the same process over again and it should respring the device. All the apps on your device should now be working properly if you follow these steps.
  
 ## Credits
 
