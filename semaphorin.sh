@@ -206,6 +206,59 @@ parse_cmdline() {
         exit 0
     fi
 }
+get_device_mode() {
+    if [ "$os" = "Darwin" ]; then
+        apples="$(system_profiler SPUSBDataType 2> /dev/null | grep -B1 'Vendor ID: 0x05ac' | grep 'Product ID:' | cut -dx -f2 | cut -d' ' -f1 | tail -r)"
+    elif [ "$os" = "Linux" ]; then
+        apples="$(lsusb | cut -d' ' -f6 | grep '05ac:' | cut -d: -f2)"
+    fi
+    local device_count=0
+    local usbserials=""
+    for apple in $apples; do
+        case "$apple" in
+            12a8|12aa|12ab)
+            device_mode=normal
+            device_count=$((device_count+1))
+            ;;
+            1281)
+            device_mode=recovery
+            device_count=$((device_count+1))
+            ;;
+            1227)
+            device_mode=dfu
+            device_count=$((device_count+1))
+            ;;
+            1222)
+            device_mode=diag
+            device_count=$((device_count+1))
+            ;;
+            1338)
+            device_mode=checkra1n_stage2
+            device_count=$((device_count+1))
+            ;;
+            4141)
+            device_mode=pongo
+            device_count=$((device_count+1))
+            ;;
+        esac
+    done
+    if [ "$device_count" = "0" ]; then
+        device_mode=none
+    elif [ "$device_count" -ge "2" ]; then
+        echo "[-] Please attach only one device" > /dev/tty
+        kill -30 0
+        exit 1;
+    fi
+    if [ "$os" = "Linux" ]; then
+        usbserials=$(cat /sys/bus/usb/devices/*/serial)
+    elif [ "$os" = "Darwin" ]; then
+        usbserials=$(system_profiler SPUSBDataType 2> /dev/null | grep 'Serial Number' | cut -d: -f2- | sed 's/ //')
+    fi
+    if grep -qE '(ramdisk tool|SSHRD_Script) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9]{1,2} [0-9]{4} [0-9]{2}:[0-9]{2}:[0-9]{2}' <<< "$usbserials"; then
+        device_mode=ramdisk
+    fi
+    echo "$device_mode"
+}
 _wait_for_dfu() {
     if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
         echo "[*] Waiting for device in DFU mode"
@@ -1397,6 +1450,43 @@ _kill_if_running() {
         fi
     fi
 }
+_boot() {
+    if [[ "$cpid" == "0x8001" || "$cpid" == "0x8000" || "$cpid" == "0x8003" ]]; then
+        kbag="24A0F3547373C6FED863FC0F321D7FEA216D0258B48413903939DF968CC2C0E571949EFB72DED8B55B8670932CA7A039"
+        iv=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ',' -f 1 | cut -d ' ' -f 2)
+        key=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ' ' -f 4)
+        ivkey="$iv$key"
+        pwd
+        echo "$ivkey"
+    fi
+    if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
+        "$bin"/ipwnder -p
+        sleep 1
+        "$bin"/gaster reset
+    else
+        "$bin"/gaster pwn
+        "$bin"/gaster reset
+    fi
+    "$bin"/irecovery -f iBSS.img4
+    sleep 1
+    "$bin"/irecovery -f iBEC.img4
+    sleep 2
+    if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
+        sleep 1
+        "$bin"/irecovery -c go
+        sleep 2
+    else
+        sleep 1
+    fi
+    "$bin"/irecovery -f devicetree.img4
+    "$bin"/irecovery -c devicetree
+    if [ -e ./trustcache.img4 ]; then
+        "$bin"/irecovery -f trustcache.img4
+        "$bin"/irecovery -c firmware
+    fi
+    "$bin"/irecovery -f kernelcache.img4
+    "$bin"/irecovery -c bootx &
+}
 _boot_ramdisk2() {
     if [[ "$cpid" == "0x8001" || "$cpid" == "0x8000" || "$cpid" == "0x8003" ]]; then
         kbag="24A0F3547373C6FED863FC0F321D7FEA216D0258B48413903939DF968CC2C0E571949EFB72DED8B55B8670932CA7A039"
@@ -1408,17 +1498,22 @@ _boot_ramdisk2() {
     fi
     if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
         "$bin"/ipwnder -p
+        sleep 1
+        "$bin"/gaster reset
     else
         "$bin"/gaster pwn
         "$bin"/gaster reset
     fi
     "$bin"/irecovery -f iBSS.img4
-    "$bin"/irecovery -f iBSS.img4
+    sleep 1
     "$bin"/irecovery -f iBEC.img4
+    sleep 2
     if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
         sleep 1
         "$bin"/irecovery -c go
         sleep 2
+    else
+        sleep 1
     fi
     "$bin"/irecovery -f ramdisk.img4
     "$bin"/irecovery -c ramdisk
@@ -1481,6 +1576,18 @@ done
 if [ "$cmd_not_found" = "1" ]; then
     exit 1
 fi
+sudo killall -STOP -c usbd
+if [[ "$(get_device_mode)" == "normal" ]]; then
+    "$bin"/reboot_into_recovery.sh
+fi 
+if [[ "$(get_device_mode)" == "none" ]]; then
+    echo "[-] Please connect a device in recovery mode or dfu mode to continue"
+    exit 0
+fi
+if [[ ! "$(get_device_mode)" == "dfu" && ! "$(get_device_mode)" == "recovery" ]]; then
+    echo "[-] You can not run $0 from $(get_device_mode), please put your device into recovery mode"
+    exit 0
+fi
 if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
     "$bin"/irecovery -c "setenv auto-boot true"
     "$bin"/irecovery -c "saveenv"
@@ -1490,8 +1597,7 @@ if [[ "$*" == *"--fix-auto-boot"* ]]; then
     "$bin"/irecovery -c "saveenv"
     "$bin"/irecovery -c "reset"
     exit 0
-fi
-sudo killall -STOP -c usbd
+fi 
 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
     "$bin"/dfuhelper.sh
 fi
@@ -1581,36 +1687,7 @@ if [[ "$boot_clean" == 1 ]]; then
     fi
     if [ -e "$dir"/$deviceid/clean/$cpid/$version/iBSS.img4 ]; then
         cd "$dir"/$deviceid/clean/$cpid/$version
-        if [[ "$cpid" == "0x8001" || "$cpid" == "0x8000" || "$cpid" == "0x8003" ]]; then
-            kbag="24A0F3547373C6FED863FC0F321D7FEA216D0258B48413903939DF968CC2C0E571949EFB72DED8B55B8670932CA7A039"
-            iv=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ',' -f 1 | cut -d ' ' -f 2)
-            key=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ' ' -f 4)
-            ivkey="$iv$key"
-            pwd
-            echo "$ivkey"
-        fi
-        if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
-            "$bin"/ipwnder -p
-        else
-            "$bin"/gaster pwn
-            "$bin"/gaster reset
-        fi
-        "$bin"/irecovery -f iBSS.img4
-        "$bin"/irecovery -f iBSS.img4
-        "$bin"/irecovery -f iBEC.img4
-        if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
-            sleep 1
-            "$bin"/irecovery -c go
-            sleep 2
-        fi
-        "$bin"/irecovery -f devicetree.img4
-        "$bin"/irecovery -c devicetree
-        if [ -e ./trustcache.img4 ]; then
-            "$bin"/irecovery -f trustcache.img4
-            "$bin"/irecovery -c firmware
-        fi
-        "$bin"/irecovery -f kernelcache.img4
-        "$bin"/irecovery -c bootx &
+        _boot
         cd "$dir"/
         exit 0
     fi
@@ -1671,7 +1748,16 @@ if [[ "$boot" == 1 ]]; then
         sleep 5
         if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
             if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
-                "$bin"/dfuhelper.sh
+                sleep 10
+                if [ "$(get_device_mode)" = "recovery" ]; then
+                    "$bin"/dfuhelper.sh
+                else
+                    "$bin"/dfuhelper4.sh
+                    sleep 5
+                    "$bin"/irecovery -c "setenv auto-boot false"
+                    "$bin"/irecovery -c "saveenv"
+                    "$bin"/dfuhelper.sh
+                fi
             elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
                 "$bin"/dfuhelper2.sh
             else
@@ -1697,36 +1783,7 @@ if [[ "$boot" == 1 ]]; then
     fi
     if [ -e "$dir"/$deviceid/$cpid/$version/iBSS.img4 ]; then
         cd "$dir"/$deviceid/$cpid/$version
-        if [[ "$cpid" == "0x8001" || "$cpid" == "0x8000" || "$cpid" == "0x8003" ]]; then
-            kbag="24A0F3547373C6FED863FC0F321D7FEA216D0258B48413903939DF968CC2C0E571949EFB72DED8B55B8670932CA7A039"
-            iv=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ',' -f 1 | cut -d ' ' -f 2)
-            key=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ' ' -f 4)
-            ivkey="$iv$key"
-            pwd
-            echo "$ivkey"
-        fi
-        if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
-            "$bin"/ipwnder -p
-        else
-            "$bin"/gaster pwn
-            "$bin"/gaster reset
-        fi
-        "$bin"/irecovery -f iBSS.img4
-        "$bin"/irecovery -f iBSS.img4
-        "$bin"/irecovery -f iBEC.img4
-        if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
-            sleep 1
-            "$bin"/irecovery -c go
-            sleep 2
-        fi
-        "$bin"/irecovery -f devicetree.img4
-        "$bin"/irecovery -c devicetree
-        if [ -e ./trustcache.img4 ]; then
-            "$bin"/irecovery -f trustcache.img4
-            "$bin"/irecovery -c firmware
-        fi
-        "$bin"/irecovery -f kernelcache.img4
-        "$bin"/irecovery -c bootx &
+        _boot
         cd "$dir"/
         exit 0
     fi
@@ -1747,7 +1804,16 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
         sleep 1
         if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
             if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
-                "$bin"/dfuhelper.sh
+                sleep 10
+                if [ "$(get_device_mode)" = "recovery" ]; then
+                    "$bin"/dfuhelper.sh
+                else
+                    "$bin"/dfuhelper4.sh
+                    sleep 5
+                    "$bin"/irecovery -c "setenv auto-boot false"
+                    "$bin"/irecovery -c "saveenv"
+                    "$bin"/dfuhelper.sh
+                fi
             elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
                 "$bin"/dfuhelper2.sh
             else
@@ -1830,7 +1896,16 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
         sleep 1
         if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
             if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
-                "$bin"/dfuhelper.sh
+                sleep 10
+                if [ "$(get_device_mode)" = "recovery" ]; then
+                    "$bin"/dfuhelper.sh
+                else
+                    "$bin"/dfuhelper4.sh
+                    sleep 5
+                    "$bin"/irecovery -c "setenv auto-boot false"
+                    "$bin"/irecovery -c "saveenv"
+                    "$bin"/dfuhelper.sh
+                fi
             elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
                 "$bin"/dfuhelper2.sh
             else
@@ -2054,14 +2129,18 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
             if [[ "$hit" == 1 ]]; then
                 $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
                 _kill_if_running iproxy
-                echo "device should now reboot into recovery, pls wait"
                 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
                     if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
-                        if [[ "$r" == "13.*" || "$r" == "14.*" || "$r" == "15.*" ]]; then
-                            echo "[*] Waiting 30 seconds before continuing.."
-                            sleep 30
+                        sleep 10
+                        if [ "$(get_device_mode)" = "recovery" ]; then
+                            "$bin"/dfuhelper.sh
+                        else
+                            "$bin"/dfuhelper4.sh
+                            sleep 5
+                            "$bin"/irecovery -c "setenv auto-boot false"
+                            "$bin"/irecovery -c "saveenv"
+                            "$bin"/dfuhelper.sh
                         fi
-                        "$bin"/dfuhelper.sh
                     elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
                         "$bin"/dfuhelper2.sh
                     else
@@ -2289,7 +2368,16 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                     echo "[*] Device should boot to Recovery mode. Please wait..."
                     if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
                         if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
-                            "$bin"/dfuhelper.sh
+                            sleep 10
+                            if [ "$(get_device_mode)" = "recovery" ]; then
+                                "$bin"/dfuhelper.sh
+                            else
+                                "$bin"/dfuhelper4.sh
+                                sleep 5
+                                "$bin"/irecovery -c "setenv auto-boot false"
+                                "$bin"/irecovery -c "saveenv"
+                                "$bin"/dfuhelper.sh
+                            fi
                         elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
                             "$bin"/dfuhelper2.sh
                         else
@@ -2359,7 +2447,16 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                     echo "[*] Device should boot to Recovery mode. Please wait..."
                     if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
                         if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
-                            "$bin"/dfuhelper.sh
+                            sleep 10
+                            if [ "$(get_device_mode)" = "recovery" ]; then
+                                "$bin"/dfuhelper.sh
+                            else
+                                "$bin"/dfuhelper4.sh
+                                sleep 5
+                                "$bin"/irecovery -c "setenv auto-boot false"
+                                "$bin"/irecovery -c "saveenv"
+                                "$bin"/dfuhelper.sh
+                            fi
                         elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
                             "$bin"/dfuhelper2.sh
                         else
@@ -2421,7 +2518,16 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 echo "[*] Device should boot to Recovery mode. Please wait..."
                 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
                     if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
-                        "$bin"/dfuhelper.sh
+                        sleep 10
+                        if [ "$(get_device_mode)" = "recovery" ]; then
+                            "$bin"/dfuhelper.sh
+                        else
+                            "$bin"/dfuhelper4.sh
+                            sleep 5
+                            "$bin"/irecovery -c "setenv auto-boot false"
+                            "$bin"/irecovery -c "saveenv"
+                            "$bin"/dfuhelper.sh
+                        fi
                     elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
                         "$bin"/dfuhelper2.sh
                     else
@@ -2481,10 +2587,18 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
             echo "[*] Device should boot to Recovery mode. Please wait..."
             if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
                 if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
-                    sleep 5
-                    "$bin"/irecovery -c "setenv auto-boot true"
-                    "$bin"/irecovery -c "saveenv"
-                    "$bin"/dfuhelper.sh
+                    sleep 10
+                    if [ "$(get_device_mode)" = "recovery" ]; then
+                        "$bin"/irecovery -c "setenv auto-boot true"
+                        "$bin"/irecovery -c "saveenv"
+                        "$bin"/dfuhelper.sh
+                    else
+                        "$bin"/dfuhelper4.sh
+                        sleep 5
+                        "$bin"/irecovery -c "setenv auto-boot true"
+                        "$bin"/irecovery -c "saveenv"
+                        "$bin"/dfuhelper.sh
+                    fi
                 elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
                     "$bin"/dfuhelper2.sh
                 else
@@ -3139,8 +3253,17 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 _kill_if_running iproxy
                 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
                     if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
-                        "$bin"/dfuhelper.sh
-                    elif [[ "clean/$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                        sleep 10
+                        if [ "$(get_device_mode)" = "recovery" ]; then
+                            "$bin"/dfuhelper.sh
+                        else
+                            "$bin"/dfuhelper4.sh
+                            sleep 5
+                            "$bin"/irecovery -c "setenv auto-boot false"
+                            "$bin"/irecovery -c "saveenv"
+                            "$bin"/dfuhelper.sh
+                        fi
+                    elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
                         "$bin"/dfuhelper2.sh
                     else
                         "$bin"/dfuhelper3.sh
@@ -3162,36 +3285,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                     sleep 10
                 fi
                 cd "$dir"/$deviceid/clean/$cpid/$r
-                if [[ "$cpid" == "0x8001" || "$cpid" == "0x8000" || "$cpid" == "0x8003" ]]; then
-                    kbag="24A0F3547373C6FED863FC0F321D7FEA216D0258B48413903939DF968CC2C0E571949EFB72DED8B55B8670932CA7A039"
-                    iv=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ',' -f 1 | cut -d ' ' -f 2)
-                    key=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ' ' -f 4)
-                    ivkey="$iv$key"
-                    pwd
-                    echo "$ivkey"
-                fi
-                if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
-                    "$bin"/ipwnder -p
-                else
-                    "$bin"/gaster pwn
-                    "$bin"/gaster reset
-                fi
-                "$bin"/irecovery -f iBSS.img4
-                "$bin"/irecovery -f iBSS.img4
-                "$bin"/irecovery -f iBEC.img4
-                if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
-                    sleep 1
-                    "$bin"/irecovery -c go
-                    sleep 2
-                fi
-                "$bin"/irecovery -f devicetree.img4
-                "$bin"/irecovery -c devicetree
-                if [ -e ./trustcache.img4 ]; then
-                    "$bin"/irecovery -f trustcache.img4
-                    "$bin"/irecovery -c firmware
-                fi
-                "$bin"/irecovery -f kernelcache.img4
-                "$bin"/irecovery -c bootx &
+                _boot
                 cd "$dir"/
                 echo "[*] Step 2 of dualbooting to iOS $version is now done"
                 echo '[*] The device should now show a bunch of AppleKeyStore: operation failed (pid: %d sel: %d ret: %x)'
@@ -3200,7 +3294,16 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 sleep 5
                 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
                     if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
-                        "$bin"/dfuhelper.sh
+                        sleep 10
+                        if [ "$(get_device_mode)" = "recovery" ]; then
+                            "$bin"/dfuhelper.sh
+                        else
+                            "$bin"/dfuhelper4.sh
+                            sleep 5
+                            "$bin"/irecovery -c "setenv auto-boot false"
+                            "$bin"/irecovery -c "saveenv"
+                            "$bin"/dfuhelper.sh
+                        fi
                     elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
                         "$bin"/dfuhelper2.sh
                     else
@@ -3266,8 +3369,17 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 _kill_if_running iproxy
                 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
                     if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
-                        "$bin"/dfuhelper.sh
-                    elif [[ "clean/$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                        sleep 10
+                        if [ "$(get_device_mode)" = "recovery" ]; then
+                            "$bin"/dfuhelper.sh
+                        else
+                            "$bin"/dfuhelper4.sh
+                            sleep 5
+                            "$bin"/irecovery -c "setenv auto-boot false"
+                            "$bin"/irecovery -c "saveenv"
+                            "$bin"/dfuhelper.sh
+                        fi
+                    elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
                         "$bin"/dfuhelper2.sh
                     else
                         "$bin"/dfuhelper3.sh
@@ -3289,36 +3401,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                     sleep 10
                 fi
                 cd "$dir"/$deviceid/clean/$cpid/$r
-                if [[ "$cpid" == "0x8001" || "$cpid" == "0x8000" || "$cpid" == "0x8003" ]]; then
-                    kbag="24A0F3547373C6FED863FC0F321D7FEA216D0258B48413903939DF968CC2C0E571949EFB72DED8B55B8670932CA7A039"
-                    iv=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ',' -f 1 | cut -d ' ' -f 2)
-                    key=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ' ' -f 4)
-                    ivkey="$iv$key"
-                    pwd
-                    echo "$ivkey"
-                fi
-                if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
-                    "$bin"/ipwnder -p
-                else
-                    "$bin"/gaster pwn
-                    "$bin"/gaster reset
-                fi
-                "$bin"/irecovery -f iBSS.img4
-                "$bin"/irecovery -f iBSS.img4
-                "$bin"/irecovery -f iBEC.img4
-                if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
-                    sleep 1
-                    "$bin"/irecovery -c go
-                    sleep 2
-                fi
-                "$bin"/irecovery -f devicetree.img4
-                "$bin"/irecovery -c devicetree
-                if [ -e ./trustcache.img4 ]; then
-                    "$bin"/irecovery -f trustcache.img4
-                    "$bin"/irecovery -c firmware
-                fi
-                "$bin"/irecovery -f kernelcache.img4
-                "$bin"/irecovery -c bootx &
+                _boot
                 cd "$dir"/
                 if [[ "$version" == "7."* ]]; then
                     echo "[*] Step 4 of dualbooting to iOS $version is now done"
@@ -3329,7 +3412,16 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                     sleep 5
                     if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
                         if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
-                            "$bin"/dfuhelper.sh
+                            sleep 10
+                            if [ "$(get_device_mode)" = "recovery" ]; then
+                                "$bin"/dfuhelper.sh
+                            else
+                                "$bin"/dfuhelper4.sh
+                                sleep 5
+                                "$bin"/irecovery -c "setenv auto-boot false"
+                                "$bin"/irecovery -c "saveenv"
+                                "$bin"/dfuhelper.sh
+                            fi
                         elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
                             "$bin"/dfuhelper2.sh
                         else
@@ -3409,7 +3501,16 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 if [ -e "$dir"/$deviceid/$cpid/$version/iBSS.img4 ]; then
                     if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
                         if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
-                            "$bin"/dfuhelper.sh
+                            sleep 10
+                            if [ "$(get_device_mode)" = "recovery" ]; then
+                                "$bin"/dfuhelper.sh
+                            else
+                                "$bin"/dfuhelper4.sh
+                                sleep 5
+                                "$bin"/irecovery -c "setenv auto-boot false"
+                                "$bin"/irecovery -c "saveenv"
+                                "$bin"/dfuhelper.sh
+                            fi
                         elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
                             "$bin"/dfuhelper2.sh
                         else
@@ -3432,36 +3533,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                         sleep 10
                     fi
                     cd "$dir"/$deviceid/$cpid/$version
-                    if [[ "$cpid" == "0x8001" || "$cpid" == "0x8000" || "$cpid" == "0x8003" ]]; then
-                        kbag="24A0F3547373C6FED863FC0F321D7FEA216D0258B48413903939DF968CC2C0E571949EFB72DED8B55B8670932CA7A039"
-                        iv=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ',' -f 1 | cut -d ' ' -f 2)
-                        key=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ' ' -f 4)
-                        ivkey="$iv$key"
-                        pwd
-                        echo "$ivkey"
-                    fi
-                    if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
-                        "$bin"/ipwnder -p
-                    else
-                        "$bin"/gaster pwn
-                        "$bin"/gaster reset
-                    fi
-                    "$bin"/irecovery -f iBSS.img4
-                    "$bin"/irecovery -f iBSS.img4
-                    "$bin"/irecovery -f iBEC.img4
-                    if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
-                        sleep 1
-                        "$bin"/irecovery -c go
-                        sleep 2
-                    fi
-                    "$bin"/irecovery -f devicetree.img4
-                    "$bin"/irecovery -c devicetree
-                    if [ -e ./trustcache.img4 ]; then
-                        "$bin"/irecovery -f trustcache.img4
-                        "$bin"/irecovery -c firmware
-                    fi
-                    "$bin"/irecovery -f kernelcache.img4
-                    "$bin"/irecovery -c bootx &
+                    _boot
                     cd "$dir"/
                 fi
                 _kill_if_running iproxy
@@ -3472,11 +3544,16 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 sleep 5
                 if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
                     if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
-                        "$bin"/dfuhelper4.sh
-                        sleep 5
-                        "$bin"/irecovery -c "setenv auto-boot false"
-                        "$bin"/irecovery -c "saveenv"
-                        "$bin"/dfuhelper.sh
+                        sleep 10
+                        if [ "$(get_device_mode)" = "recovery" ]; then
+                            "$bin"/dfuhelper.sh
+                        else
+                            "$bin"/dfuhelper4.sh
+                            sleep 5
+                            "$bin"/irecovery -c "setenv auto-boot false"
+                            "$bin"/irecovery -c "saveenv"
+                            "$bin"/dfuhelper.sh
+                        fi
                     elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
                         "$bin"/dfuhelper2.sh
                     else
@@ -3586,10 +3663,16 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
         if [ -e "$dir"/$deviceid/$cpid/$version/iBSS.img4 ]; then
             if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
                 if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
-                    sleep 5
-                    "$bin"/irecovery -c "setenv auto-boot true"
-                    "$bin"/irecovery -c "saveenv"
-                    "$bin"/dfuhelper.sh
+                    sleep 10
+                    if [ "$(get_device_mode)" = "recovery" ]; then
+                        "$bin"/dfuhelper.sh
+                    else
+                        "$bin"/dfuhelper4.sh
+                        sleep 5
+                        "$bin"/irecovery -c "setenv auto-boot false"
+                        "$bin"/irecovery -c "saveenv"
+                        "$bin"/dfuhelper.sh
+                    fi
                 elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
                     "$bin"/dfuhelper2.sh
                 else
@@ -3612,36 +3695,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 sleep 10
             fi
             cd "$dir"/$deviceid/$cpid/$version
-            if [[ "$cpid" == "0x8001" || "$cpid" == "0x8000" || "$cpid" == "0x8003" ]]; then
-                kbag="24A0F3547373C6FED863FC0F321D7FEA216D0258B48413903939DF968CC2C0E571949EFB72DED8B55B8670932CA7A039"
-                iv=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ',' -f 1 | cut -d ' ' -f 2)
-                key=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ' ' -f 4)
-                ivkey="$iv$key"
-                pwd
-                echo "$ivkey"
-            fi
-            if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
-                "$bin"/ipwnder -p
-            else
-                "$bin"/gaster pwn
-                "$bin"/gaster reset
-            fi
-            "$bin"/irecovery -f iBSS.img4
-            "$bin"/irecovery -f iBSS.img4
-            "$bin"/irecovery -f iBEC.img4
-            if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
-                sleep 1
-                "$bin"/irecovery -c go
-                sleep 2
-            fi
-            "$bin"/irecovery -f devicetree.img4
-            "$bin"/irecovery -c devicetree
-            if [ -e ./trustcache.img4 ]; then
-                "$bin"/irecovery -f trustcache.img4
-                "$bin"/irecovery -c firmware
-            fi
-            "$bin"/irecovery -f kernelcache.img4
-            "$bin"/irecovery -c bootx &
+            _boot
             cd "$dir"/
         fi
         _kill_if_running iproxy
