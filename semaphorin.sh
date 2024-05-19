@@ -906,13 +906,19 @@ _download_boot_files() {
                 "$bin"/img4 -i "$dir"/$1/$cpid/$3/audiocodecfirmware.dec -o "$dir"/$1/$cpid/$3/audiocodecfirmware.img4 -M IM4M -T acfw
             fi
             if [[ "$deviceid" == "iPhone8,1" && "$3" == "11.0" ]]; then
+                # seprmvr64lite5 is seprmvr64lite but with only AppleKeyStore: operation %s(pid: %d sel: %d ret: %x '%d'%s)
+                "$bin"/seprmvr64lite5 "$dir"/$1/$cpid/$3/kcache_15A5278f.raw "$dir"/$1/$cpid/$3/kcache.patched
                 # seprmvr647 is plooshfinder seprmvr64 but with EP0 patches removed
-                "$bin"/seprmvr647 "$dir"/$1/$cpid/$3/kcache_15A5278f.raw "$dir"/$1/$cpid/$3/kcache.patched
+                "$bin"/seprmvr647 "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched
                 # KPlooshFinder is amfi patch
-                "$bin"/KPlooshFinder "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched
+                "$bin"/KPlooshFinder "$dir"/$1/$cpid/$3/kcache2.patched "$dir"/$1/$cpid/$3/kcache3.patched
                 # -a is mapIO, -f is vm_fault_enter, -m is mount_common, and -b is image4 validation patches
-                "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache2.patched "$dir"/$1/$cpid/$3/kcache3.patched -a -f -m -b
-                "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache_15A5278f.raw "$dir"/$1/$cpid/$3/kcache3.patched "$dir"/$1/$cpid/$3/kc.bpatch
+                if [[ "$3" == "11.3"* || "$3" == "11.4"* ]]; then
+                    "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache3.patched "$dir"/$1/$cpid/$3/kcache4.patched -a -f -m -r
+                else
+                    "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache3.patched "$dir"/$1/$cpid/$3/kcache4.patched -a -f -m -b
+                fi
+                "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache_15A5278f.raw "$dir"/$1/$cpid/$3/kcache4.patched "$dir"/$1/$cpid/$3/kc.bpatch
                 "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache_15A5278f.dec -o "$dir"/$1/$cpid/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$cpid/$3/kc.bpatch
                 "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache_15A5278f.dec -o "$dir"/$1/$cpid/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$cpid/$3/kc.bpatch
             else
@@ -923,7 +929,11 @@ _download_boot_files() {
                 # KPlooshFinder is amfi patch
                 "$bin"/KPlooshFinder "$dir"/$1/$cpid/$3/kcache2.patched "$dir"/$1/$cpid/$3/kcache3.patched
                 # -a is mapIO, -f is vm_fault_enter, -m is mount_common, and -b is image4 validation patches
-                "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache3.patched "$dir"/$1/$cpid/$3/kcache4.patched -a -f -m -b
+                if [[ "$3" == "11.3"* || "$3" == "11.4"* ]]; then
+                    "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache3.patched "$dir"/$1/$cpid/$3/kcache4.patched -a -f -m -r
+                else
+                    "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache3.patched "$dir"/$1/$cpid/$3/kcache4.patched -a -f -m -b
+                fi
                 "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache4.patched "$dir"/$1/$cpid/$3/kc.bpatch
                 "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$cpid/$3/kc.bpatch
                 "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$cpid/$3/kc.bpatch
@@ -2702,12 +2712,8 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
             fi
             "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/$deviceid/$cpid/$version/kernelcache root@localhost:/mnt4/System/Library/Caches/com.apple.kernelcaches
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt4/usr/lib/libmis.dylib"
-            if [[ ! "$version" == "11.3"* && ! "$version" == "11.4"* ]]; then
-                "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/$deviceid/$cpid/$version/aopfw.img4 root@localhost:/mnt4/usr/standalone/firmware/FUD/AOP.img4
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/chflags schg /mnt4/usr/standalone/firmware/FUD/AOP.img4"
-            else
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt4/usr/standalone/firmware/FUD/AOP.img4"
-            fi
+            "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/$deviceid/$cpid/$version/aopfw.img4 root@localhost:/mnt4/usr/standalone/firmware/FUD/AOP.img4
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/chflags schg /mnt4/usr/standalone/firmware/FUD/AOP.img4"
             "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/$deviceid/$cpid/$version/homerfw.img4 root@localhost:/mnt4/usr/standalone/firmware/FUD/Homer.img4
             "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/$deviceid/$cpid/$version/trustcache root@localhost:/mnt4/usr/standalone/firmware/FUD/StaticTrustCache.img4
             "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/$deviceid/$cpid/$version/multitouch.img4 root@localhost:/mnt4/usr/standalone/firmware/FUD/Multitouch.img4
