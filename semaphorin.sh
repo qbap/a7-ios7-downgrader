@@ -908,8 +908,13 @@ _download_boot_files() {
             if [[ "$deviceid" == "iPhone8,1" && "$3" == "11.0" ]]; then
                 # seprmvr64lite5 is seprmvr64lite but with only AppleKeyStore: operation %s(pid: %d sel: %d ret: %x '%d'%s)
                 "$bin"/seprmvr64lite5 "$dir"/$1/$cpid/$3/kcache_15A5278f.raw "$dir"/$1/$cpid/$3/kcache.patched
-                # seprmvr647 is plooshfinder seprmvr64 but with EP0 patches removed
-                "$bin"/seprmvr647 "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched
+                if [[ "$deviceid" == "iPhone10,3" || "$deviceid" == "iPhone10,6" ]]; then
+                    # seprmvr64iphonex2 is plooshfinder seprmvr64X but with EP0 patch removed
+                    "$bin"/seprmvr64iphonex2 "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched
+                else
+                    # seprmvr647 is plooshfinder seprmvr64 but with EP0 patch removed
+                    "$bin"/seprmvr647 "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched
+                fi
                 # KPlooshFinder is amfi patch
                 "$bin"/KPlooshFinder "$dir"/$1/$cpid/$3/kcache2.patched "$dir"/$1/$cpid/$3/kcache3.patched
                 # -a is mapIO, -f is vm_fault_enter, -m is mount_common, and -b is image4 validation patches
@@ -924,8 +929,13 @@ _download_boot_files() {
             else
                 # seprmvr64lite5 is seprmvr64lite but with only AppleKeyStore: operation %s(pid: %d sel: %d ret: %x '%d'%s)
                 "$bin"/seprmvr64lite5 "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache.patched
-                # seprmvr647 is plooshfinder seprmvr64 but with EP0 patches removed
-                "$bin"/seprmvr647 "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched
+                if [[ "$deviceid" == "iPhone10,3" || "$deviceid" == "iPhone10,6" ]]; then
+                    # seprmvr64iphonex2 is plooshfinder seprmvr64X but with EP0 patch removed
+                    "$bin"/seprmvr64iphonex2 "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched
+                else
+                    # seprmvr647 is plooshfinder seprmvr64 but with EP0 patch removed
+                    "$bin"/seprmvr647 "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched
+                fi
                 # KPlooshFinder is amfi patch
                 "$bin"/KPlooshFinder "$dir"/$1/$cpid/$3/kcache2.patched "$dir"/$1/$cpid/$3/kcache3.patched
                 # -a is mapIO, -f is vm_fault_enter, -m is mount_common, and -b is image4 validation patches
@@ -940,40 +950,6 @@ _download_boot_files() {
             fi
             if [ -e "$dir"/$1/$cpid/$3/trustcache.im4p ]; then
                 "$bin"/img4 -i "$dir"/$1/$cpid/$3/trustcache.im4p -o "$dir"/$1/$cpid/$3/trustcache.img4 -M IM4M -T rtsc
-            fi
-            "$bin"/img4tool -e -o "$dir"/$1/$cpid/$3/devicetree.out "$dir"/$1/$cpid/$3/devicetree.dec
-            "$bin"/dtree_patcher "$dir"/$1/$cpid/$3/devicetree.out "$dir"/$1/$cpid/$3/DeviceTree.patched -n
-            "$bin"/img4 -i "$dir"/$1/$cpid/$3/DeviceTree.patched -o "$dir"/$1/$cpid/$3/devicetree.img4 -A -M IM4M -T rdtr
-        elif [[ "$3" == "12.4"* || "$3" == "12.3"* || "$3" == "12.2"* ]]; then
-            "$bin"/img4 -i "$dir"/$1/$cpid/$3/iBSS.patched -o "$dir"/$1/$cpid/$3/iBSS.img4 -M IM4M -A -T ibss
-            "$bin"/img4 -i "$dir"/$1/$cpid/$3/iBEC.patched -o "$dir"/$1/$cpid/$3/iBEC.img4 -M IM4M -A -T ibec
-            "$bin"/img4 -i "$dir"/$1/$cpid/$3/aopfw.dec -o "$dir"/$1/$cpid/$3/aopfw.img4 -M IM4M -T aopf
-            if [ -e "$dir"/$1/$cpid/$3/homerfw.dec ]; then
-                "$bin"/img4 -i "$dir"/$1/$cpid/$3/homerfw.dec -o "$dir"/$1/$cpid/$3/homerfw.img4 -M IM4M -T homr
-            fi
-            if [ -e "$dir"/$1/$cpid/$3/avefw.dec ]; then
-                "$bin"/img4 -i "$dir"/$1/$cpid/$3/avefw.dec -o "$dir"/$1/$cpid/$3/avefw.img4 -M IM4M -T avef
-            fi
-            if [ -e "$dir"/$1/$cpid/$3/multitouch.dec ]; then
-                "$bin"/img4 -i "$dir"/$1/$cpid/$3/multitouch.dec -o "$dir"/$1/$cpid/$3/multitouch.img4 -M IM4M -T mtfw
-            fi
-            if [ -e "$dir"/$1/$cpid/$3/audiocodecfirmware.dec ]; then
-                "$bin"/img4 -i "$dir"/$1/$cpid/$3/audiocodecfirmware.dec -o "$dir"/$1/$cpid/$3/audiocodecfirmware.img4 -M IM4M -T acfw
-            fi
-            # seprmvr646 is plooshfinder seprmvr64 but with EP0 and AssertMacros patches removed
-            "$bin"/seprmvr646 "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache.patched
-            # KPlooshFinder is amfi patch
-            "$bin"/KPlooshFinder "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched
-            # seprmvr64lite4 is a less invasive AssertMacros patch that we have to use so it doesn't kernel panic during boot
-            "$bin"/seprmvr64lite4 "$dir"/$1/$cpid/$3/kcache2.patched "$dir"/$1/$cpid/$3/kcache3.patched
-            # -a is mapIO, -m is mount_common, -f is vm_fault_enter, and -r is image4 validation patches
-            "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache3.patched "$dir"/$1/$cpid/$3/kcache4.patched -a -m -r -f
-            "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache4.patched "$dir"/$1/$cpid/$3/kc.bpatch
-            "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$cpid/$3/kc.bpatch
-            "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$cpid/$3/kc.bpatch
-            if [ -e "$dir"/$1/$cpid/$3/trustcache.im4p ]; then
-                "$bin"/img4 -i "$dir"/$1/$cpid/$3/trustcache.im4p -o "$dir"/$1/$cpid/$3/trustcache.img4 -M IM4M -T rtsc
-                "$bin"/img4 -i "$dir"/$1/$cpid/$3/trustcache.im4p -o "$dir"/$1/$cpid/$3/trustcache -M IM4M -T trst
             fi
             "$bin"/img4tool -e -o "$dir"/$1/$cpid/$3/devicetree.out "$dir"/$1/$cpid/$3/devicetree.dec
             "$bin"/dtree_patcher "$dir"/$1/$cpid/$3/devicetree.out "$dir"/$1/$cpid/$3/DeviceTree.patched -n
@@ -996,8 +972,13 @@ _download_boot_files() {
             fi
             # seprmvr64lite5 is seprmvr64lite but with only AppleKeyStore: operation %s(pid: %d sel: %d ret: %x '%d'%s)
             "$bin"/seprmvr64lite5 "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache.patched
-            # seprmvr647 is plooshfinder seprmvr64 but with EP0 patch removed
-            "$bin"/seprmvr647 "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched
+            if [[ "$deviceid" == "iPhone10,3" || "$deviceid" == "iPhone10,6" ]]; then
+                # seprmvr64iphonex2 is plooshfinder seprmvr64X but with EP0 patch removed
+                "$bin"/seprmvr64iphonex2 "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched
+            else
+                # seprmvr647 is plooshfinder seprmvr64 but with EP0 patch removed
+                "$bin"/seprmvr647 "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched
+            fi
             # KPlooshFinder is amfi patch
             "$bin"/KPlooshFinder "$dir"/$1/$cpid/$3/kcache2.patched "$dir"/$1/$cpid/$3/kcache3.patched
             # -a is mapIO, -m is mount_common, -f is vm_fault_enter, and -r is image4 validation patches
@@ -1846,6 +1827,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
             sleep 10
         fi
         cd "$dir"/$deviceid/$cpid/ramdisk/$rdversion
+        pongo=0
     else
         if [[ "$version" == "7."* || "$version" == "8."* ]]; then
             _download_ramdisk_boot_files $deviceid $replace 8.4.1
