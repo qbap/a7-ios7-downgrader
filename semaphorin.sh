@@ -1309,8 +1309,7 @@ _download_root_fs() {
                 "$bin"/aria2c https://ia800301.us.archive.org/22/items/iPhone_4.7_11.0_15A5278f_Restore/iPhone_4.7_11.0_15A5278f_Restore.ipsw
                 "$bin"/7z x $(find . -name '*.ipsw*')
                 fn="058-76196-042.dmg"
-                #asr -source $fn -target "$dir"/$1/$cpid/$3/OS.dmg --embed -erase -noprompt --chunkchecksum --puppetstrings
-                cp $fn "$dir"/$1/$cpid/$3/OS.dmg
+                asr -source $fn -target "$dir"/$1/$cpid/$3/OS.dmg --embed -erase -noprompt --chunkchecksum --puppetstrings
                 "$bin"/img4 -i kernelcache.release.n71 -o "$dir"/$1/$cpid/$3/kcache_15A5278f.raw
                 "$bin"/img4 -i kernelcache.release.n71 -o "$dir"/$1/$cpid/$3/kernelcache_15A5278f.dec -D
                 cd "$dir"/work/
@@ -1323,8 +1322,7 @@ _download_root_fs() {
                     fn="$("$bin"/PlistBuddy -c "Print BuildIdentities:0:Manifest:OS:Info:Path" BuildManifest.plist | tr -d '"')"
                 fi
                 "$bin"/pzb -g "$fn" "$ipswurl"
-                #asr -source $fn -target "$dir"/$1/$cpid/$3/OS.dmg --embed -erase -noprompt --chunkchecksum --puppetstrings
-                cp $fn "$dir"/$1/$cpid/$3/OS.dmg
+                asr -source $fn -target "$dir"/$1/$cpid/$3/OS.dmg --embed -erase -noprompt --chunkchecksum --puppetstrings
             fi
             if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
                "$bin"/irecovery -f /dev/null
