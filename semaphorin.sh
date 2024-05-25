@@ -1975,7 +1975,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
             else
                 _download_ramdisk_boot_files $deviceid $replace 12.5.4
             fi
-        elif [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
+        elif [[ "$os" = "Darwin" && ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
             _download_ramdisk_boot_files $deviceid $replace 9.3
         else
             _download_ramdisk_boot_files $deviceid $replace 11.4
@@ -2074,7 +2074,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
             else
                 cd "$dir"/$deviceid/$cpid/ramdisk/12.5.4
             fi
-        elif [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
+        elif [[ "$os" = "Darwin" && ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
             cd "$dir"/$deviceid/$cpid/ramdisk/9.3
         else
             cd "$dir"/$deviceid/$cpid/ramdisk/11.4
@@ -2328,7 +2328,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                     else
                         cd "$dir"/$deviceid/$cpid/ramdisk/12.5.4
                     fi
-                elif [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
+                elif [[ "$os" = "Darwin" && ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
                     cd "$dir"/$deviceid/$cpid/ramdisk/9.3
                 else
                     cd "$dir"/$deviceid/$cpid/ramdisk/11.4
@@ -2576,7 +2576,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                         cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
                     elif [[ "$version" == "10.3"* || "$version" == "11."* ||  "$version" == "12."* || "$version" == "13."* ]]; then
                         cd "$dir"/$deviceid/$cpid/ramdisk/$r
-                    elif [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
+                    elif [[ "$os" = "Darwin" && ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
                         cd "$dir"/$deviceid/$cpid/ramdisk/9.3
                     else
                         cd "$dir"/$deviceid/$cpid/ramdisk/11.4
@@ -2676,7 +2676,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                         cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
                     elif [[ "$version" == "10.3"* || "$version" == "11."* ||  "$version" == "12."* || "$version" == "13."* ]]; then
                         cd "$dir"/$deviceid/$cpid/ramdisk/$r
-                    elif [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
+                    elif [[ "$os" = "Darwin" && ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
                         cd "$dir"/$deviceid/$cpid/ramdisk/9.3
                     else
                         cd "$dir"/$deviceid/$cpid/ramdisk/11.4
@@ -2768,7 +2768,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                     cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
                 elif [[ "$version" == "10.3"* || "$version" == "11."* ||  "$version" == "12."* || "$version" == "13."* ]]; then
                     cd "$dir"/$deviceid/$cpid/ramdisk/$r
-                elif [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
+                elif [[ "$os" = "Darwin" && ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
                     cd "$dir"/$deviceid/$cpid/ramdisk/9.3
                 else
                     cd "$dir"/$deviceid/$cpid/ramdisk/11.4
@@ -2862,7 +2862,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
             elif [[ "$version" == "10.3"* || "$version" == "11."* ||  "$version" == "12."* || "$version" == "13."* ]]; then
                 cd "$dir"/$deviceid/$cpid/ramdisk/$r
-            elif [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
+            elif [[ "$os" = "Darwin" && ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
                 cd "$dir"/$deviceid/$cpid/ramdisk/9.3
             else
                 cd "$dir"/$deviceid/$cpid/ramdisk/11.4
@@ -3193,8 +3193,8 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 "$bin"/pv "$dir"/$deviceid/$cpid/$version/OS.tar | "$bin"/sshpass -p "alpine" ssh -p2222 root@localhost 'cat | tar x -C /mnt1'
             else
                 "$bin"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P 2222 -v "$dir"/$deviceid/$cpid/$version/rw.dmg root@localhost:/mnt2
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/hdik /mnt2/rw.dmg"
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_hfs -o ro /dev/disk4s3 /mnt3"
+                disktomount="$("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/hdik /mnt2/rw.dmg' | tail -n 1 | cut -d ' ' -f 1)"
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_hfs -o ro $disktomount /mnt3"
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cp -av /mnt3/* /mnt1"
             fi
             if [[ "$version" == "7."* || "$version" == "8."* || "$version" == "9."* ]]; then
@@ -3616,7 +3616,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                     cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
                 elif [[ "$version" == "10.3"* || "$version" == "11."* ||  "$version" == "12."* ||  "$version" == "13."* ]]; then
                     cd "$dir"/$deviceid/$cpid/ramdisk/$r
-                elif [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
+                elif [[ "$os" = "Darwin" && ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
                     cd "$dir"/$deviceid/$cpid/ramdisk/9.3
                 else
                     cd "$dir"/$deviceid/$cpid/ramdisk/11.4
@@ -3776,7 +3776,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                         cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
                     elif [[ "$version" == "10.3"* || "$version" == "11."* ||  "$version" == "12."* ||  "$version" == "13."* ]]; then
                         cd "$dir"/$deviceid/$cpid/ramdisk/$r
-                    elif [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
+                    elif [[ "$os" = "Darwin" && ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
                         cd "$dir"/$deviceid/$cpid/ramdisk/9.3
                     else
                         cd "$dir"/$deviceid/$cpid/ramdisk/11.4
@@ -3950,7 +3950,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                     cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
                 elif [[ "$version" == "10.3"* || "$version" == "11."* ||  "$version" == "12."* ||  "$version" == "13."* ]]; then
                     cd "$dir"/$deviceid/$cpid/ramdisk/$r
-                elif [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
+                elif [[ "$os" = "Darwin" && ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
                     cd "$dir"/$deviceid/$cpid/ramdisk/9.3
                 else
                     cd "$dir"/$deviceid/$cpid/ramdisk/11.4
