@@ -1309,6 +1309,7 @@ _download_root_fs() {
                 "$bin"/aria2c https://ia800301.us.archive.org/22/items/iPhone_4.7_11.0_15A5278f_Restore/iPhone_4.7_11.0_15A5278f_Restore.ipsw
                 "$bin"/7z x $(find . -name '*.ipsw*')
                 fn="058-76196-042.dmg"
+                # no asr on linux
                 asr -source $fn -target "$dir"/$1/$cpid/$3/OS.dmg --embed -erase -noprompt --chunkchecksum --puppetstrings
                 "$bin"/img4 -i kernelcache.release.n71 -o "$dir"/$1/$cpid/$3/kcache_15A5278f.raw
                 "$bin"/img4 -i kernelcache.release.n71 -o "$dir"/$1/$cpid/$3/kernelcache_15A5278f.dec -D
@@ -1322,6 +1323,7 @@ _download_root_fs() {
                     fn="$("$bin"/PlistBuddy -c "Print BuildIdentities:0:Manifest:OS:Info:Path" BuildManifest.plist | tr -d '"')"
                 fi
                 "$bin"/pzb -g "$fn" "$ipswurl"
+                # no asr on linux
                 asr -source $fn -target "$dir"/$1/$cpid/$3/OS.dmg --embed -erase -noprompt --chunkchecksum --puppetstrings
             fi
             if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
@@ -1460,8 +1462,17 @@ _download_root_fs() {
                     "$bin"/dmg extract $fn "$dir"/$1/$cpid/$3/OS.dmg -k $ivkey
                 fi
             fi
-            "$bin"/hfsplus "$dir"/$1/$cpid/$3/OS.dmg untar "$dir"/$1/$cpid/$3/OS.tar
-            "$bin"/dmg build "$dir"/$1/$cpid/$3/OS.dmg "$dir"/$1/$cpid/$3/rw.dmg
+            if [ ! -e "$dir"/$1/$cpid/$3/rw.dmg ]; then
+                "$bin"/dmg build "$dir"/$1/$cpid/$3/OS.dmg "$dir"/$1/$cpid/$3/rw.dmg
+            fi
+            if [ "$os" = "Darwin" ]; then
+                hdiutil attach -mountpoint /tmp/ios "$dir"/$1/$cpid/$3/rw.dmg
+                sudo diskutil enableOwnership /tmp/ios
+                sudo "$bin"/gnutar -cvf "$dir"/$1/$cpid/$3/OS.tar -C /tmp/ios .
+                hdiutil detach /tmp/ios
+            else
+                : how do i do this on linux lol
+            fi
             rm -rf /tmp/ios
             if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
                "$bin"/irecovery -f /dev/null
@@ -2989,13 +3000,20 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt2" 2> /dev/null
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt3" 2> /dev/null
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_hfs /dev/disk0s1s3 /mnt1" 2> /dev/null
+                #mnt1disk="3"
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs -o suid,dev /dev/disk0s1s4 /mnt2" 2> /dev/null
             else
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_hfs /dev/disk0s1s1 /mnt1" 2> /dev/null
+                #mnt1disk="1"
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs -o suid,dev /dev/disk0s1s2 /mnt2" 2> /dev/null
             fi
             echo "[*] Uploading $dir/$deviceid/$cpid/$version/OS.tar, this may take up to 10 minutes.."
             "$bin"/pv "$dir"/$deviceid/$cpid/$version/OS.tar | "$bin"/sshpass -p "alpine" ssh -p2222 root@localhost 'cat | tar x -C /mnt1'
+            #"$bin"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P 2222 "$dir"/$deviceid/$cpid/$version/rw.dmg root@localhost:/mnt2 2> /dev/null
+            #echo "[*] Restoring rootfs with ASR, this may take up to 10 minutes.."
+            #"$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "echo 'y' | /usr/sbin/asr restore --source /mnt2/rw.dmg --target /dev/disk0s1s${mnt1disk} --erase"
+            #echo "[*] Done with rootfs, moving on now"
+            #"$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/rw.dmg; /sbin/mount_hfs /dev/disk0s1s${mnt1disk} /mnt1" 2> /dev/null
             if [[ "$version" == "7."* || "$version" == "8."* || "$version" == "9."* ]]; then
                 "$bin"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P 2222 "$dir"/jb/cydia_ios7.tar.gz root@localhost:/mnt2 2> /dev/null
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xzvf /mnt2/cydia_ios7.tar.gz -C /mnt1"
