@@ -17,6 +17,14 @@ arg_count=0
 
 # This would probably go better somewhere else, but I'm not sure where to put it since most of the script is just in functions.
 
+clean_usbmuxd() {
+    sudo killall usbmuxd 2>/dev/null
+    if [[ $(which systemctl 2>/dev/null) ]]; then
+        sleep 1
+        sudo systemctl restart usbmuxd
+    fi
+}
+
 if [[ $os =~ Darwin ]]; then
     echo "[*] Running on Darwin..."
     sudo xattr -cr .
@@ -32,6 +40,13 @@ if [[ $os =~ Darwin ]]; then
     fi
 elif [[ $os =~ Linux ]]; then
     echo "[*] Running on Linux..."
+    if [[ $(which systemctl 2>/dev/null) ]]; then
+        sudo systemctl stop usbmuxd
+    fi
+    #sudo killall usbmuxd 2>/dev/null
+    #sleep 1
+    sudo -b $bin/usbmuxd -pf
+    trap "clean_usbmuxd" EXIT
 else
     echo "[!] What operating system are you even using..."
     exit 1
