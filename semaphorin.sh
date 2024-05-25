@@ -1948,7 +1948,12 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
         pongo=0
     else
         if [[ "$version" == "7."* || "$version" == "8."* ]]; then
-            _download_ramdisk_boot_files $deviceid $replace 8.4.1
+            if [ "$os" = "Darwin" ]; then
+                _download_ramdisk_boot_files $deviceid $replace 8.4.1
+            else
+                _download_ramdisk_boot_files $deviceid $replace 8.4.1
+                _download_ramdisk_boot_files $deviceid $replace 11.4
+            fi
         elif [[ "$version" == "10.3"* ]]; then
             _download_ramdisk_boot_files $deviceid $replace 10.3.3
             if [[ "$(./java/bin/java -jar ./Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e 14.3 $deviceid)" == "true" ]]; then
@@ -2061,7 +2066,11 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
         if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
             cd "$dir"/$deviceid/$cpid/ramdisk/$r
         elif [[ "$version" == "7."* || "$version" == "8."* ]]; then
-            cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
+            if [ "$os" = "Darwin" ]; then
+                cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
+            else
+                cd "$dir"/$deviceid/$cpid/ramdisk/11.4
+            fi
         elif [[ "$version" == "10.3"* ]]; then
             cd "$dir"/$deviceid/$cpid/ramdisk/10.3.3
         elif [[ "$deviceid" == "iPhone8,1" && "$version" == "11.0" ]]; then
@@ -2315,7 +2324,11 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                     sleep 10
                 fi
                 if [[ "$version" == "7."* || "$version" == "8."* ]]; then
-                    cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
+                    if [ "$os" = "Darwin" ]; then
+                        cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
+                    else
+                        cd "$dir"/$deviceid/$cpid/ramdisk/11.4
+                    fi
                 elif [[ "$version" == "10.3"* ]]; then
                     cd "$dir"/$deviceid/$cpid/ramdisk/10.3.3
                 elif [[ "$deviceid" == "iPhone8,1" && "$version" == "11.0" ]]; then
@@ -2573,7 +2586,11 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                         sleep 10
                     fi
                     if [[ "$version" == "7."* || "$version" == "8."* ]]; then
-                        cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
+                        if [ "$os" = "Darwin" ]; then
+                            cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
+                        else
+                            cd "$dir"/$deviceid/$cpid/ramdisk/11.4
+                        fi
                     elif [[ "$version" == "10.3"* || "$version" == "11."* ||  "$version" == "12."* || "$version" == "13."* ]]; then
                         cd "$dir"/$deviceid/$cpid/ramdisk/$r
                     elif [[ "$os" = "Darwin" && ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
@@ -2673,7 +2690,11 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                         sleep 10
                     fi
                     if [[ "$version" == "7."* || "$version" == "8."* ]]; then
-                        cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
+                        if [ "$os" = "Darwin" ]; then
+                            cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
+                        else
+                            cd "$dir"/$deviceid/$cpid/ramdisk/11.4
+                        fi
                     elif [[ "$version" == "10.3"* || "$version" == "11."* ||  "$version" == "12."* || "$version" == "13."* ]]; then
                         cd "$dir"/$deviceid/$cpid/ramdisk/$r
                     elif [[ "$os" = "Darwin" && ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
@@ -2765,7 +2786,11 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                     sleep 10
                 fi
                 if [[ "$version" == "7."* || "$version" == "8."* ]]; then
-                    cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
+                    if [ "$os" = "Darwin" ]; then
+                        cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
+                    else
+                        cd "$dir"/$deviceid/$cpid/ramdisk/11.4
+                    fi
                 elif [[ "$version" == "10.3"* || "$version" == "11."* ||  "$version" == "12."* || "$version" == "13."* ]]; then
                     cd "$dir"/$deviceid/$cpid/ramdisk/$r
                 elif [[ "$os" = "Darwin" && ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
@@ -2859,7 +2884,11 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 sleep 10
             fi
             if [[ "$version" == "7."* || "$version" == "8."* ]]; then
-                cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
+                if [ "$os" = "Darwin" ]; then
+                    cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
+                else
+                    cd "$dir"/$deviceid/$cpid/ramdisk/11.4
+                fi
             elif [[ "$version" == "10.3"* || "$version" == "11."* ||  "$version" == "12."* || "$version" == "13."* ]]; then
                 cd "$dir"/$deviceid/$cpid/ramdisk/$r
             elif [[ "$os" = "Darwin" && ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
@@ -3196,6 +3225,102 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 disktomount="$("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/hdik /mnt2/rw.dmg' | tail -n 1 | cut -d ' ' -f 1)"
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_hfs -o ro $disktomount /mnt3"
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cp -av /mnt3/* /mnt1"
+                if [[ "$version" == "7."* || "$version" == "8."* ]]; then
+                    $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
+                    sleep 5
+                    _kill_if_running iproxy
+                    echo "[*] Device should boot to Recovery mode. Please wait..."
+                    if [ "$os" = "Darwin" ]; then
+                        if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+                            if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                                sleep 10
+                                if [ "$(get_device_mode)" = "recovery" ]; then
+                                    "$bin"/irecovery -c "setenv auto-boot true"
+                                    "$bin"/irecovery -c "saveenv"
+                                    "$bin"/dfuhelper.sh
+                                else
+                                    "$bin"/dfuhelper4.sh
+                                    sleep 5
+                                    "$bin"/irecovery -c "setenv auto-boot true"
+                                    "$bin"/irecovery -c "saveenv"
+                                    "$bin"/dfuhelper.sh
+                                fi
+                            elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                                "$bin"/dfuhelper2.sh
+                            else
+                                "$bin"/dfuhelper3.sh
+                            fi
+                        fi
+                    else
+                        if ! (lsusb | cut -d' ' -f6 | grep '05ac:' | cut -d: -f2 | grep 1227 >> /dev/null); then
+                            if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                                sleep 10
+                                if [ "$(get_device_mode)" = "recovery" ]; then
+                                    "$bin"/irecovery -c "setenv auto-boot true"
+                                    "$bin"/irecovery -c "saveenv"
+                                    "$bin"/dfuhelper.sh
+                                else
+                                    "$bin"/dfuhelper4.sh
+                                    sleep 5
+                                    "$bin"/irecovery -c "setenv auto-boot true"
+                                    "$bin"/irecovery -c "saveenv"
+                                    "$bin"/dfuhelper.sh
+                                fi
+                            elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                                "$bin"/dfuhelper2.sh
+                            else
+                                "$bin"/dfuhelper3.sh
+                            fi
+                        fi
+                    fi
+                    _wait_for_dfu
+                    sudo killall -STOP -c usbd
+                    read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
+                    if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
+                        read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                        echo "[*] Waiting 10 seconds before continuing.."
+                        sleep 10
+                    elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
+                        echo "[*] Ok no problem, continuing.."
+                    else
+                        echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
+                        read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                        echo "[*] Waiting 10 seconds before continuing.."
+                        sleep 10
+                    fi
+                    if [[ "$version" == "7."* || "$version" == "8."* ]]; then
+                        cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
+                    elif [[ "$version" == "10.3"* || "$version" == "11."* ||  "$version" == "12."* || "$version" == "13."* ]]; then
+                        cd "$dir"/$deviceid/$cpid/ramdisk/$r
+                    elif [[ "$os" = "Darwin" && ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
+                        cd "$dir"/$deviceid/$cpid/ramdisk/9.3
+                    else
+                        cd "$dir"/$deviceid/$cpid/ramdisk/11.4
+                    fi
+                    _boot_ramdisk $deviceid $replace $r
+                    cd "$dir"/
+                    read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk. " r1
+                    echo "[*] Waiting 6 seconds before continuing.."
+                    sleep 6
+                    sudo killall -STOP -c usbd
+                    read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
+                    if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
+                        read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                        echo "[*] Waiting 10 seconds before continuing.."
+                        sleep 10
+                    elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
+                        echo "[*] Ok no problem, continuing.."
+                    else
+                        echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
+                        read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                        echo "[*] Waiting 10 seconds before continuing.."
+                        sleep 10
+                    fi
+                    "$bin"/iproxy 2222 22 &
+                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/sbin/fsck'
+                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_hfs /dev/disk0s1s1 /mnt1" 2> /dev/null
+                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs -o suid,dev /dev/disk0s1s2 /mnt2" 2> /dev/null
+                fi
             fi
             if [[ "$version" == "7."* || "$version" == "8."* || "$version" == "9."* ]]; then
                 "$bin"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P 2222 "$dir"/jb/cydia_ios7.tar.gz root@localhost:/mnt2 2> /dev/null
