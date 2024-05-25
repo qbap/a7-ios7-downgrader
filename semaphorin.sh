@@ -1028,7 +1028,7 @@ _download_boot_files() {
             fi
             "$bin"/img4tool -e -o "$dir"/$1/$cpid/$3/devicetree.out "$dir"/$1/$cpid/$3/devicetree.dec
             "$bin"/dtree_patcher "$dir"/$1/$cpid/$3/devicetree.out "$dir"/$1/$cpid/$3/DeviceTree.patched -n
-            "$bin"/dtree_patcher2 "$dir"/$1/$cpid/$3/DeviceTree.patched "$dir"/$1/$cpid/$3/DeviceTree2.patched -d 0 -s n
+            "$bin"/dtree_patcher2 "$dir"/$1/$cpid/$3/DeviceTree.patched "$dir"/$1/$cpid/$3/DeviceTree2.patched -d 0
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/DeviceTree2.patched -o "$dir"/$1/$cpid/$3/devicetree.img4 -A -M IM4M -T rdtr
         fi
     fi
