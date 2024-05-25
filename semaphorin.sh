@@ -1346,7 +1346,7 @@ _download_root_fs() {
             fi
         fi
     else
-        if [ ! -e "$dir"/$1/$cpid/$3/OS.tar ]; then
+        if [ ! -e "$dir"/$1/$cpid/$3/rw.dmg ]; then
             if [ ! -e "$dir"/$1/$cpid/$3/OS.dmg ]; then
                 if [[ "$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e $buildid $1)" == "true" ]]; then
                     if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" || ! "$3" == "8.0" ]]; then
