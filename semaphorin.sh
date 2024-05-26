@@ -1,11 +1,10 @@
-#/bin/bash
+#!/bin/bash
 mkdir -p logs
+#set -x
 verbose=1
-sudo xattr -cr .
 {
 echo "[*] Command ran:`if [ $EUID = 0 ]; then echo " sudo"; fi` ./semaphorin.sh $@"
 os=$(uname)
-os_ver=$(sw_vers -productVersion)
 maj_ver=$(echo "$os_ver" | awk -F. '{print $1}')
 dir="$(pwd)"
 bin="$(pwd)/$(uname)"
@@ -18,27 +17,40 @@ arg_count=0
 
 # This would probably go better somewhere else, but I'm not sure where to put it since most of the script is just in functions.
 
+clean_usbmuxd() {
+    sudo killall usbmuxd 2>/dev/null
+    if [[ $(which systemctl 2>/dev/null) ]]; then
+        sleep 1
+        sudo systemctl restart usbmuxd
+    fi
+}
+
 if [[ $os =~ Darwin ]]; then
-        echo "[*] Running on Darwin..."
-elif [[ $os =~ Linux ]]; then
-        echo "[!] This tool does not support Linux. Please use this with macOS 10.15 (Catalina) to continue."
-        exit 1
-else
-        echo "[!] What operating system are you even using..."
-        exit 1
-fi
-
-
-if [[ $os_ver =~ ^10\.1[3-4]\.* ]]; then
+    echo "[*] Running on Darwin..."
+    sudo xattr -cr .
+    os_ver=$(sw_vers -productVersion)
+    if [[ $os_ver =~ ^10\.1[3-4]\.* ]]; then
         echo "[!] Semaphorin no longer supports macOS $os_ver. Please update to macOS 10.15 (Catalina) or later to continue."
-	exit 1
-elif [[ $os_ver == 10.15.* ]] || (( $maj_ver >= 11 )); then
-	echo "[*] You are running macOS $os_ver. Continuing..."
-else    
-        echo "[!] macOS/OS X $os_ver is not supported by this script. Please install macOS 10.15 (Catalina) or later to continue if possible." 
+        exit 1
+    elif [[ $os_ver == 10.15.* ]] || (( maj_ver >= 11 )); then
+        echo "[*] You are running macOS $os_ver. Continuing..."
+    else
+        echo "[!] macOS/OS X $os_ver is not supported by this script. Please install macOS 10.15 (Catalina) or later to continue if possible."
         read -p "[*] You can press the enter key on your keyboard to skip this warning  " r1
+    fi
+elif [[ $os =~ Linux ]]; then
+    echo "[*] Running on Linux..."
+    if [[ $(which systemctl 2>/dev/null) ]]; then
+        sudo systemctl stop usbmuxd
+    fi
+    #sudo killall usbmuxd 2>/dev/null
+    #sleep 1
+    sudo -b $bin/usbmuxd -pf
+    trap "clean_usbmuxd" EXIT
+else
+    echo "[!] What operating system are you even using..."
+    exit 1
 fi
-
 
 print_help() {
     cat << EOF
@@ -260,13 +272,23 @@ get_device_mode() {
     echo "$device_mode"
 }
 _wait_for_dfu() {
-    if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-        echo "[*] Waiting for device in DFU mode"
+    if [ "$os" = "Darwin" ]; then
+        if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+            echo "[*] Waiting for device in DFU mode"
+        fi
+
+        while ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); do
+            sleep 1
+        done
+    else
+        if ! (lsusb | cut -d' ' -f6 | grep '05ac:' | cut -d: -f2 | grep 1227 >> /dev/null); then
+            echo "[*] Waiting for device in DFU mode"
+        fi
+
+        while ! (lsusb | cut -d' ' -f6 | grep '05ac:' | cut -d: -f2 | grep 1227 >> /dev/null); do
+            sleep 1
+        done
     fi
-    
-    while ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); do
-        sleep 1
-    done
 }
 _download_ramdisk_boot_files() {
     ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$bin"/jq '.firmwares | .[] | select(.version=="'$3'")' | "$bin"/jq -s '.[0] | .url' --raw-output)
@@ -373,10 +395,14 @@ _download_ramdisk_boot_files() {
                 mv $(awk "/""$replace""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]all_flash.*production[/]//' | sed 's/Firmware[/]all_flash[/]//') "$dir"/$1/$cpid/ramdisk/$3/DeviceTree.dec
             fi
         fi
+        if [ "$os" = "Darwin" ]; then
+            fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
+        else
+            fn="$("$bin"/PlistBuddy -c "Print BuildIdentities:0:Manifest:RestoreRamDisk:Info:Path" BuildManifest.plist | tr -d '"')"
+        fi
         if [ ! -e "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg ]; then
-            "$bin"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
+            "$bin"/pzb -g "$fn" "$ipswurl"
             if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* ]]; then
-                fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
                 if [[ "$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e $3 $1)" == "true" ]]; then
                     ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
                     "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg -k $ivkey
@@ -388,104 +414,183 @@ _download_ramdisk_boot_files() {
                     "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg -k $ivkey
                 fi
             else
-                "$bin"/img4 -i "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -o "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg
+                "$bin"/img4 -i "$fn" -o "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg
             fi
         fi
         if [[ ! "$3" == "7."* && ! "$3" == "8."* && ! "$3" == "9."* && ! "$3" == "10."* && ! "$3" == "11."* ]]; then
             if [ ! -e "$dir"/$1/$cpid/ramdisk/$3/trustcache.img4 ]; then
-                "$bin"/pzb -g Firmware/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)".trustcache "$ipswurl"
-                 mv "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)".trustcache "$dir"/$1/$cpid/ramdisk/$3/trustcache.im4p
+                "$bin"/pzb -g Firmware/"$fn".trustcache "$ipswurl"
+                 mv "$fn".trustcache "$dir"/$1/$cpid/ramdisk/$3/trustcache.im4p
             fi
         fi
         rm -rf BuildManifest.plist
-        if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* ]]; then
-            if [[ "$3" == "9."* ]]; then
-                hdiutil resize -size 80M "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg
-            else
-                hdiutil resize -size 60M "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg
-            fi
-            hdiutil attach -mountpoint /tmp/ramdisk "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg
-            sudo diskutil enableOwnership /tmp/ramdisk
-            sudo "$bin"/gnutar -xzvf "$sshtars"/ssh.tar.gz -C /tmp/ramdisk
-            if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* || "$3" == "10."* || "$3" == "11."* ]]; then
-                # fix scp
-                sudo "$bin"/gnutar -xvf "$dir"/jb/libcharset.1.dylib_libiconv.2.dylib.tar -C /tmp/ramdisk/usr/lib
-            fi
-            if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* || "$3" == "10."* || "$3" == "11."* || "$3" == "12."* || "$3" == "13.0"* || "$3" == "13.1"* || "$3" == "13.2"* || "$3" == "13.3"* ]]; then
-                # fix scp
-                sudo "$bin"/gnutar -xvf "$dir"/jb/libresolv.9.dylib.tar -C /tmp/ramdisk/usr/lib
-            fi
-            # gptfdisk automation shenanigans
-            sudo "$bin"/gnutar -xvf "$dir"/jb/gpt.txt_hfs_dualboot.tar -C /tmp/ramdisk
-            sudo "$bin"/gnutar -xvf "$dir"/jb/gpt.txt.tar -C /tmp/ramdisk
-            hdiutil detach /tmp/ramdisk
-            "$bin"/img4tool -c "$dir"/$1/$cpid/ramdisk/$3/ramdisk.im4p -t rdsk "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg
-            "$bin"/img4tool -c "$dir"/$1/$cpid/ramdisk/$3/ramdisk.img4 -p "$dir"/$1/$cpid/ramdisk/$3/ramdisk.im4p -m IM4M
-            if [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$3" == "9."* ]]; then
-                "$bin"/kairos "$dir"/$1/$cpid/ramdisk/$3/iBSS.dec "$dir"/$1/$cpid/ramdisk/$3/iBSS.patched
-                "$bin"/kairos "$dir"/$1/$cpid/ramdisk/$3/iBEC.dec "$dir"/$1/$cpid/ramdisk/$3/iBEC.patched -b "rd=md0 debug=0x2014e amfi=0xff cs_enforcement_disable=1 $boot_args wdt=-1 `if [ "$check" = '0x8960' ] || [ "$check" = '0x7000' ] || [ "$check" = '0x7001' ]; then echo "-restore"; fi`" -n
-            elif [[ "$3" == "9."* ]]; then
-                "$bin"/kairos "$dir"/$1/$cpid/ramdisk/$3/iBSS.dec "$dir"/$1/$cpid/ramdisk/$3/iBSS.patched
-                "$bin"/kairos "$dir"/$1/$cpid/ramdisk/$3/iBEC.dec "$dir"/$1/$cpid/ramdisk/$3/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 $boot_args rd=md0 nand-enable-reformat=1 -progress" -n
-            else
-                "$bin"/ipatcher "$dir"/$1/$cpid/ramdisk/$3/iBSS.dec "$dir"/$1/$cpid/ramdisk/$3/iBSS.patched
-                "$bin"/ipatcher "$dir"/$1/$cpid/ramdisk/$3/iBEC.dec "$dir"/$1/$cpid/ramdisk/$3/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 $boot_args rd=md0 nand-enable-reformat=1 -progress"
-            fi
-            "$bin"/img4 -i "$dir"/$1/$cpid/ramdisk/$3/iBSS.patched -o "$dir"/$1/$cpid/ramdisk/$3/iBSS.img4 -M IM4M -A -T ibss
-            "$bin"/img4 -i "$dir"/$1/$cpid/ramdisk/$3/iBEC.patched -o "$dir"/$1/$cpid/ramdisk/$3/iBEC.img4 -M IM4M -A -T ibec
-            "$bin"/img4 -i "$dir"/$1/$cpid/ramdisk/$3/kernelcache.dec -o "$dir"/$1/$cpid/ramdisk/$3/kernelcache.img4 -M IM4M -T rkrn
-            "$bin"/img4 -i "$dir"/$1/$cpid/ramdisk/$3/devicetree.dec -o "$dir"/$1/$cpid/ramdisk/$3/devicetree.img4 -A -M IM4M -T rdtr
-        else
-            if [[ "$3" == *"16"* || "$3" == *"17"* ]]; then
+        if [ "$os" = "Darwin" ]; then
+            if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* ]]; then
+                if [[ "$3" == "9."* ]]; then
+                    hdiutil resize -size 80M "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg
+                else
+                    hdiutil resize -size 60M "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg
+                fi
                 hdiutil attach -mountpoint /tmp/ramdisk "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg
-                hdiutil create -size 210m -imagekey diskimage-class=CRawDiskImage -format UDZO -fs HFS+ -layout NONE -srcfolder /tmp/ramdisk -copyuid root "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk1.dmg
+                sudo diskutil enableOwnership /tmp/ramdisk
+                sudo "$bin"/gnutar -xzvf "$sshtars"/ssh.tar.gz -C /tmp/ramdisk
+                if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* || "$3" == "10."* || "$3" == "11."* ]]; then
+                    # fix scp
+                    sudo "$bin"/gnutar -xvf "$dir"/jb/libcharset.1.dylib_libiconv.2.dylib.tar -C /tmp/ramdisk/usr/lib
+                fi
+                if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* || "$3" == "10."* || "$3" == "11."* || "$3" == "12."* || "$3" == "13.0"* || "$3" == "13.1"* || "$3" == "13.2"* || "$3" == "13.3"* ]]; then
+                    # fix scp
+                    sudo "$bin"/gnutar -xvf "$dir"/jb/libresolv.9.dylib.tar -C /tmp/ramdisk/usr/lib
+                fi
+                # gptfdisk automation shenanigans
+                sudo "$bin"/gnutar -xvf "$dir"/jb/gpt.txt_hfs_dualboot.tar -C /tmp/ramdisk
+                sudo "$bin"/gnutar -xvf "$dir"/jb/gpt.txt.tar -C /tmp/ramdisk
+                hdiutil detach /tmp/ramdisk
+                "$bin"/img4tool -c "$dir"/$1/$cpid/ramdisk/$3/ramdisk.im4p -t rdsk "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg
+                "$bin"/img4tool -c "$dir"/$1/$cpid/ramdisk/$3/ramdisk.img4 -p "$dir"/$1/$cpid/ramdisk/$3/ramdisk.im4p -m IM4M
+                if [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$3" == "9."* ]]; then
+                    "$bin"/kairos "$dir"/$1/$cpid/ramdisk/$3/iBSS.dec "$dir"/$1/$cpid/ramdisk/$3/iBSS.patched
+                    "$bin"/kairos "$dir"/$1/$cpid/ramdisk/$3/iBEC.dec "$dir"/$1/$cpid/ramdisk/$3/iBEC.patched -b "rd=md0 debug=0x2014e amfi=0xff cs_enforcement_disable=1 $boot_args wdt=-1 `if [ "$check" = '0x8960' ] || [ "$check" = '0x7000' ] || [ "$check" = '0x7001' ]; then echo "-restore"; fi`" -n
+                elif [[ "$3" == "9."* ]]; then
+                    "$bin"/kairos "$dir"/$1/$cpid/ramdisk/$3/iBSS.dec "$dir"/$1/$cpid/ramdisk/$3/iBSS.patched
+                    "$bin"/kairos "$dir"/$1/$cpid/ramdisk/$3/iBEC.dec "$dir"/$1/$cpid/ramdisk/$3/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 $boot_args rd=md0 nand-enable-reformat=1 -progress" -n
+                else
+                    "$bin"/ipatcher "$dir"/$1/$cpid/ramdisk/$3/iBSS.dec "$dir"/$1/$cpid/ramdisk/$3/iBSS.patched
+                    "$bin"/ipatcher "$dir"/$1/$cpid/ramdisk/$3/iBEC.dec "$dir"/$1/$cpid/ramdisk/$3/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 $boot_args rd=md0 nand-enable-reformat=1 -progress"
+                fi
+                "$bin"/img4 -i "$dir"/$1/$cpid/ramdisk/$3/iBSS.patched -o "$dir"/$1/$cpid/ramdisk/$3/iBSS.img4 -M IM4M -A -T ibss
+                "$bin"/img4 -i "$dir"/$1/$cpid/ramdisk/$3/iBEC.patched -o "$dir"/$1/$cpid/ramdisk/$3/iBEC.img4 -M IM4M -A -T ibec
+                "$bin"/img4 -i "$dir"/$1/$cpid/ramdisk/$3/kernelcache.dec -o "$dir"/$1/$cpid/ramdisk/$3/kernelcache.img4 -M IM4M -T rkrn
+                "$bin"/img4 -i "$dir"/$1/$cpid/ramdisk/$3/devicetree.dec -o "$dir"/$1/$cpid/ramdisk/$3/devicetree.img4 -A -M IM4M -T rdtr
+            else
+                if [[ "$3" == *"16"* || "$3" == *"17"* ]]; then
+                    hdiutil attach -mountpoint /tmp/ramdisk "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg
+                    hdiutil create -size 210m -imagekey diskimage-class=CRawDiskImage -format UDZO -fs HFS+ -layout NONE -srcfolder /tmp/ramdisk -copyuid root "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk1.dmg
+                    hdiutil detach -force /tmp/ramdisk
+                    hdiutil attach -mountpoint /tmp/ramdisk "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk1.dmg
+                else
+                    hdiutil resize -size 120M "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg
+                    hdiutil attach -mountpoint /tmp/ramdisk "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg
+                fi
+                sudo diskutil enableOwnership /tmp/ramdisk
+                sudo "$bin"/gnutar -xzvf "$sshtars"/ssh.tar.gz -C /tmp/ramdisk
+                if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* || "$3" == "10."* || "$3" == "11."* ]]; then
+                    # fix scp
+                    sudo "$bin"/gnutar -xvf "$dir"/jb/libcharset.1.dylib_libiconv.2.dylib.tar -C /tmp/ramdisk/usr/lib
+                fi
+                if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* || "$3" == "10."* || "$3" == "11."* || "$3" == "12."* || "$3" == "13.0"* || "$3" == "13.1"* || "$3" == "13.2"* || "$3" == "13.3"* ]]; then
+                    # fix scp
+                    sudo "$bin"/gnutar -xvf "$dir"/jb/libresolv.9.dylib.tar -C /tmp/ramdisk/usr/lib
+                fi
+                # gptfdisk automation shenanigans
+                sudo "$bin"/gnutar -xvf "$dir"/jb/gpt.txt_hfs_dualboot.tar -C /tmp/ramdisk
+                sudo "$bin"/gnutar -xvf "$dir"/jb/gpt.txt.tar -C /tmp/ramdisk
                 hdiutil detach -force /tmp/ramdisk
-                hdiutil attach -mountpoint /tmp/ramdisk "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk1.dmg
+                if [[ "$3" == *"16"* || "$3" == *"17"* ]]; then
+                    hdiutil resize -sectors min "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk1.dmg
+                    "$bin"/img4 -i "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk1.dmg -o "$dir"/$1/$cpid/ramdisk/$3/ramdisk.img4 -M IM4M -A -T rdsk
+                else
+                    hdiutil resize -sectors min "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg
+                    "$bin"/img4 -i "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg -o "$dir"/$1/$cpid/ramdisk/$3/ramdisk.img4 -M IM4M -A -T rdsk
+                fi
+                "$bin"/iBoot64Patcher "$dir"/$1/$cpid/ramdisk/$3/iBSS.dec "$dir"/$1/$cpid/ramdisk/$3/iBSS.patched
+                if [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* ]]; then
+                    "$bin"/iBoot64Patcher "$dir"/$1/$cpid/ramdisk/$3/iBEC.dec "$dir"/$1/$cpid/ramdisk/$3/iBEC.patched -b "rd=md0 debug=0x2014e $boot_args wdt=-1 `if [ "$check" = '0x8960' ] || [ "$check" = '0x7000' ] || [ "$check" = '0x7001' ]; then echo "-restore"; fi`"
+                else
+                    "$bin"/iBoot64Patcher "$dir"/$1/$cpid/ramdisk/$3/iBEC.dec "$dir"/$1/$cpid/ramdisk/$3/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 $boot_args rd=md0 nand-enable-reformat=1 amfi_get_out_of_my_way=1 -restore -progress" -n
+                fi
+                "$bin"/img4 -i "$dir"/$1/$cpid/ramdisk/$3/iBSS.patched -o "$dir"/$1/$cpid/ramdisk/$3/iBSS.img4 -M IM4M -A -T ibss
+                "$bin"/img4 -i "$dir"/$1/$cpid/ramdisk/$3/iBEC.patched -o "$dir"/$1/$cpid/ramdisk/$3/iBEC.img4 -M IM4M -A -T ibec
+                if [[ "$3" == "10.3"* ]]; then
+                    "$bin"/KPlooshFinder "$dir"/$1/$cpid/ramdisk/$3/kcache.raw "$dir"/$1/$cpid/ramdisk/$3/kcache2.patched
+                else
+                    "$bin"/Kernel64Patcher2 "$dir"/$1/$cpid/ramdisk/$3/kcache.raw "$dir"/$1/$cpid/ramdisk/$3/kcache2.patched -a
+                fi
+                "$bin"/kerneldiff "$dir"/$1/$cpid/ramdisk/$3/kcache.raw "$dir"/$1/$cpid/ramdisk/$3/kcache2.patched "$dir"/$1/$cpid/ramdisk/$3/kc.bpatch
+                "$bin"/img4 -i "$dir"/$1/$cpid/ramdisk/$3/kernelcache.dec -o "$dir"/$1/$cpid/ramdisk/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$cpid/ramdisk/$3/kc.bpatch
+                "$bin"/img4 -i "$dir"/$1/$cpid/ramdisk/$3/kernelcache.dec -o "$dir"/$1/$cpid/ramdisk/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$cpid/ramdisk/$3/kc.bpatch
+                if [[ ! "$3" == "7."* && ! "$3" == "8."* && ! "$3" == "9."* && ! "$3" == "10."* && ! "$3" == "11."* ]]; then
+                    "$bin"/img4 -i "$dir"/$1/$cpid/ramdisk/$3/trustcache.im4p -o "$dir"/$1/$cpid/ramdisk/$3/trustcache.img4 -M IM4M -T rtsc
+                fi
+                "$bin"/img4 -i "$dir"/$1/$cpid/ramdisk/$3/devicetree.dec -o "$dir"/$1/$cpid/ramdisk/$3/devicetree.img4 -M IM4M -T rdtr
+            fi
+        else
+            if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* ]]; then
+                if [[ "$3" == "9."* ]]; then
+                    "$bin"/hfsplus "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg grow 80000000
+                else
+                    "$bin"/hfsplus "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg grow 60000000
+                fi
+                gzip -d "$sshtars"/ssh.tar.gz
+                "$bin"/hfsplus "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg untar "$sshtars"/ssh.tar
+                if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* || "$3" == "10."* || "$3" == "11."* ]]; then
+                    # fix scp
+                    "$bin"/hfsplus "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg untar "$dir"/jb/libcharset.1.dylib_libiconv.2.dylib.tar
+                fi
+                if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* || "$3" == "10."* || "$3" == "11."* || "$3" == "12."* || "$3" == "13.0"* || "$3" == "13.1"* || "$3" == "13.2"* || "$3" == "13.3"* ]]; then
+                    # fix scp
+                    "$bin"/hfsplus "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg untar "$dir"/jb/libresolv.9.dylib.tar
+                fi
+                # gptfdisk automation shenanigans
+                "$bin"/hfsplus "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg untar "$dir"/jb/gpt.txt_hfs_dualboot.tar
+                "$bin"/hfsplus "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg untar "$dir"/jb/gpt.txt.tar
+                "$bin"/img4tool -c "$dir"/$1/$cpid/ramdisk/$3/ramdisk.im4p -t rdsk "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg
+                "$bin"/img4tool -c "$dir"/$1/$cpid/ramdisk/$3/ramdisk.img4 -p "$dir"/$1/$cpid/ramdisk/$3/ramdisk.im4p -m IM4M
+                if [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$3" == "9."* ]]; then
+                    "$bin"/kairos "$dir"/$1/$cpid/ramdisk/$3/iBSS.dec "$dir"/$1/$cpid/ramdisk/$3/iBSS.patched
+                    "$bin"/kairos "$dir"/$1/$cpid/ramdisk/$3/iBEC.dec "$dir"/$1/$cpid/ramdisk/$3/iBEC.patched -b "rd=md0 debug=0x2014e amfi=0xff cs_enforcement_disable=1 $boot_args wdt=-1 `if [ "$check" = '0x8960' ] || [ "$check" = '0x7000' ] || [ "$check" = '0x7001' ]; then echo "-restore"; fi`" -n
+                elif [[ "$3" == "9."* ]]; then
+                    "$bin"/kairos "$dir"/$1/$cpid/ramdisk/$3/iBSS.dec "$dir"/$1/$cpid/ramdisk/$3/iBSS.patched
+                    "$bin"/kairos "$dir"/$1/$cpid/ramdisk/$3/iBEC.dec "$dir"/$1/$cpid/ramdisk/$3/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 $boot_args rd=md0 nand-enable-reformat=1 -progress" -n
+                else
+                    "$bin"/ipatcher "$dir"/$1/$cpid/ramdisk/$3/iBSS.dec "$dir"/$1/$cpid/ramdisk/$3/iBSS.patched
+                    "$bin"/ipatcher "$dir"/$1/$cpid/ramdisk/$3/iBEC.dec "$dir"/$1/$cpid/ramdisk/$3/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 $boot_args rd=md0 nand-enable-reformat=1 -progress"
+                fi
+                "$bin"/img4 -i "$dir"/$1/$cpid/ramdisk/$3/iBSS.patched -o "$dir"/$1/$cpid/ramdisk/$3/iBSS.img4 -M IM4M -A -T ibss
+                "$bin"/img4 -i "$dir"/$1/$cpid/ramdisk/$3/iBEC.patched -o "$dir"/$1/$cpid/ramdisk/$3/iBEC.img4 -M IM4M -A -T ibec
+                "$bin"/img4 -i "$dir"/$1/$cpid/ramdisk/$3/kernelcache.dec -o "$dir"/$1/$cpid/ramdisk/$3/kernelcache.img4 -M IM4M -T rkrn
+                "$bin"/img4 -i "$dir"/$1/$cpid/ramdisk/$3/DeviceTree.dec -o "$dir"/$1/$cpid/ramdisk/$3/devicetree.img4 -A -M IM4M -T rdtr
             else
-                hdiutil resize -size 120M "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg
-                hdiutil attach -mountpoint /tmp/ramdisk "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg
-            fi
-            sudo diskutil enableOwnership /tmp/ramdisk
-            sudo "$bin"/gnutar -xzvf "$sshtars"/ssh.tar.gz -C /tmp/ramdisk
-            if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* || "$3" == "10."* || "$3" == "11."* ]]; then
-                # fix scp
-                sudo "$bin"/gnutar -xvf "$dir"/jb/libcharset.1.dylib_libiconv.2.dylib.tar -C /tmp/ramdisk/usr/lib
-            fi
-            if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* || "$3" == "10."* || "$3" == "11."* || "$3" == "12."* || "$3" == "13.0"* || "$3" == "13.1"* || "$3" == "13.2"* || "$3" == "13.3"* ]]; then
-                # fix scp
-                sudo "$bin"/gnutar -xvf "$dir"/jb/libresolv.9.dylib.tar -C /tmp/ramdisk/usr/lib
-            fi
-            # gptfdisk automation shenanigans
-            sudo "$bin"/gnutar -xvf "$dir"/jb/gpt.txt_hfs_dualboot.tar -C /tmp/ramdisk
-            sudo "$bin"/gnutar -xvf "$dir"/jb/gpt.txt.tar -C /tmp/ramdisk
-            hdiutil detach -force /tmp/ramdisk
-            if [[ "$3" == *"16"* || "$3" == *"17"* ]]; then
-                hdiutil resize -sectors min "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk1.dmg
-                "$bin"/img4 -i "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk1.dmg -o "$dir"/$1/$cpid/ramdisk/$3/ramdisk.img4 -M IM4M -A -T rdsk
-            else
-                hdiutil resize -sectors min "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg
+                if [[ "$3" == *"16"* || "$3" == *"17"* ]]; then
+                    "$bin"/hfsplus "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg grow 210000000
+                else
+                    "$bin"/hfsplus "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg grow 120000000
+                fi
+                gzip -d "$sshtars"/ssh.tar.gz
+                "$bin"/hfsplus "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg untar "$sshtars"/ssh.tar
+                if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* || "$3" == "10."* || "$3" == "11."* ]]; then
+                    # fix scp
+                    "$bin"/hfsplus "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg untar "$dir"/jb/libcharset.1.dylib_libiconv.2.dylib.tar
+                fi
+                if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* || "$3" == "10."* || "$3" == "11."* || "$3" == "12."* || "$3" == "13.0"* || "$3" == "13.1"* || "$3" == "13.2"* || "$3" == "13.3"* ]]; then
+                    # fix scp
+                    "$bin"/hfsplus "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg untar "$dir"/jb/libresolv.9.dylib.tar
+                fi
+                # gptfdisk automation shenanigans
+                "$bin"/hfsplus "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg untar "$dir"/jb/gpt.txt_hfs_dualboot.tar
+                "$bin"/hfsplus "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg untar "$dir"/jb/gpt.txt.tar
                 "$bin"/img4 -i "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg -o "$dir"/$1/$cpid/ramdisk/$3/ramdisk.img4 -M IM4M -A -T rdsk
+                "$bin"/iBoot64Patcher "$dir"/$1/$cpid/ramdisk/$3/iBSS.dec "$dir"/$1/$cpid/ramdisk/$3/iBSS.patched
+                if [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* ]]; then
+                    "$bin"/iBoot64Patcher "$dir"/$1/$cpid/ramdisk/$3/iBEC.dec "$dir"/$1/$cpid/ramdisk/$3/iBEC.patched -b "rd=md0 debug=0x2014e $boot_args wdt=-1 `if [ "$check" = '0x8960' ] || [ "$check" = '0x7000' ] || [ "$check" = '0x7001' ]; then echo "-restore"; fi`"
+                else
+                    "$bin"/iBoot64Patcher "$dir"/$1/$cpid/ramdisk/$3/iBEC.dec "$dir"/$1/$cpid/ramdisk/$3/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 $boot_args rd=md0 nand-enable-reformat=1 amfi_get_out_of_my_way=1 -restore -progress" -n
+                fi
+                "$bin"/img4 -i "$dir"/$1/$cpid/ramdisk/$3/iBSS.patched -o "$dir"/$1/$cpid/ramdisk/$3/iBSS.img4 -M IM4M -A -T ibss
+                "$bin"/img4 -i "$dir"/$1/$cpid/ramdisk/$3/iBEC.patched -o "$dir"/$1/$cpid/ramdisk/$3/iBEC.img4 -M IM4M -A -T ibec
+                if [[ "$3" == "10.3"* ]]; then
+                    "$bin"/KPlooshFinder "$dir"/$1/$cpid/ramdisk/$3/kcache.raw "$dir"/$1/$cpid/ramdisk/$3/kcache2.patched
+                else
+                    "$bin"/Kernel64Patcher2 "$dir"/$1/$cpid/ramdisk/$3/kcache.raw "$dir"/$1/$cpid/ramdisk/$3/kcache2.patched -a
+                fi
+                "$bin"/kerneldiff "$dir"/$1/$cpid/ramdisk/$3/kcache.raw "$dir"/$1/$cpid/ramdisk/$3/kcache2.patched "$dir"/$1/$cpid/ramdisk/$3/kc.bpatch
+                "$bin"/img4 -i "$dir"/$1/$cpid/ramdisk/$3/kernelcache.dec -o "$dir"/$1/$cpid/ramdisk/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$cpid/ramdisk/$3/kc.bpatch
+                "$bin"/img4 -i "$dir"/$1/$cpid/ramdisk/$3/kernelcache.dec -o "$dir"/$1/$cpid/ramdisk/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$cpid/ramdisk/$3/kc.bpatch
+                if [[ ! "$3" == "7."* && ! "$3" == "8."* && ! "$3" == "9."* && ! "$3" == "10."* && ! "$3" == "11."* ]]; then
+                    "$bin"/img4 -i "$dir"/$1/$cpid/ramdisk/$3/trustcache.im4p -o "$dir"/$1/$cpid/ramdisk/$3/trustcache.img4 -M IM4M -T rtsc
+                fi
+                "$bin"/img4 -i "$dir"/$1/$cpid/ramdisk/$3/DeviceTree.dec -o "$dir"/$1/$cpid/ramdisk/$3/devicetree.img4 -M IM4M -T rdtr
             fi
-            "$bin"/iBoot64Patcher "$dir"/$1/$cpid/ramdisk/$3/iBSS.dec "$dir"/$1/$cpid/ramdisk/$3/iBSS.patched
-            if [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* ]]; then
-                "$bin"/iBoot64Patcher "$dir"/$1/$cpid/ramdisk/$3/iBEC.dec "$dir"/$1/$cpid/ramdisk/$3/iBEC.patched -b "rd=md0 debug=0x2014e $boot_args wdt=-1 `if [ "$check" = '0x8960' ] || [ "$check" = '0x7000' ] || [ "$check" = '0x7001' ]; then echo "-restore"; fi`"
-            else
-                "$bin"/iBoot64Patcher "$dir"/$1/$cpid/ramdisk/$3/iBEC.dec "$dir"/$1/$cpid/ramdisk/$3/iBEC.patched -b "amfi=0xff cs_enforcement_disable=1 $boot_args rd=md0 nand-enable-reformat=1 amfi_get_out_of_my_way=1 -restore -progress" -n
-            fi
-            "$bin"/img4 -i "$dir"/$1/$cpid/ramdisk/$3/iBSS.patched -o "$dir"/$1/$cpid/ramdisk/$3/iBSS.img4 -M IM4M -A -T ibss
-            "$bin"/img4 -i "$dir"/$1/$cpid/ramdisk/$3/iBEC.patched -o "$dir"/$1/$cpid/ramdisk/$3/iBEC.img4 -M IM4M -A -T ibec
-            if [[ "$3" == "10.3"* ]]; then
-                "$bin"/KPlooshFinder "$dir"/$1/$cpid/ramdisk/$3/kcache.raw "$dir"/$1/$cpid/ramdisk/$3/kcache2.patched
-            else
-                "$bin"/Kernel64Patcher2 "$dir"/$1/$cpid/ramdisk/$3/kcache.raw "$dir"/$1/$cpid/ramdisk/$3/kcache2.patched -a
-            fi
-            "$bin"/kerneldiff "$dir"/$1/$cpid/ramdisk/$3/kcache.raw "$dir"/$1/$cpid/ramdisk/$3/kcache2.patched "$dir"/$1/$cpid/ramdisk/$3/kc.bpatch
-            "$bin"/img4 -i "$dir"/$1/$cpid/ramdisk/$3/kernelcache.dec -o "$dir"/$1/$cpid/ramdisk/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$cpid/ramdisk/$3/kc.bpatch
-            "$bin"/img4 -i "$dir"/$1/$cpid/ramdisk/$3/kernelcache.dec -o "$dir"/$1/$cpid/ramdisk/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$cpid/ramdisk/$3/kc.bpatch
-            if [[ ! "$3" == "7."* && ! "$3" == "8."* && ! "$3" == "9."* && ! "$3" == "10."* && ! "$3" == "11."* ]]; then
-                "$bin"/img4 -i "$dir"/$1/$cpid/ramdisk/$3/trustcache.im4p -o "$dir"/$1/$cpid/ramdisk/$3/trustcache.img4 -M IM4M -T rtsc
-            fi
-            "$bin"/img4 -i "$dir"/$1/$cpid/ramdisk/$3/devicetree.dec -o "$dir"/$1/$cpid/ramdisk/$3/devicetree.img4 -M IM4M -T rdtr
         fi
     fi
     cd ..
@@ -681,10 +786,14 @@ _download_boot_files() {
                 fi
             fi
         fi
+        if [ "$os" = "Darwin" ]; then
+            fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
+        else
+            fn="$("$bin"/PlistBuddy -c "Print BuildIdentities:0:Manifest:RestoreRamDisk:Info:Path" BuildManifest.plist | tr -d '"')"
+        fi
         if [ ! -e "$dir"/$1/$cpid/$3/RestoreRamDisk.dmg ]; then
-            "$bin"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
+            "$bin"/pzb -g "$fn" "$ipswurl"
             if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* ]]; then
-                fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
                 if [[ "$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e $buildid $1)" == "true" ]]; then
                     ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $buildid $1)"
                     "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/$3/RestoreRamDisk.dmg -k $ivkey
@@ -696,13 +805,19 @@ _download_boot_files() {
                     "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/$3/RestoreRamDisk.dmg -k $ivkey
                 fi
             else
-                "$bin"/img4 -i "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -o "$dir"/$1/$cpid/$3/RestoreRamDisk.dmg
+                "$bin"/img4 -i "$fn" -o "$dir"/$1/$cpid/$3/RestoreRamDisk.dmg
             fi
         fi
         if [[ ! "$3" == "7."* && ! "$3" == "8."* && ! "$3" == "9."* && ! "$3" == "10."* && ! "$3" == "11."* ]]; then
             if [ ! -e "$dir"/$1/$cpid/$3/trustcache.img4 ]; then
-                "$bin"/pzb -g Firmware/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)".trustcache "$ipswurl"
-                 mv "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)".trustcache "$dir"/$1/$cpid/$3/trustcache.im4p
+                local fn
+                if [ "$os" = "Darwin" ]; then
+                    fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
+                else
+                    fn="$("$bin"/PlistBuddy -c "Print BuildIdentities:0:Manifest:OS:Info:Path" BuildManifest.plist | tr -d '"')"
+                fi
+                "$bin"/pzb -g Firmware/"$fn".trustcache "$ipswurl"
+                 mv "$fn".trustcache "$dir"/$1/$cpid/$3/trustcache.im4p
             fi
         fi
         rm -rf BuildManifest.plist
@@ -755,42 +870,42 @@ _download_boot_files() {
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/iBEC.patched -o "$dir"/$1/$cpid/$3/iBEC.img4 -M IM4M -A -T ibec
             if [[ "$deviceid" == "iPhone6,2" || "$deviceid" == "iPhone6,1" || "$deviceid" == "iPad4,4" || "$deviceid" == "iPad4,5" || "$deviceid" == "iPad4,2" || "$deviceid" == "iPad4,8" ]]; then
                 "$bin"/seprmvr64lite "$dir"/$1/$cpid/$3/kcache_12A4331d.raw "$dir"/$1/$cpid/$3/kcache.patched
-                "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched -t -p -f -a -m -g -s
+                "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched -t -p -e 8 -f 8 -a -m 8 -g -s 8
                 "$bin"/cp64patcher "$dir"/$1/$cpid/$3/kcache2.patched "$dir"/$1/$cpid/$3/kcache3.patched
                 "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache_12A4331d.raw "$dir"/$1/$cpid/$3/kcache3.patched "$dir"/$1/$cpid/$3/kc.bpatch
                 "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache_12A4331d.dec -o "$dir"/$1/$cpid/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$cpid/$3/kc.bpatch
                 "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache_12A4331d.dec -o "$dir"/$1/$cpid/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$cpid/$3/kc.bpatch
             else
                 "$bin"/seprmvr64lite "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache.patched
-                "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched -t -p -f -a -m -g -s
+                "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched -t -p -e 8 -f 8 -a -m 8 -g -s 8
                 "$bin"/cp64patcher "$dir"/$1/$cpid/$3/kcache2.patched "$dir"/$1/$cpid/$3/kcache3.patched
                 "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache3.patched "$dir"/$1/$cpid/$3/kc.bpatch
                 "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$cpid/$3/kc.bpatch
                 "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$cpid/$3/kc.bpatch
             fi
-            "$bin"/dtree_patcher "$dir"/$1/$cpid/$3/devicetree.dec "$dir"/$1/$cpid/$3/DeviceTree.patched -n
+            "$bin"/dtree_patcher "$dir"/$1/$cpid/$3/DeviceTree.dec "$dir"/$1/$cpid/$3/DeviceTree.patched -n
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/DeviceTree.patched -o "$dir"/$1/$cpid/$3/devicetree.img4 -A -M IM4M -T rdtr
         elif [[ "$3" == "8.4"* ]]; then
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/iBSS.patched -o "$dir"/$1/$cpid/$3/iBSS.img4 -M IM4M -A -T ibss
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/iBEC.patched -o "$dir"/$1/$cpid/$3/iBEC.img4 -M IM4M -A -T ibec
             "$bin"/seprmvr64lite "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache.patched
-            "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched -t -p -e -i -a -m -g -s
+            "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched -t -p -e 8 -f 84 -a -m 8 -g -s 8
             "$bin"/cp64patcher "$dir"/$1/$cpid/$3/kcache2.patched "$dir"/$1/$cpid/$3/kcache3.patched
             "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache3.patched "$dir"/$1/$cpid/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$cpid/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$cpid/$3/kc.bpatch
-            "$bin"/dtree_patcher "$dir"/$1/$cpid/$3/devicetree.dec "$dir"/$1/$cpid/$3/DeviceTree.patched -n
+            "$bin"/dtree_patcher "$dir"/$1/$cpid/$3/DeviceTree.dec "$dir"/$1/$cpid/$3/DeviceTree.patched -n
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/DeviceTree.patched -o "$dir"/$1/$cpid/$3/devicetree.img4 -A -M IM4M -T rdtr
         elif [[ "$3" == "8."* ]]; then
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/iBSS.patched -o "$dir"/$1/$cpid/$3/iBSS.img4 -M IM4M -A -T ibss
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/iBEC.patched -o "$dir"/$1/$cpid/$3/iBEC.img4 -M IM4M -A -T ibec
             "$bin"/seprmvr64lite "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache.patched
-            "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched -t -p -e -f -a -m -g -s
+            "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched -t -p -e 8 -f 8 -a -m 8 -g -s 8
             "$bin"/cp64patcher "$dir"/$1/$cpid/$3/kcache2.patched "$dir"/$1/$cpid/$3/kcache3.patched
             "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache3.patched "$dir"/$1/$cpid/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$cpid/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$cpid/$3/kc.bpatch
-            "$bin"/dtree_patcher "$dir"/$1/$cpid/$3/devicetree.dec "$dir"/$1/$cpid/$3/DeviceTree.patched -n
+            "$bin"/dtree_patcher "$dir"/$1/$cpid/$3/DeviceTree.dec "$dir"/$1/$cpid/$3/DeviceTree.patched -n
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/DeviceTree.patched -o "$dir"/$1/$cpid/$3/devicetree.img4 -A -M IM4M -T rdtr
         elif [[ "$3" == "9."* ]]; then
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/iBSS.patched -o "$dir"/$1/$cpid/$3/iBSS.img4 -M IM4M -A -T ibss
@@ -803,22 +918,22 @@ _download_boot_files() {
             # "REQUIRE fail: %s @ %s:%u:%s: "
             "$bin"/seprmvr64lite2 "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache.patched
             # -e is vm_map_enter, -l is vm_map_protect, -f is vm_fault_enter, -t is tfp0, -m is mount_common, -a is mapIO, -s is PE_i_can_has_debugger, -p is sandbox_trace, and -j is sandbox patch
-            "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched -f -m -a -k -y
+            "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched -f 9 -m 9 -a -k -y
             "$bin"/cp64patcher "$dir"/$1/$cpid/$3/kcache2.patched "$dir"/$1/$cpid/$3/kcache3.patched
             "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache3.patched "$dir"/$1/$cpid/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$cpid/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$cpid/$3/kc.bpatch
-            "$bin"/dtree_patcher "$dir"/$1/$cpid/$3/devicetree.dec "$dir"/$1/$cpid/$3/DeviceTree.patched -n
+            "$bin"/dtree_patcher "$dir"/$1/$cpid/$3/DeviceTree.dec "$dir"/$1/$cpid/$3/DeviceTree.patched -n
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/DeviceTree.patched -o "$dir"/$1/$cpid/$3/devicetree.img4 -A -M IM4M -T rdtr
         elif [[ "$3" == "7."* ]]; then
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/iBSS.patched -o "$dir"/$1/$cpid/$3/iBSS.img4 -M IM4M -A -T ibss
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/iBEC.patched -o "$dir"/$1/$cpid/$3/iBEC.img4 -M IM4M -A -T ibec
             "$bin"/seprmvr64lite "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache.patched
-            "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched -m -e -f -k
+            "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched -m 7 -e 7 -f 7 -k
             "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache2.patched "$dir"/$1/$cpid/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$cpid/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$cpid/$3/kc.bpatch
-            "$bin"/dtree_patcher "$dir"/$1/$cpid/$3/devicetree.dec "$dir"/$1/$cpid/$3/DeviceTree.patched -n
+            "$bin"/dtree_patcher "$dir"/$1/$cpid/$3/DeviceTree.dec "$dir"/$1/$cpid/$3/DeviceTree.patched -n
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/DeviceTree.patched -o "$dir"/$1/$cpid/$3/devicetree.img4 -A -M IM4M -T rdtr
         elif [[ "$3" == "10.0"* || "$3" == "10.1"* || "$3" == "10.2"* ]]; then
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/iBSS.patched -o "$dir"/$1/$cpid/$3/iBSS.img4 -M IM4M -A -T ibss
@@ -838,22 +953,22 @@ _download_boot_files() {
             fi
             # seprmvr64lite3 is seprmvr64lite but with only AppleKeyStore: operation failed (pid: %d sel: %d ret: %x) patch
             "$bin"/seprmvr64lite3 "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache.patched
-            # seprmvr645 is plooshfinder seprmvr64 but with sks timeout strike patch removed
-            "$bin"/seprmvr645 "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched
+            # seprmvr647 is plooshfinder seprmvr64 but with EP0 patches removed
+            "$bin"/seprmvr647 "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched
             # KPlooshFinder is amfi patch
             "$bin"/KPlooshFinder "$dir"/$1/$cpid/$3/kcache2.patched "$dir"/$1/$cpid/$3/kcache3.patched
             # seprmvr643 just patches "SEP Panic" and may not even be required
             "$bin"/seprmvr643 "$dir"/$1/$cpid/$3/kcache3.patched "$dir"/$1/$cpid/$3/kcache4.patched
-            # -a is mapIO, -f is vm_fault_enter, -h is sandbox patch, and -q is image4 validation patches
-            "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache4.patched "$dir"/$1/$cpid/$3/kcache5.patched -a -f -k -q
-            "$bin"/cp64patcher "$dir"/$1/$cpid/$3/kcache6.patched "$dir"/$1/$cpid/$3/kcache7.patched
-            "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache7.patched "$dir"/$1/$cpid/$3/kc.bpatch
+            # -a is mapIO, -f is vm_fault_enter, and -q is image4 validation patches
+            "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache4.patched "$dir"/$1/$cpid/$3/kcache5.patched -a -f 10 -q
+            "$bin"/cp64patcher "$dir"/$1/$cpid/$3/kcache5.patched "$dir"/$1/$cpid/$3/kcache6.patched
+            "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache6.patched "$dir"/$1/$cpid/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$cpid/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$cpid/$3/kc.bpatch
             if [ -e "$dir"/$1/$cpid/$3/trustcache.im4p ]; then
                 "$bin"/img4 -i "$dir"/$1/$cpid/$3/trustcache.im4p -o "$dir"/$1/$cpid/$3/trustcache.img4 -M IM4M -T rtsc
             fi
-            "$bin"/img4tool -e -o "$dir"/$1/$cpid/$3/devicetree.out "$dir"/$1/$cpid/$3/devicetree.dec
+            "$bin"/img4tool -e -o "$dir"/$1/$cpid/$3/devicetree.out "$dir"/$1/$cpid/$3/DeviceTree.dec
             "$bin"/dtree_patcher "$dir"/$1/$cpid/$3/devicetree.out "$dir"/$1/$cpid/$3/DeviceTree.patched -n
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/DeviceTree.patched -o "$dir"/$1/$cpid/$3/devicetree.img4 -A -M IM4M -T rdtr
         elif [[ "$3" == "10.3"* ]]; then
@@ -879,14 +994,14 @@ _download_boot_files() {
             # seprmvr643 just patches "SEP Panic" and may not even be required
             "$bin"/seprmvr643 "$dir"/$1/$cpid/$3/kcache2.patched "$dir"/$1/$cpid/$3/kcache3.patched
             # -a is mapIO, -f is vm_fault_enter, and -q is image4 validation patches
-            "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache3.patched "$dir"/$1/$cpid/$3/kcache4.patched -a -f -q
+            "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache3.patched "$dir"/$1/$cpid/$3/kcache4.patched -a -f 10 -q
             "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache4.patched "$dir"/$1/$cpid/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$cpid/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$cpid/$3/kc.bpatch
             if [ -e "$dir"/$1/$cpid/$3/trustcache.im4p ]; then
                 "$bin"/img4 -i "$dir"/$1/$cpid/$3/trustcache.im4p -o "$dir"/$1/$cpid/$3/trustcache.img4 -M IM4M -T rtsc
             fi
-            "$bin"/img4tool -e -o "$dir"/$1/$cpid/$3/devicetree.out "$dir"/$1/$cpid/$3/devicetree.dec
+            "$bin"/img4tool -e -o "$dir"/$1/$cpid/$3/devicetree.out "$dir"/$1/$cpid/$3/DeviceTree.dec
             "$bin"/dtree_patcher "$dir"/$1/$cpid/$3/devicetree.out "$dir"/$1/$cpid/$3/DeviceTree.patched -n
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/DeviceTree.patched -o "$dir"/$1/$cpid/$3/devicetree.img4 -A -M IM4M -T rdtr
         elif [[ "$3" == "11."* ]]; then
@@ -919,9 +1034,9 @@ _download_boot_files() {
                 "$bin"/KPlooshFinder "$dir"/$1/$cpid/$3/kcache2.patched "$dir"/$1/$cpid/$3/kcache3.patched
                 # -a is mapIO, -f is vm_fault_enter, -m is mount_common, and -b is image4 validation patches
                 if [[ "$3" == "11.3"* || "$3" == "11.4"* ]]; then
-                    "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache3.patched "$dir"/$1/$cpid/$3/kcache4.patched -a -f -m -r
+                    "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache3.patched "$dir"/$1/$cpid/$3/kcache4.patched -a -f 11 -m 11 -r
                 else
-                    "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache3.patched "$dir"/$1/$cpid/$3/kcache4.patched -a -f -m -b
+                    "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache3.patched "$dir"/$1/$cpid/$3/kcache4.patched -a -f 11 -m 11 -b
                 fi
                 "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache_15A5278f.raw "$dir"/$1/$cpid/$3/kcache4.patched "$dir"/$1/$cpid/$3/kc.bpatch
                 "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache_15A5278f.dec -o "$dir"/$1/$cpid/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$cpid/$3/kc.bpatch
@@ -940,9 +1055,9 @@ _download_boot_files() {
                 "$bin"/KPlooshFinder "$dir"/$1/$cpid/$3/kcache2.patched "$dir"/$1/$cpid/$3/kcache3.patched
                 # -a is mapIO, -f is vm_fault_enter, -m is mount_common, and -b is image4 validation patches
                 if [[ "$3" == "11.3"* || "$3" == "11.4"* ]]; then
-                    "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache3.patched "$dir"/$1/$cpid/$3/kcache4.patched -a -f -m -r
+                    "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache3.patched "$dir"/$1/$cpid/$3/kcache4.patched -a -f 11 -m 11 -r
                 else
-                    "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache3.patched "$dir"/$1/$cpid/$3/kcache4.patched -a -f -m -b
+                    "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache3.patched "$dir"/$1/$cpid/$3/kcache4.patched -a -f 11 -m 11 -b
                 fi
                 "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache4.patched "$dir"/$1/$cpid/$3/kc.bpatch
                 "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$cpid/$3/kc.bpatch
@@ -951,7 +1066,7 @@ _download_boot_files() {
             if [ -e "$dir"/$1/$cpid/$3/trustcache.im4p ]; then
                 "$bin"/img4 -i "$dir"/$1/$cpid/$3/trustcache.im4p -o "$dir"/$1/$cpid/$3/trustcache.img4 -M IM4M -T rtsc
             fi
-            "$bin"/img4tool -e -o "$dir"/$1/$cpid/$3/devicetree.out "$dir"/$1/$cpid/$3/devicetree.dec
+            "$bin"/img4tool -e -o "$dir"/$1/$cpid/$3/devicetree.out "$dir"/$1/$cpid/$3/DeviceTree.dec
             "$bin"/dtree_patcher "$dir"/$1/$cpid/$3/devicetree.out "$dir"/$1/$cpid/$3/DeviceTree.patched -n
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/DeviceTree.patched -o "$dir"/$1/$cpid/$3/devicetree.img4 -A -M IM4M -T rdtr
         elif [[ "$3" == "12."* ]]; then
@@ -982,7 +1097,7 @@ _download_boot_files() {
             # KPlooshFinder is amfi patch
             "$bin"/KPlooshFinder "$dir"/$1/$cpid/$3/kcache2.patched "$dir"/$1/$cpid/$3/kcache3.patched
             # -a is mapIO, -m is mount_common, -f is vm_fault_enter, and -r is image4 validation patches
-            "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache3.patched "$dir"/$1/$cpid/$3/kcache4.patched -a -m -r -f
+            "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache3.patched "$dir"/$1/$cpid/$3/kcache4.patched -a -m 12 -r -f 12
             "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache4.patched "$dir"/$1/$cpid/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$cpid/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$cpid/$3/kc.bpatch
@@ -990,7 +1105,7 @@ _download_boot_files() {
                 "$bin"/img4 -i "$dir"/$1/$cpid/$3/trustcache.im4p -o "$dir"/$1/$cpid/$3/trustcache.img4 -M IM4M -T rtsc
                 "$bin"/img4 -i "$dir"/$1/$cpid/$3/trustcache.im4p -o "$dir"/$1/$cpid/$3/trustcache -M IM4M -T trst
             fi
-            "$bin"/img4tool -e -o "$dir"/$1/$cpid/$3/devicetree.out "$dir"/$1/$cpid/$3/devicetree.dec
+            "$bin"/img4tool -e -o "$dir"/$1/$cpid/$3/devicetree.out "$dir"/$1/$cpid/$3/DeviceTree.dec
             "$bin"/dtree_patcher "$dir"/$1/$cpid/$3/devicetree.out "$dir"/$1/$cpid/$3/DeviceTree.patched -n
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/DeviceTree.patched -o "$dir"/$1/$cpid/$3/devicetree.img4 -A -M IM4M -T rdtr
         elif [[ "$3" == "13."* ]]; then
@@ -1026,9 +1141,9 @@ _download_boot_files() {
                 "$bin"/img4 -i "$dir"/$1/$cpid/$3/trustcache.im4p -o "$dir"/$1/$cpid/$3/trustcache.img4 -M IM4M -T rtsc
                 "$bin"/img4 -i "$dir"/$1/$cpid/$3/trustcache.im4p -o "$dir"/$1/$cpid/$3/trustcache -M IM4M -T trst
             fi
-            "$bin"/img4tool -e -o "$dir"/$1/$cpid/$3/devicetree.out "$dir"/$1/$cpid/$3/devicetree.dec
+            "$bin"/img4tool -e -o "$dir"/$1/$cpid/$3/devicetree.out "$dir"/$1/$cpid/$3/DeviceTree.dec
             "$bin"/dtree_patcher "$dir"/$1/$cpid/$3/devicetree.out "$dir"/$1/$cpid/$3/DeviceTree.patched -n
-            "$bin"/dtree_patcher2 "$dir"/$1/$cpid/$3/DeviceTree.patched "$dir"/$1/$cpid/$3/DeviceTree2.patched -d 0 -s n
+            "$bin"/dtree_patcher2 "$dir"/$1/$cpid/$3/DeviceTree.patched "$dir"/$1/$cpid/$3/DeviceTree2.patched -d 0
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/DeviceTree2.patched -o "$dir"/$1/$cpid/$3/devicetree.img4 -A -M IM4M -T rdtr
         fi
     fi
@@ -1205,10 +1320,14 @@ _download_clean_boot_files() {
                 fi
             fi
         fi
+        if [ "$os" = "Darwin" ]; then
+            fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
+        else
+            fn="$("$bin"/PlistBuddy -c "Print BuildIdentities:0:Manifest:RestoreRamDisk:Info:Path" BuildManifest.plist | tr -d '"')"
+        fi
         if [ ! -e "$dir"/$1/clean/$cpid/$3/RestoreRamDisk.dmg ]; then
-            "$bin"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
+            "$bin"/pzb -g "$fn" "$ipswurl"
             if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* ]]; then
-                fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
                 if [[ "$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e $buildid $1)" == "true" ]]; then
                     ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $buildid $1)"
                     "$bin"/img4 -i $fn -o "$dir"/$1/clean/$cpid/$3/RestoreRamDisk.dmg -k $ivkey
@@ -1220,13 +1339,19 @@ _download_clean_boot_files() {
                     "$bin"/img4 -i $fn -o "$dir"/$1/clean/$cpid/$3/RestoreRamDisk.dmg -k $ivkey
                 fi
             else
-                "$bin"/img4 -i "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -o "$dir"/$1/clean/$cpid/$3/RestoreRamDisk.dmg
+                "$bin"/img4 -i "$fn" -o "$dir"/$1/clean/$cpid/$3/RestoreRamDisk.dmg
             fi
         fi
         if [[ ! "$3" == "7."* && ! "$3" == "8."* && ! "$3" == "9."* && ! "$3" == "10."* && ! "$3" == "11."* ]]; then
             if [ ! -e "$dir"/$1/clean/$cpid/$3/trustcache.img4 ]; then
-                "$bin"/pzb -g Firmware/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)".trustcache "$ipswurl"
-                 mv "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)".trustcache "$dir"/$1/clean/$cpid/$3/trustcache.im4p
+                local fn
+                if [ "$os" = "Darwin" ]; then
+                    fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
+                else
+                    fn="$("$bin"/PlistBuddy -c "Print BuildIdentities:0:Manifest:OS:Info:Path" BuildManifest.plist | tr -d '"')"
+                fi
+                "$bin"/pzb -g Firmware/"$fn".trustcache "$ipswurl"
+                 mv "$fn".trustcache "$dir"/$1/clean/$cpid/$3/trustcache.im4p
             fi
         fi
         rm -rf BuildManifest.plist
@@ -1262,9 +1387,9 @@ _download_clean_boot_files() {
             "$bin"/img4 -i "$dir"/$1/clean/$cpid/$3/trustcache.im4p -o "$dir"/$1/clean/$cpid/$3/trustcache -M IM4M -T trst
         fi
         if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* ]]; then
-            "$bin"/img4 -i "$dir"/$1/clean/$cpid/$3/devicetree.dec -o "$dir"/$1/clean/$cpid/$3/devicetree.img4 -A -M IM4M -T rdtr
+            "$bin"/img4 -i "$dir"/$1/clean/$cpid/$3/DeviceTree.dec -o "$dir"/$1/clean/$cpid/$3/devicetree.img4 -A -M IM4M -T rdtr
         else
-            "$bin"/img4 -i "$dir"/$1/clean/$cpid/$3/devicetree.dec -o "$dir"/$1/clean/$cpid/$3/devicetree.img4 -M IM4M -T rdtr
+            "$bin"/img4 -i "$dir"/$1/clean/$cpid/$3/DeviceTree.dec -o "$dir"/$1/clean/$cpid/$3/devicetree.img4 -M IM4M -T rdtr
         fi
     fi
     cd ..
@@ -1291,14 +1416,21 @@ _download_root_fs() {
                 "$bin"/aria2c https://ia800301.us.archive.org/22/items/iPhone_4.7_11.0_15A5278f_Restore/iPhone_4.7_11.0_15A5278f_Restore.ipsw
                 "$bin"/7z x $(find . -name '*.ipsw*')
                 fn="058-76196-042.dmg"
+                # no asr on linux
                 asr -source $fn -target "$dir"/$1/$cpid/$3/OS.dmg --embed -erase -noprompt --chunkchecksum --puppetstrings
                 "$bin"/img4 -i kernelcache.release.n71 -o "$dir"/$1/$cpid/$3/kcache_15A5278f.raw
                 "$bin"/img4 -i kernelcache.release.n71 -o "$dir"/$1/$cpid/$3/kernelcache_15A5278f.dec -D
                 cd "$dir"/work/
             else
+                local fn
                 "$bin"/pzb -g BuildManifest.plist "$ipswurl"
-                "$bin"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
-                fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
+                if [ "$os" = "Darwin" ]; then
+                    fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
+                else
+                    fn="$("$bin"/PlistBuddy -c "Print BuildIdentities:0:Manifest:OS:Info:Path" BuildManifest.plist | tr -d '"')"
+                fi
+                "$bin"/pzb -g "$fn" "$ipswurl"
+                # no asr on linux
                 asr -source $fn -target "$dir"/$1/$cpid/$3/OS.dmg --embed -erase -noprompt --chunkchecksum --puppetstrings
             fi
             if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
@@ -1306,13 +1438,18 @@ _download_root_fs() {
             fi
         fi
     else
-        if [ ! -e "$dir"/$1/$cpid/$3/OS.tar ]; then
+        if [ ! -e "$dir"/$1/$cpid/$3/rw.dmg ]; then
             if [ ! -e "$dir"/$1/$cpid/$3/OS.dmg ]; then
                 if [[ "$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e $buildid $1)" == "true" ]]; then
                     if [[ "$deviceid" == "iPhone7,2" || "$deviceid" == "iPhone7,1" || ! "$3" == "8.0" ]]; then
+                        local fn
                         "$bin"/pzb -g BuildManifest.plist "$ipswurl"
-                        "$bin"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
-                        fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
+                        if [ "$os" = "Darwin" ]; then
+                            fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
+                        else
+                            fn="$("$bin"/PlistBuddy -c "Print BuildIdentities:0:Manifest:OS:Info:Path" BuildManifest.plist | tr -d '"')"
+                        fi
+                        "$bin"/pzb -g "$fn" "$ipswurl"
                         ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $buildid $1)"
                         "$bin"/dmg extract $fn "$dir"/$1/$cpid/$3/OS.dmg -k $ivkey
                     elif [[ "$deviceid" == "iPhone6,1" || "$deviceid" == "iPhone6,2" ]]; then
@@ -1386,19 +1523,33 @@ _download_root_fs() {
                         "$bin"/img4 -i kernelcache.release.j73 -o "$dir"/$1/$cpid/$3/kernelcache_12A4331d.dec -k fc44a450a05e812125e93ff45c820a90cd11f08347133cc03a9b4bed23a1ec16c509c58d3b0f3083640d62edc56eee10 -D
                         cd "$dir"/work/
                     else
+                        local fn
                         "$bin"/pzb -g BuildManifest.plist "$ipswurl"
-                        "$bin"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
-                        fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
+                        if [ "$os" = "Darwin" ]; then
+                            fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
+                        else
+                            fn="$("$bin"/PlistBuddy -c "Print BuildIdentities:0:Manifest:OS:Info:Path" BuildManifest.plist | tr -d '"')"
+                        fi
+                        "$bin"/pzb -g "$fn" "$ipswurl"
                         ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $3 $1)"
                         "$bin"/dmg extract $fn "$dir"/$1/$cpid/$3/OS.dmg -k $ivkey
                     fi
                 else
+                    local fno
+                    local fnr
                     "$bin"/pzb -g BuildManifest.plist "$ipswurl"
-                    "$bin"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
+                    if [ "$os" = "Darwin" ]; then
+                        fno="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
+                        fnr="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
+                    else
+                        fno="$("$bin"/PlistBuddy -c "Print BuildIdentities:0:Manifest:OS:Info:Path" BuildManifest.plist | tr -d '"')"
+                        fnr="$("$bin"/PlistBuddy -c "Print BuildIdentities:0:Manifest:RestoreRamDisk:Info:Path" BuildManifest.plist | tr -d '"')"
+                    fi
+                    "$bin"/pzb -g "$fno" "$ipswurl"
                     if [ ! -e "$dir"/$1/$cpid/$3/RestoreRamDisk.dmg ]; then
-                        "$bin"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" "$ipswurl"
+                        "$bin"/pzb -g "$fnr" "$ipswurl"
                         if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* ]]; then
-                            fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
+                            fn="$fnr"
                             if [[ "$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e $buildid $1)" == "true" ]]; then
                                 ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $buildid $1)"
                                 "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/$3/RestoreRamDisk.dmg -k $ivkey
@@ -1410,19 +1561,23 @@ _download_root_fs() {
                                 "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/$3/RestoreRamDisk.dmg -k $ivkey
                             fi
                         else
-                            "$bin"/img4 -i "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -o "$dir"/$1/$cpid/$3/RestoreRamDisk.dmg
+                            "$bin"/img4 -i "$fnr" -o "$dir"/$1/$cpid/$3/RestoreRamDisk.dmg
                         fi
                     fi
-                    fn="$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."OS"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)"
+                    fn="$fno"
                     ivkey=$("$bin"/pass2key $scid "$dir"/$1/$cpid/$3/RestoreRamDisk.dmg $fn | tail -n 1 | cut -d ' ' -f 3)
                     "$bin"/dmg extract $fn "$dir"/$1/$cpid/$3/OS.dmg -k $ivkey
                 fi
             fi
-            "$bin"/dmg build "$dir"/$1/$cpid/$3/OS.dmg "$dir"/$1/$cpid/$3/rw.dmg
-            hdiutil attach -mountpoint /tmp/ios "$dir"/$1/$cpid/$3/rw.dmg
-            sudo diskutil enableOwnership /tmp/ios
-            sudo "$bin"/gnutar -cvf "$dir"/$1/$cpid/$3/OS.tar -C /tmp/ios .
-            hdiutil detach /tmp/ios
+            if [ ! -e "$dir"/$1/$cpid/$3/rw.dmg ]; then
+                "$bin"/dmg build "$dir"/$1/$cpid/$3/OS.dmg "$dir"/$1/$cpid/$3/rw.dmg
+            fi
+            if [ "$os" = "Darwin" ]; then
+                hdiutil attach -mountpoint /tmp/ios "$dir"/$1/$cpid/$3/rw.dmg
+                sudo diskutil enableOwnership /tmp/ios
+                sudo "$bin"/gnutar -cvf "$dir"/$1/$cpid/$3/OS.tar -C /tmp/ios .
+                hdiutil detach /tmp/ios
+            fi
             rm -rf /tmp/ios
             if [[ "$deviceid" == "iPhone6"* || "$deviceid" == "iPad4"* ]]; then
                "$bin"/irecovery -f /dev/null
@@ -1552,10 +1707,17 @@ _boot_ramdisk() {
 if [ ! -e java/bin/java ]; then
     mkdir java
     cd java
-    curl -k -SLO https://builds.openlogic.com/downloadJDK/openlogic-openjdk-jre/8u262-b10/openlogic-openjdk-jre-8u262-b10-mac-x64.zip
-    "$bin"/7z x openlogic-openjdk-jre-8u262-b10-mac-x64.zip
-    sudo cp -rf openlogic-openjdk-jre-8u262-b10-mac-x64/jdk1.8.0_262.jre/Contents/Home/* .
-    sudo rm -rf openlogic-openjdk-jre-8u262-b10-mac-x64/
+    if [ "$os" = "Darwin" ]; then
+        curl -k -SLO https://builds.openlogic.com/downloadJDK/openlogic-openjdk-jre/8u262-b10/openlogic-openjdk-jre-8u262-b10-mac-x64.zip
+        "$bin"/7z x openlogic-openjdk-jre-8u262-b10-mac-x64.zip
+        sudo cp -rf openlogic-openjdk-jre-8u262-b10-mac-x64/jdk1.8.0_262.jre/Contents/Home/* .
+        sudo rm -rf openlogic-openjdk-jre-8u262-b10-mac-x64/
+    else
+        curl -k -SLO https://builds.openlogic.com/downloadJDK/openlogic-openjdk-jre/8u262-b10/openlogic-openjdk-jre-8u262-b10-linux-x64.tar.gz
+        "$bin"/gnutar -xzf openlogic-openjdk-jre-8u262-b10-linux-x64.tar.gz
+        cp -rf openlogic-openjdk-jre-8u262-b10-linux-64/* .
+        rm -rf openlogic-openjdk-jre-8u262-b10-linux*
+    fi
     cd ..
 fi
 for cmd in curl unzip git ssh scp killall sudo grep pgrep ${linux_cmds}; do
@@ -1589,8 +1751,14 @@ if [[ "$*" == *"--fix-auto-boot"* ]]; then
     "$bin"/irecovery -c "reset"
     exit 0
 fi 
-if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-    "$bin"/dfuhelper.sh
+if [ "$os" = "Darwin" ]; then
+    if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+        "$bin"/dfuhelper.sh
+    fi
+else
+    if ! (lsusb | cut -d' ' -f6 | grep '05ac:' | cut -d: -f2 | grep 1227 >> /dev/null); then
+        "$bin"/dfuhelper.sh
+    fi
 fi
 _wait_for_dfu
 sudo killall -STOP -c usbd
@@ -1737,22 +1905,43 @@ if [[ "$boot" == 1 ]]; then
         echo "[*] We will try to boot iOS $version on your device"
         echo "[*] You can enable auto-boot again at any time by running $0 $version --fix-auto-boot"
         sleep 5
-        if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-            if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
-                sleep 10
-                if [ "$(get_device_mode)" = "recovery" ]; then
-                    "$bin"/dfuhelper.sh
+        if [ "$os" = "Darwin" ]; then
+            if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+                if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                    sleep 10
+                    if [ "$(get_device_mode)" = "recovery" ]; then
+                        "$bin"/dfuhelper.sh
+                    else
+                        "$bin"/dfuhelper4.sh
+                        sleep 5
+                        "$bin"/irecovery -c "setenv auto-boot false"
+                        "$bin"/irecovery -c "saveenv"
+                        "$bin"/dfuhelper.sh
+                    fi
+                elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                    "$bin"/dfuhelper2.sh
                 else
-                    "$bin"/dfuhelper4.sh
-                    sleep 5
-                    "$bin"/irecovery -c "setenv auto-boot false"
-                    "$bin"/irecovery -c "saveenv"
-                    "$bin"/dfuhelper.sh
+                    "$bin"/dfuhelper3.sh
                 fi
-            elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
-                "$bin"/dfuhelper2.sh
-            else
-                "$bin"/dfuhelper3.sh
+            fi
+        else
+            if ! (lsusb | cut -d' ' -f6 | grep '05ac:' | cut -d: -f2 | grep 1227 >> /dev/null); then
+                if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                    sleep 10
+                    if [ "$(get_device_mode)" = "recovery" ]; then
+                        "$bin"/dfuhelper.sh
+                    else
+                        "$bin"/dfuhelper4.sh
+                        sleep 5
+                        "$bin"/irecovery -c "setenv auto-boot false"
+                        "$bin"/irecovery -c "saveenv"
+                        "$bin"/dfuhelper.sh
+                    fi
+                elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                    "$bin"/dfuhelper2.sh
+                else
+                    "$bin"/dfuhelper3.sh
+                fi
             fi
         fi
         _wait_for_dfu
@@ -1793,22 +1982,43 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
         fi
         _download_ramdisk_boot_files $deviceid $replace $rdversion
         sleep 1
-        if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-            if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
-                sleep 10
-                if [ "$(get_device_mode)" = "recovery" ]; then
-                    "$bin"/dfuhelper.sh
+        if [ "$os" = "Darwin" ]; then
+            if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+                if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                    sleep 10
+                    if [ "$(get_device_mode)" = "recovery" ]; then
+                        "$bin"/dfuhelper.sh
+                    else
+                        "$bin"/dfuhelper4.sh
+                        sleep 5
+                        "$bin"/irecovery -c "setenv auto-boot false"
+                        "$bin"/irecovery -c "saveenv"
+                        "$bin"/dfuhelper.sh
+                    fi
+                elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                    "$bin"/dfuhelper2.sh
                 else
-                    "$bin"/dfuhelper4.sh
-                    sleep 5
-                    "$bin"/irecovery -c "setenv auto-boot false"
-                    "$bin"/irecovery -c "saveenv"
-                    "$bin"/dfuhelper.sh
+                    "$bin"/dfuhelper3.sh
                 fi
-            elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
-                "$bin"/dfuhelper2.sh
-            else
-                "$bin"/dfuhelper3.sh
+            fi
+        else
+            if ! (lsusb | cut -d' ' -f6 | grep '05ac:' | cut -d: -f2 | grep 1227 >> /dev/null); then
+                if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                    sleep 10
+                    if [ "$(get_device_mode)" = "recovery" ]; then
+                        "$bin"/dfuhelper.sh
+                    else
+                        "$bin"/dfuhelper4.sh
+                        sleep 5
+                        "$bin"/irecovery -c "setenv auto-boot false"
+                        "$bin"/irecovery -c "saveenv"
+                        "$bin"/dfuhelper.sh
+                    fi
+                elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                    "$bin"/dfuhelper2.sh
+                else
+                    "$bin"/dfuhelper3.sh
+                fi
             fi
         fi
         _wait_for_dfu
@@ -1830,7 +2040,12 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
         pongo=0
     else
         if [[ "$version" == "7."* || "$version" == "8."* ]]; then
-            _download_ramdisk_boot_files $deviceid $replace 8.4.1
+            if [ "$os" = "Darwin" ]; then
+                _download_ramdisk_boot_files $deviceid $replace 8.4.1
+            else
+                _download_ramdisk_boot_files $deviceid $replace 8.4.1
+                _download_ramdisk_boot_files $deviceid $replace 11.4
+            fi
         elif [[ "$version" == "10.3"* ]]; then
             _download_ramdisk_boot_files $deviceid $replace 10.3.3
             if [[ "$(./java/bin/java -jar ./Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e 14.3 $deviceid)" == "true" ]]; then
@@ -1857,7 +2072,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
             else
                 _download_ramdisk_boot_files $deviceid $replace 12.5.4
             fi
-        elif [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
+        elif [[ "$os" = "Darwin" && ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
             _download_ramdisk_boot_files $deviceid $replace 9.3
         else
             _download_ramdisk_boot_files $deviceid $replace 11.4
@@ -1886,22 +2101,43 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
         fi
         echo "[*] Waiting for device in DFU mode"
         sleep 1
-        if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-            if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
-                sleep 10
-                if [ "$(get_device_mode)" = "recovery" ]; then
-                    "$bin"/dfuhelper.sh
+        if [ "$os" = "Darwin" ]; then
+            if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+                if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                    sleep 10
+                    if [ "$(get_device_mode)" = "recovery" ]; then
+                        "$bin"/dfuhelper.sh
+                    else
+                        "$bin"/dfuhelper4.sh
+                        sleep 5
+                        "$bin"/irecovery -c "setenv auto-boot false"
+                        "$bin"/irecovery -c "saveenv"
+                        "$bin"/dfuhelper.sh
+                    fi
+                elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                    "$bin"/dfuhelper2.sh
                 else
-                    "$bin"/dfuhelper4.sh
-                    sleep 5
-                    "$bin"/irecovery -c "setenv auto-boot false"
-                    "$bin"/irecovery -c "saveenv"
-                    "$bin"/dfuhelper.sh
+                    "$bin"/dfuhelper3.sh
                 fi
-            elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
-                "$bin"/dfuhelper2.sh
-            else
-                "$bin"/dfuhelper3.sh
+            fi
+        else
+            if ! (lsusb | cut -d' ' -f6 | grep '05ac:' | cut -d: -f2 | grep 1227 >> /dev/null); then
+                if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                    sleep 10
+                    if [ "$(get_device_mode)" = "recovery" ]; then
+                        "$bin"/dfuhelper.sh
+                    else
+                        "$bin"/dfuhelper4.sh
+                        sleep 5
+                        "$bin"/irecovery -c "setenv auto-boot false"
+                        "$bin"/irecovery -c "saveenv"
+                        "$bin"/dfuhelper.sh
+                    fi
+                elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                    "$bin"/dfuhelper2.sh
+                else
+                    "$bin"/dfuhelper3.sh
+                fi
             fi
         fi
         _wait_for_dfu
@@ -1922,7 +2158,11 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
         if [[ ! -e "$dir"/$deviceid/0.0/apticket.der || ! -e "$dir"/$deviceid/0.0/sep-firmware.img4 || ! -e "$dir"/$deviceid/0.0/keybags ]]; then
             cd "$dir"/$deviceid/$cpid/ramdisk/$r
         elif [[ "$version" == "7."* || "$version" == "8."* ]]; then
-            cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
+            if [ "$os" = "Darwin" ]; then
+                cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
+            else
+                cd "$dir"/$deviceid/$cpid/ramdisk/11.4
+            fi
         elif [[ "$version" == "10.3"* ]]; then
             cd "$dir"/$deviceid/$cpid/ramdisk/10.3.3
         elif [[ "$deviceid" == "iPhone8,1" && "$version" == "11.0" ]]; then
@@ -1935,7 +2175,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
             else
                 cd "$dir"/$deviceid/$cpid/ramdisk/12.5.4
             fi
-        elif [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
+        elif [[ "$os" = "Darwin" && ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
             cd "$dir"/$deviceid/$cpid/ramdisk/9.3
         else
             cd "$dir"/$deviceid/$cpid/ramdisk/11.4
@@ -2121,22 +2361,43 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
             if [[ "$hit" == 1 ]]; then
                 $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
                 _kill_if_running iproxy
-                if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                    if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
-                        sleep 10
-                        if [ "$(get_device_mode)" = "recovery" ]; then
-                            "$bin"/dfuhelper.sh
+                if [ "$os" = "Darwin" ]; then
+                    if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+                        if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                            sleep 10
+                            if [ "$(get_device_mode)" = "recovery" ]; then
+                                "$bin"/dfuhelper.sh
+                            else
+                                "$bin"/dfuhelper4.sh
+                                sleep 5
+                                "$bin"/irecovery -c "setenv auto-boot false"
+                                "$bin"/irecovery -c "saveenv"
+                                "$bin"/dfuhelper.sh
+                            fi
+                        elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                            "$bin"/dfuhelper2.sh
                         else
-                            "$bin"/dfuhelper4.sh
-                            sleep 5
-                            "$bin"/irecovery -c "setenv auto-boot false"
-                            "$bin"/irecovery -c "saveenv"
-                            "$bin"/dfuhelper.sh
+                            "$bin"/dfuhelper3.sh
                         fi
-                    elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
-                        "$bin"/dfuhelper2.sh
-                    else
-                        "$bin"/dfuhelper3.sh
+                    fi
+                else
+                    if ! (lsusb | cut -d' ' -f6 | grep '05ac:' | cut -d: -f2 | grep 1227 >> /dev/null); then
+                        if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                            sleep 10
+                            if [ "$(get_device_mode)" = "recovery" ]; then
+                                "$bin"/dfuhelper.sh
+                            else
+                                "$bin"/dfuhelper4.sh
+                                sleep 5
+                                "$bin"/irecovery -c "setenv auto-boot false"
+                                "$bin"/irecovery -c "saveenv"
+                                "$bin"/dfuhelper.sh
+                            fi
+                        elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                            "$bin"/dfuhelper2.sh
+                        else
+                            "$bin"/dfuhelper3.sh
+                        fi
                     fi
                 fi
                 _wait_for_dfu
@@ -2155,7 +2416,11 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                     sleep 10
                 fi
                 if [[ "$version" == "7."* || "$version" == "8."* ]]; then
-                    cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
+                    if [ "$os" = "Darwin" ]; then
+                        cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
+                    else
+                        cd "$dir"/$deviceid/$cpid/ramdisk/11.4
+                    fi
                 elif [[ "$version" == "10.3"* ]]; then
                     cd "$dir"/$deviceid/$cpid/ramdisk/10.3.3
                 elif [[ "$deviceid" == "iPhone8,1" && "$version" == "11.0" ]]; then
@@ -2168,7 +2433,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                     else
                         cd "$dir"/$deviceid/$cpid/ramdisk/12.5.4
                     fi
-                elif [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
+                elif [[ "$os" = "Darwin" && ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
                     cd "$dir"/$deviceid/$cpid/ramdisk/9.3
                 else
                     cd "$dir"/$deviceid/$cpid/ramdisk/11.4
@@ -2358,22 +2623,43 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                     sleep 5
                     _kill_if_running iproxy
                     echo "[*] Device should boot to Recovery mode. Please wait..."
-                    if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                        if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
-                            sleep 10
-                            if [ "$(get_device_mode)" = "recovery" ]; then
-                                "$bin"/dfuhelper.sh
+                    if [ "$os" = "Darwin" ]; then
+                        if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+                            if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                                sleep 10
+                                if [ "$(get_device_mode)" = "recovery" ]; then
+                                    "$bin"/dfuhelper.sh
+                                else
+                                    "$bin"/dfuhelper4.sh
+                                    sleep 5
+                                    "$bin"/irecovery -c "setenv auto-boot false"
+                                    "$bin"/irecovery -c "saveenv"
+                                    "$bin"/dfuhelper.sh
+                                fi
+                            elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                                "$bin"/dfuhelper2.sh
                             else
-                                "$bin"/dfuhelper4.sh
-                                sleep 5
-                                "$bin"/irecovery -c "setenv auto-boot false"
-                                "$bin"/irecovery -c "saveenv"
-                                "$bin"/dfuhelper.sh
+                                "$bin"/dfuhelper3.sh
                             fi
-                        elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
-                            "$bin"/dfuhelper2.sh
-                        else
-                            "$bin"/dfuhelper3.sh
+                        fi
+                    else
+                        if ! (lsusb | cut -d' ' -f6 | grep '05ac:' | cut -d: -f2 | grep 1227 >> /dev/null); then
+                            if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                                sleep 10
+                                if [ "$(get_device_mode)" = "recovery" ]; then
+                                    "$bin"/dfuhelper.sh
+                                else
+                                    "$bin"/dfuhelper4.sh
+                                    sleep 5
+                                    "$bin"/irecovery -c "setenv auto-boot false"
+                                    "$bin"/irecovery -c "saveenv"
+                                    "$bin"/dfuhelper.sh
+                                fi
+                            elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                                "$bin"/dfuhelper2.sh
+                            else
+                                "$bin"/dfuhelper3.sh
+                            fi
                         fi
                     fi
                     _wait_for_dfu
@@ -2392,10 +2678,14 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                         sleep 10
                     fi
                     if [[ "$version" == "7."* || "$version" == "8."* ]]; then
-                        cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
+                        if [ "$os" = "Darwin" ]; then
+                            cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
+                        else
+                            cd "$dir"/$deviceid/$cpid/ramdisk/11.4
+                        fi
                     elif [[ "$version" == "10.3"* || "$version" == "11."* ||  "$version" == "12."* || "$version" == "13."* ]]; then
                         cd "$dir"/$deviceid/$cpid/ramdisk/$r
-                    elif [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
+                    elif [[ "$os" = "Darwin" && ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
                         cd "$dir"/$deviceid/$cpid/ramdisk/9.3
                     else
                         cd "$dir"/$deviceid/$cpid/ramdisk/11.4
@@ -2437,22 +2727,43 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                     sleep 5
                     _kill_if_running iproxy
                     echo "[*] Device should boot to Recovery mode. Please wait..."
-                    if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                        if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
-                            sleep 10
-                            if [ "$(get_device_mode)" = "recovery" ]; then
-                                "$bin"/dfuhelper.sh
+                    if [ "$os" = "Darwin" ]; then
+                        if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+                            if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                                sleep 10
+                                if [ "$(get_device_mode)" = "recovery" ]; then
+                                    "$bin"/dfuhelper.sh
+                                else
+                                    "$bin"/dfuhelper4.sh
+                                    sleep 5
+                                    "$bin"/irecovery -c "setenv auto-boot false"
+                                    "$bin"/irecovery -c "saveenv"
+                                    "$bin"/dfuhelper.sh
+                                fi
+                            elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                                "$bin"/dfuhelper2.sh
                             else
-                                "$bin"/dfuhelper4.sh
-                                sleep 5
-                                "$bin"/irecovery -c "setenv auto-boot false"
-                                "$bin"/irecovery -c "saveenv"
-                                "$bin"/dfuhelper.sh
+                                "$bin"/dfuhelper3.sh
                             fi
-                        elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
-                            "$bin"/dfuhelper2.sh
-                        else
-                            "$bin"/dfuhelper3.sh
+                        fi
+                    else
+                        if ! (lsusb | cut -d' ' -f6 | grep '05ac:' | cut -d: -f2 | grep 1227 >> /dev/null); then
+                            if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                                sleep 10
+                                if [ "$(get_device_mode)" = "recovery" ]; then
+                                    "$bin"/dfuhelper.sh
+                                else
+                                    "$bin"/dfuhelper4.sh
+                                    sleep 5
+                                    "$bin"/irecovery -c "setenv auto-boot false"
+                                    "$bin"/irecovery -c "saveenv"
+                                    "$bin"/dfuhelper.sh
+                                fi
+                            elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                                "$bin"/dfuhelper2.sh
+                            else
+                                "$bin"/dfuhelper3.sh
+                            fi
                         fi
                     fi
                     _wait_for_dfu
@@ -2471,10 +2782,14 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                         sleep 10
                     fi
                     if [[ "$version" == "7."* || "$version" == "8."* ]]; then
-                        cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
+                        if [ "$os" = "Darwin" ]; then
+                            cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
+                        else
+                            cd "$dir"/$deviceid/$cpid/ramdisk/11.4
+                        fi
                     elif [[ "$version" == "10.3"* || "$version" == "11."* ||  "$version" == "12."* || "$version" == "13."* ]]; then
                         cd "$dir"/$deviceid/$cpid/ramdisk/$r
-                    elif [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
+                    elif [[ "$os" = "Darwin" && ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
                         cd "$dir"/$deviceid/$cpid/ramdisk/9.3
                     else
                         cd "$dir"/$deviceid/$cpid/ramdisk/11.4
@@ -2508,22 +2823,43 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 sleep 5
                 _kill_if_running iproxy
                 echo "[*] Device should boot to Recovery mode. Please wait..."
-                if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                    if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
-                        sleep 10
-                        if [ "$(get_device_mode)" = "recovery" ]; then
-                            "$bin"/dfuhelper.sh
+                if [ "$os" = "Darwin" ]; then
+                    if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+                        if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                            sleep 10
+                            if [ "$(get_device_mode)" = "recovery" ]; then
+                                "$bin"/dfuhelper.sh
+                            else
+                                "$bin"/dfuhelper4.sh
+                                sleep 5
+                                "$bin"/irecovery -c "setenv auto-boot false"
+                                "$bin"/irecovery -c "saveenv"
+                                "$bin"/dfuhelper.sh
+                            fi
+                        elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                            "$bin"/dfuhelper2.sh
                         else
-                            "$bin"/dfuhelper4.sh
-                            sleep 5
-                            "$bin"/irecovery -c "setenv auto-boot false"
-                            "$bin"/irecovery -c "saveenv"
-                            "$bin"/dfuhelper.sh
+                            "$bin"/dfuhelper3.sh
                         fi
-                    elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
-                        "$bin"/dfuhelper2.sh
-                    else
-                        "$bin"/dfuhelper3.sh
+                    fi
+                else
+                    if ! (lsusb | cut -d' ' -f6 | grep '05ac:' | cut -d: -f2 | grep 1227 >> /dev/null); then
+                        if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                            sleep 10
+                            if [ "$(get_device_mode)" = "recovery" ]; then
+                                "$bin"/dfuhelper.sh
+                            else
+                                "$bin"/dfuhelper4.sh
+                                sleep 5
+                                "$bin"/irecovery -c "setenv auto-boot false"
+                                "$bin"/irecovery -c "saveenv"
+                                "$bin"/dfuhelper.sh
+                            fi
+                        elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                            "$bin"/dfuhelper2.sh
+                        else
+                            "$bin"/dfuhelper3.sh
+                        fi
                     fi
                 fi
                 _wait_for_dfu
@@ -2542,10 +2878,14 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                     sleep 10
                 fi
                 if [[ "$version" == "7."* || "$version" == "8."* ]]; then
-                    cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
+                    if [ "$os" = "Darwin" ]; then
+                        cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
+                    else
+                        cd "$dir"/$deviceid/$cpid/ramdisk/11.4
+                    fi
                 elif [[ "$version" == "10.3"* || "$version" == "11."* ||  "$version" == "12."* || "$version" == "13."* ]]; then
                     cd "$dir"/$deviceid/$cpid/ramdisk/$r
-                elif [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
+                elif [[ "$os" = "Darwin" && ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
                     cd "$dir"/$deviceid/$cpid/ramdisk/9.3
                 else
                     cd "$dir"/$deviceid/$cpid/ramdisk/11.4
@@ -2577,24 +2917,47 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
             sleep 5
             _kill_if_running iproxy
             echo "[*] Device should boot to Recovery mode. Please wait..."
-            if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
-                    sleep 10
-                    if [ "$(get_device_mode)" = "recovery" ]; then
-                        "$bin"/irecovery -c "setenv auto-boot true"
-                        "$bin"/irecovery -c "saveenv"
-                        "$bin"/dfuhelper.sh
+            if [ "$os" = "Darwin" ]; then
+                if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+                    if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                        sleep 10
+                        if [ "$(get_device_mode)" = "recovery" ]; then
+                            "$bin"/irecovery -c "setenv auto-boot true"
+                            "$bin"/irecovery -c "saveenv"
+                            "$bin"/dfuhelper.sh
+                        else
+                            "$bin"/dfuhelper4.sh
+                            sleep 5
+                            "$bin"/irecovery -c "setenv auto-boot true"
+                            "$bin"/irecovery -c "saveenv"
+                            "$bin"/dfuhelper.sh
+                        fi
+                    elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                        "$bin"/dfuhelper2.sh
                     else
-                        "$bin"/dfuhelper4.sh
-                        sleep 5
-                        "$bin"/irecovery -c "setenv auto-boot true"
-                        "$bin"/irecovery -c "saveenv"
-                        "$bin"/dfuhelper.sh
+                        "$bin"/dfuhelper3.sh
                     fi
-                elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
-                    "$bin"/dfuhelper2.sh
-                else
-                    "$bin"/dfuhelper3.sh
+                fi
+            else
+                if ! (lsusb | cut -d' ' -f6 | grep '05ac:' | cut -d: -f2 | grep 1227 >> /dev/null); then
+                    if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                        sleep 10
+                        if [ "$(get_device_mode)" = "recovery" ]; then
+                            "$bin"/irecovery -c "setenv auto-boot true"
+                            "$bin"/irecovery -c "saveenv"
+                            "$bin"/dfuhelper.sh
+                        else
+                            "$bin"/dfuhelper4.sh
+                            sleep 5
+                            "$bin"/irecovery -c "setenv auto-boot true"
+                            "$bin"/irecovery -c "saveenv"
+                            "$bin"/dfuhelper.sh
+                        fi
+                    elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                        "$bin"/dfuhelper2.sh
+                    else
+                        "$bin"/dfuhelper3.sh
+                    fi
                 fi
             fi
             _wait_for_dfu
@@ -2613,10 +2976,14 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 sleep 10
             fi
             if [[ "$version" == "7."* || "$version" == "8."* ]]; then
-                cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
+                if [ "$os" = "Darwin" ]; then
+                    cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
+                else
+                    cd "$dir"/$deviceid/$cpid/ramdisk/11.4
+                fi
             elif [[ "$version" == "10.3"* || "$version" == "11."* ||  "$version" == "12."* || "$version" == "13."* ]]; then
                 cd "$dir"/$deviceid/$cpid/ramdisk/$r
-            elif [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
+            elif [[ "$os" = "Darwin" && ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
                 cd "$dir"/$deviceid/$cpid/ramdisk/9.3
             else
                 cd "$dir"/$deviceid/$cpid/ramdisk/11.4
@@ -2943,7 +3310,110 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs -o suid,dev /dev/disk0s1s2 /mnt2" 2> /dev/null
             fi
             echo "[*] Uploading $dir/$deviceid/$cpid/$version/OS.tar, this may take up to 10 minutes.."
-            "$bin"/pv "$dir"/$deviceid/$cpid/$version/OS.tar | "$bin"/sshpass -p "alpine" ssh -p2222 root@localhost 'cat | tar x -C /mnt1'
+            if [ "$os" = "Darwin" ]; then
+                "$bin"/pv "$dir"/$deviceid/$cpid/$version/OS.tar | "$bin"/sshpass -p "alpine" ssh -p2222 root@localhost 'cat | tar x -C /mnt1'
+            else
+                "$bin"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P 2222 -v "$dir"/$deviceid/$cpid/$version/rw.dmg root@localhost:/mnt2
+                disktomount="$("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/hdik /mnt2/rw.dmg' | tail -n 1 | cut -d ' ' -f 1)"
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_hfs -o ro $disktomount /mnt3"
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cp -av /mnt3/* /mnt1"
+                if [[ "$version" == "7."* || "$version" == "8."* ]]; then
+                    $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
+                    sleep 5
+                    _kill_if_running iproxy
+                    echo "[*] Device should boot to Recovery mode. Please wait..."
+                    if [ "$os" = "Darwin" ]; then
+                        if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+                            if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                                sleep 10
+                                if [ "$(get_device_mode)" = "recovery" ]; then
+                                    "$bin"/irecovery -c "setenv auto-boot true"
+                                    "$bin"/irecovery -c "saveenv"
+                                    "$bin"/dfuhelper.sh
+                                else
+                                    "$bin"/dfuhelper4.sh
+                                    sleep 5
+                                    "$bin"/irecovery -c "setenv auto-boot true"
+                                    "$bin"/irecovery -c "saveenv"
+                                    "$bin"/dfuhelper.sh
+                                fi
+                            elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                                "$bin"/dfuhelper2.sh
+                            else
+                                "$bin"/dfuhelper3.sh
+                            fi
+                        fi
+                    else
+                        if ! (lsusb | cut -d' ' -f6 | grep '05ac:' | cut -d: -f2 | grep 1227 >> /dev/null); then
+                            if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                                sleep 10
+                                if [ "$(get_device_mode)" = "recovery" ]; then
+                                    "$bin"/irecovery -c "setenv auto-boot true"
+                                    "$bin"/irecovery -c "saveenv"
+                                    "$bin"/dfuhelper.sh
+                                else
+                                    "$bin"/dfuhelper4.sh
+                                    sleep 5
+                                    "$bin"/irecovery -c "setenv auto-boot true"
+                                    "$bin"/irecovery -c "saveenv"
+                                    "$bin"/dfuhelper.sh
+                                fi
+                            elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                                "$bin"/dfuhelper2.sh
+                            else
+                                "$bin"/dfuhelper3.sh
+                            fi
+                        fi
+                    fi
+                    _wait_for_dfu
+                    sudo killall -STOP -c usbd
+                    read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
+                    if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
+                        read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                        echo "[*] Waiting 10 seconds before continuing.."
+                        sleep 10
+                    elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
+                        echo "[*] Ok no problem, continuing.."
+                    else
+                        echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
+                        read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                        echo "[*] Waiting 10 seconds before continuing.."
+                        sleep 10
+                    fi
+                    if [[ "$version" == "7."* || "$version" == "8."* ]]; then
+                        cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
+                    elif [[ "$version" == "10.3"* || "$version" == "11."* ||  "$version" == "12."* || "$version" == "13."* ]]; then
+                        cd "$dir"/$deviceid/$cpid/ramdisk/$r
+                    elif [[ "$os" = "Darwin" && ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
+                        cd "$dir"/$deviceid/$cpid/ramdisk/9.3
+                    else
+                        cd "$dir"/$deviceid/$cpid/ramdisk/11.4
+                    fi
+                    _boot_ramdisk $deviceid $replace $r
+                    cd "$dir"/
+                    read -p "[*] Press Enter once your device has fully booted into the SSH ramdisk. " r1
+                    echo "[*] Waiting 6 seconds before continuing.."
+                    sleep 6
+                    sudo killall -STOP -c usbd
+                    read -p "[*] You may need to unplug and replug your cable, would you like to? " r1
+                    if [[ "$r1" == "yes" || "$r1" == "y" ]]; then
+                        read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                        echo "[*] Waiting 10 seconds before continuing.."
+                        sleep 10
+                    elif [[ "$r1" == "no" || "$r1" == "n" ]]; then
+                        echo "[*] Ok no problem, continuing.."
+                    else
+                        echo "[*] That was not a response I was expecting, I'm going to treat that as a 'yes'.."
+                        read -p "[*] Unplug and replug the end of the cable that is attached to your Mac and then press the Enter key on your keyboard " r1
+                        echo "[*] Waiting 10 seconds before continuing.."
+                        sleep 10
+                    fi
+                    "$bin"/iproxy 2222 22 &
+                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/sbin/fsck'
+                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_hfs /dev/disk0s1s1 /mnt1" 2> /dev/null
+                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs -o suid,dev /dev/disk0s1s2 /mnt2" 2> /dev/null
+                fi
+            fi
             if [[ "$version" == "7."* || "$version" == "8."* || "$version" == "9."* ]]; then
                 "$bin"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P 2222 "$dir"/jb/cydia_ios7.tar.gz root@localhost:/mnt2 2> /dev/null
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xzvf /mnt2/cydia_ios7.tar.gz -C /mnt1"
@@ -3243,22 +3713,43 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 echo "[*] We will try to boot iOS $r to generate new keybags for your device"
                 sleep 5
                 _kill_if_running iproxy
-                if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                    if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
-                        sleep 10
-                        if [ "$(get_device_mode)" = "recovery" ]; then
-                            "$bin"/dfuhelper.sh
+                if [ "$os" = "Darwin" ]; then
+                    if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+                        if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                            sleep 10
+                            if [ "$(get_device_mode)" = "recovery" ]; then
+                                "$bin"/dfuhelper.sh
+                            else
+                                "$bin"/dfuhelper4.sh
+                                sleep 5
+                                "$bin"/irecovery -c "setenv auto-boot false"
+                                "$bin"/irecovery -c "saveenv"
+                                "$bin"/dfuhelper.sh
+                            fi
+                        elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                            "$bin"/dfuhelper2.sh
                         else
-                            "$bin"/dfuhelper4.sh
-                            sleep 5
-                            "$bin"/irecovery -c "setenv auto-boot false"
-                            "$bin"/irecovery -c "saveenv"
-                            "$bin"/dfuhelper.sh
+                            "$bin"/dfuhelper3.sh
                         fi
-                    elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
-                        "$bin"/dfuhelper2.sh
-                    else
-                        "$bin"/dfuhelper3.sh
+                    fi
+                else
+                    if ! (lsusb | cut -d' ' -f6 | grep '05ac:' | cut -d: -f2 | grep 1227 >> /dev/null); then
+                        if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                            sleep 10
+                            if [ "$(get_device_mode)" = "recovery" ]; then
+                                "$bin"/dfuhelper.sh
+                            else
+                                "$bin"/dfuhelper4.sh
+                                sleep 5
+                                "$bin"/irecovery -c "setenv auto-boot false"
+                                "$bin"/irecovery -c "saveenv"
+                                "$bin"/dfuhelper.sh
+                            fi
+                        elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                            "$bin"/dfuhelper2.sh
+                        else
+                            "$bin"/dfuhelper3.sh
+                        fi
                     fi
                 fi
                 _wait_for_dfu
@@ -3284,22 +3775,43 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 echo "[*] Please follow the on screen instructions to put your device back into dfu mode"
                 echo "[*] We will then boot into a ramdisk to fixup iOS $r to allow it to be booted again as normal"
                 sleep 5
-                if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                    if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
-                        sleep 10
-                        if [ "$(get_device_mode)" = "recovery" ]; then
-                            "$bin"/dfuhelper.sh
+                if [ "$os" = "Darwin" ]; then
+                    if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+                        if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                            sleep 10
+                            if [ "$(get_device_mode)" = "recovery" ]; then
+                                "$bin"/dfuhelper.sh
+                            else
+                                "$bin"/dfuhelper4.sh
+                                sleep 5
+                                "$bin"/irecovery -c "setenv auto-boot false"
+                                "$bin"/irecovery -c "saveenv"
+                                "$bin"/dfuhelper.sh
+                            fi
+                        elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                            "$bin"/dfuhelper2.sh
                         else
-                            "$bin"/dfuhelper4.sh
-                            sleep 5
-                            "$bin"/irecovery -c "setenv auto-boot false"
-                            "$bin"/irecovery -c "saveenv"
-                            "$bin"/dfuhelper.sh
+                            "$bin"/dfuhelper3.sh
                         fi
-                    elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
-                        "$bin"/dfuhelper2.sh
-                    else
-                        "$bin"/dfuhelper3.sh
+                    fi
+                else
+                    if ! (lsusb | cut -d' ' -f6 | grep '05ac:' | cut -d: -f2 | grep 1227 >> /dev/null); then
+                        if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                            sleep 10
+                            if [ "$(get_device_mode)" = "recovery" ]; then
+                                "$bin"/dfuhelper.sh
+                            else
+                                "$bin"/dfuhelper4.sh
+                                sleep 5
+                                "$bin"/irecovery -c "setenv auto-boot false"
+                                "$bin"/irecovery -c "saveenv"
+                                "$bin"/dfuhelper.sh
+                            fi
+                        elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                            "$bin"/dfuhelper2.sh
+                        else
+                            "$bin"/dfuhelper3.sh
+                        fi
                     fi
                 fi
                 _wait_for_dfu
@@ -3321,7 +3833,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                     cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
                 elif [[ "$version" == "10.3"* || "$version" == "11."* ||  "$version" == "12."* ||  "$version" == "13."* ]]; then
                     cd "$dir"/$deviceid/$cpid/ramdisk/$r
-                elif [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
+                elif [[ "$os" = "Darwin" && ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
                     cd "$dir"/$deviceid/$cpid/ramdisk/9.3
                 else
                     cd "$dir"/$deviceid/$cpid/ramdisk/11.4
@@ -3359,22 +3871,43 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 echo "[*] We will try to boot iOS $r for the first time with hfs filesystem on your device"
                 sleep 5
                 _kill_if_running iproxy
-                if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                    if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
-                        sleep 10
-                        if [ "$(get_device_mode)" = "recovery" ]; then
-                            "$bin"/dfuhelper.sh
+                if [ "$os" = "Darwin" ]; then
+                    if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+                        if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                            sleep 10
+                            if [ "$(get_device_mode)" = "recovery" ]; then
+                                "$bin"/dfuhelper.sh
+                            else
+                                "$bin"/dfuhelper4.sh
+                                sleep 5
+                                "$bin"/irecovery -c "setenv auto-boot false"
+                                "$bin"/irecovery -c "saveenv"
+                                "$bin"/dfuhelper.sh
+                            fi
+                        elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                            "$bin"/dfuhelper2.sh
                         else
-                            "$bin"/dfuhelper4.sh
-                            sleep 5
-                            "$bin"/irecovery -c "setenv auto-boot false"
-                            "$bin"/irecovery -c "saveenv"
-                            "$bin"/dfuhelper.sh
+                            "$bin"/dfuhelper3.sh
                         fi
-                    elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
-                        "$bin"/dfuhelper2.sh
-                    else
-                        "$bin"/dfuhelper3.sh
+                    fi
+                else
+                    if ! (lsusb | cut -d' ' -f6 | grep '05ac:' | cut -d: -f2 | grep 1227 >> /dev/null); then
+                        if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                            sleep 10
+                            if [ "$(get_device_mode)" = "recovery" ]; then
+                                "$bin"/dfuhelper.sh
+                            else
+                                "$bin"/dfuhelper4.sh
+                                sleep 5
+                                "$bin"/irecovery -c "setenv auto-boot false"
+                                "$bin"/irecovery -c "saveenv"
+                                "$bin"/dfuhelper.sh
+                            fi
+                        elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                            "$bin"/dfuhelper2.sh
+                        else
+                            "$bin"/dfuhelper3.sh
+                        fi
                     fi
                 fi
                 _wait_for_dfu
@@ -3402,22 +3935,43 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                     echo "[*] Then follow the on screen instructions to put your device back into dfu mode"
                     echo "[*] We will then boot into a ramdisk to run fsck before booting iOS $version"
                     sleep 5
-                    if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                        if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
-                            sleep 10
-                            if [ "$(get_device_mode)" = "recovery" ]; then
-                                "$bin"/dfuhelper.sh
+                    if [ "$os" = "Darwin" ]; then
+                        if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+                            if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                                sleep 10
+                                if [ "$(get_device_mode)" = "recovery" ]; then
+                                    "$bin"/dfuhelper.sh
+                                else
+                                    "$bin"/dfuhelper4.sh
+                                    sleep 5
+                                    "$bin"/irecovery -c "setenv auto-boot false"
+                                    "$bin"/irecovery -c "saveenv"
+                                    "$bin"/dfuhelper.sh
+                                fi
+                            elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                                "$bin"/dfuhelper2.sh
                             else
-                                "$bin"/dfuhelper4.sh
-                                sleep 5
-                                "$bin"/irecovery -c "setenv auto-boot false"
-                                "$bin"/irecovery -c "saveenv"
-                                "$bin"/dfuhelper.sh
+                                "$bin"/dfuhelper3.sh
                             fi
-                        elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
-                            "$bin"/dfuhelper2.sh
-                        else
-                            "$bin"/dfuhelper3.sh
+                        fi
+                    else
+                        if ! (lsusb | cut -d' ' -f6 | grep '05ac:' | cut -d: -f2 | grep 1227 >> /dev/null); then
+                            if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                                sleep 10
+                                if [ "$(get_device_mode)" = "recovery" ]; then
+                                    "$bin"/dfuhelper.sh
+                                else
+                                    "$bin"/dfuhelper4.sh
+                                    sleep 5
+                                    "$bin"/irecovery -c "setenv auto-boot false"
+                                    "$bin"/irecovery -c "saveenv"
+                                    "$bin"/dfuhelper.sh
+                                fi
+                            elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                                "$bin"/dfuhelper2.sh
+                            else
+                                "$bin"/dfuhelper3.sh
+                            fi
                         fi
                     fi
                     _wait_for_dfu
@@ -3439,7 +3993,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                         cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
                     elif [[ "$version" == "10.3"* || "$version" == "11."* ||  "$version" == "12."* ||  "$version" == "13."* ]]; then
                         cd "$dir"/$deviceid/$cpid/ramdisk/$r
-                    elif [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
+                    elif [[ "$os" = "Darwin" && ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
                         cd "$dir"/$deviceid/$cpid/ramdisk/9.3
                     else
                         cd "$dir"/$deviceid/$cpid/ramdisk/11.4
@@ -3491,22 +4045,43 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
         if [[ ! -e "$dir"/$deviceid/0.0/activation_records/activation_record.plist || "$force_activation" == 1 ]]; then
             if [[ "$version" == "9.3"* || "$version" == "10."* || "$version" == "11."* || "$version" == "12."* ||  "$version" == "13."* ]]; then
                 if [ -e "$dir"/$deviceid/$cpid/$version/iBSS.img4 ]; then
-                    if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                        if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
-                            sleep 10
-                            if [ "$(get_device_mode)" = "recovery" ]; then
-                                "$bin"/dfuhelper.sh
+                    if [ "$os" = "Darwin" ]; then
+                        if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+                            if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                                sleep 10
+                                if [ "$(get_device_mode)" = "recovery" ]; then
+                                    "$bin"/dfuhelper.sh
+                                else
+                                    "$bin"/dfuhelper4.sh
+                                    sleep 5
+                                    "$bin"/irecovery -c "setenv auto-boot false"
+                                    "$bin"/irecovery -c "saveenv"
+                                    "$bin"/dfuhelper.sh
+                                fi
+                            elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                                "$bin"/dfuhelper2.sh
                             else
-                                "$bin"/dfuhelper4.sh
-                                sleep 5
-                                "$bin"/irecovery -c "setenv auto-boot false"
-                                "$bin"/irecovery -c "saveenv"
-                                "$bin"/dfuhelper.sh
+                                "$bin"/dfuhelper3.sh
                             fi
-                        elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
-                            "$bin"/dfuhelper2.sh
-                        else
-                            "$bin"/dfuhelper3.sh
+                        fi
+                    else
+                        if ! (lsusb | cut -d' ' -f6 | grep '05ac:' | cut -d: -f2 | grep 1227 >> /dev/null); then
+                            if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                                sleep 10
+                                if [ "$(get_device_mode)" = "recovery" ]; then
+                                    "$bin"/dfuhelper.sh
+                                else
+                                    "$bin"/dfuhelper4.sh
+                                    sleep 5
+                                    "$bin"/irecovery -c "setenv auto-boot false"
+                                    "$bin"/irecovery -c "saveenv"
+                                    "$bin"/dfuhelper.sh
+                                fi
+                            elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                                "$bin"/dfuhelper2.sh
+                            else
+                                "$bin"/dfuhelper3.sh
+                            fi
                         fi
                     fi
                     _wait_for_dfu
@@ -3534,22 +4109,43 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 echo "[*] When your device gets to the setup screen, put the device back into dfu mode"
                 echo "[*] We will then activate your device to allow you to navigate to the home screen"
                 sleep 5
-                if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                    if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
-                        sleep 10
-                        if [ "$(get_device_mode)" = "recovery" ]; then
-                            "$bin"/dfuhelper.sh
+                if [ "$os" = "Darwin" ]; then
+                    if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+                        if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                            sleep 10
+                            if [ "$(get_device_mode)" = "recovery" ]; then
+                                "$bin"/dfuhelper.sh
+                            else
+                                "$bin"/dfuhelper4.sh
+                                sleep 5
+                                "$bin"/irecovery -c "setenv auto-boot false"
+                                "$bin"/irecovery -c "saveenv"
+                                "$bin"/dfuhelper.sh
+                            fi
+                        elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                            "$bin"/dfuhelper2.sh
                         else
-                            "$bin"/dfuhelper4.sh
-                            sleep 5
-                            "$bin"/irecovery -c "setenv auto-boot false"
-                            "$bin"/irecovery -c "saveenv"
-                            "$bin"/dfuhelper.sh
+                            "$bin"/dfuhelper3.sh
                         fi
-                    elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
-                        "$bin"/dfuhelper2.sh
-                    else
-                        "$bin"/dfuhelper3.sh
+                    fi
+                else
+                    if ! (lsusb | cut -d' ' -f6 | grep '05ac:' | cut -d: -f2 | grep 1227 >> /dev/null); then
+                        if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                            sleep 10
+                            if [ "$(get_device_mode)" = "recovery" ]; then
+                                "$bin"/dfuhelper.sh
+                            else
+                                "$bin"/dfuhelper4.sh
+                                sleep 5
+                                "$bin"/irecovery -c "setenv auto-boot false"
+                                "$bin"/irecovery -c "saveenv"
+                                "$bin"/dfuhelper.sh
+                            fi
+                        elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                            "$bin"/dfuhelper2.sh
+                        else
+                            "$bin"/dfuhelper3.sh
+                        fi
                     fi
                 fi
                 _wait_for_dfu
@@ -3571,7 +4167,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                     cd "$dir"/$deviceid/$cpid/ramdisk/8.4.1
                 elif [[ "$version" == "10.3"* || "$version" == "11."* ||  "$version" == "12."* ||  "$version" == "13."* ]]; then
                     cd "$dir"/$deviceid/$cpid/ramdisk/$r
-                elif [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
+                elif [[ "$os" = "Darwin" && ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$version" == "9."* ]]; then
                     cd "$dir"/$deviceid/$cpid/ramdisk/9.3
                 else
                     cd "$dir"/$deviceid/$cpid/ramdisk/11.4
@@ -3653,22 +4249,43 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
         fi
         _kill_if_running iproxy
         if [ -e "$dir"/$deviceid/$cpid/$version/iBSS.img4 ]; then
-            if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
-                if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
-                    sleep 10
-                    if [ "$(get_device_mode)" = "recovery" ]; then
-                        "$bin"/dfuhelper.sh
+            if [ "$os" = "Darwin" ]; then
+                if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+                    if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                        sleep 10
+                        if [ "$(get_device_mode)" = "recovery" ]; then
+                            "$bin"/dfuhelper.sh
+                        else
+                            "$bin"/dfuhelper4.sh
+                            sleep 5
+                            "$bin"/irecovery -c "setenv auto-boot false"
+                            "$bin"/irecovery -c "saveenv"
+                            "$bin"/dfuhelper.sh
+                        fi
+                    elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                        "$bin"/dfuhelper2.sh
                     else
-                        "$bin"/dfuhelper4.sh
-                        sleep 5
-                        "$bin"/irecovery -c "setenv auto-boot false"
-                        "$bin"/irecovery -c "saveenv"
-                        "$bin"/dfuhelper.sh
+                        "$bin"/dfuhelper3.sh
                     fi
-                elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
-                    "$bin"/dfuhelper2.sh
-                else
-                    "$bin"/dfuhelper3.sh
+                fi
+            else
+                if ! (lsusb | cut -d' ' -f6 | grep '05ac:' | cut -d: -f2 | grep 1227 >> /dev/null); then
+                    if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                        sleep 10
+                        if [ "$(get_device_mode)" = "recovery" ]; then
+                            "$bin"/dfuhelper.sh
+                        else
+                            "$bin"/dfuhelper4.sh
+                            sleep 5
+                            "$bin"/irecovery -c "setenv auto-boot false"
+                            "$bin"/irecovery -c "saveenv"
+                            "$bin"/dfuhelper.sh
+                        fi
+                    elif [[ "$cpid" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+                        "$bin"/dfuhelper2.sh
+                    else
+                        "$bin"/dfuhelper3.sh
+                    fi
                 fi
             fi
             _wait_for_dfu
