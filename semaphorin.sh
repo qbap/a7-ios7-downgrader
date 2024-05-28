@@ -433,14 +433,15 @@ _download_ramdisk_boot_files() {
                 fi
                 hdiutil attach -mountpoint /tmp/ramdisk "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg
                 sudo diskutil enableOwnership /tmp/ramdisk
-                sudo "$bin"/gnutar -xzvf "$sshtars"/ssh.tar.gz -C /tmp/ramdisk
+                gzip -d "$sshtars"/ssh.tar.gz
+                sudo "$bin"/gnutar -xvf "$sshtars"/ssh.tar -C /tmp/ramdisk
                 if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* || "$3" == "10."* || "$3" == "11."* ]]; then
                     # fix scp
-                    sudo "$bin"/gnutar -xvf "$dir"/jb/libcharset.1.dylib_libiconv.2.dylib.tar -C /tmp/ramdisk/usr/lib
+                    sudo "$bin"/gnutar -xvf "$bin"/libcharset.1.dylib_libiconv.2.dylib.tar -C /tmp/ramdisk/usr/lib
                 fi
                 if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* || "$3" == "10."* || "$3" == "11."* || "$3" == "12."* || "$3" == "13.0"* || "$3" == "13.1"* || "$3" == "13.2"* || "$3" == "13.3"* ]]; then
                     # fix scp
-                    sudo "$bin"/gnutar -xvf "$dir"/jb/libresolv.9.dylib.tar -C /tmp/ramdisk/usr/lib
+                    sudo "$bin"/gnutar -xvf "$bin"/libresolv.9.dylib.tar -C /tmp/ramdisk/usr/lib
                 fi
                 # gptfdisk automation shenanigans
                 sudo "$bin"/gnutar -xvf "$dir"/jb/gpt.txt_hfs_dualboot.tar -C /tmp/ramdisk
@@ -473,14 +474,15 @@ _download_ramdisk_boot_files() {
                     hdiutil attach -mountpoint /tmp/ramdisk "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg
                 fi
                 sudo diskutil enableOwnership /tmp/ramdisk
-                sudo "$bin"/gnutar -xzvf "$sshtars"/ssh.tar.gz -C /tmp/ramdisk
+                gzip -d "$sshtars"/ssh.tar.gz
+                sudo "$bin"/gnutar -xvf "$sshtars"/ssh.tar -C /tmp/ramdisk
                 if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* || "$3" == "10."* || "$3" == "11."* ]]; then
                     # fix scp
-                    sudo "$bin"/gnutar -xvf "$dir"/jb/libcharset.1.dylib_libiconv.2.dylib.tar -C /tmp/ramdisk/usr/lib
+                    sudo "$bin"/gnutar -xvf "$bin"/libcharset.1.dylib_libiconv.2.dylib.tar -C /tmp/ramdisk/usr/lib
                 fi
                 if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* || "$3" == "10."* || "$3" == "11."* || "$3" == "12."* || "$3" == "13.0"* || "$3" == "13.1"* || "$3" == "13.2"* || "$3" == "13.3"* ]]; then
                     # fix scp
-                    sudo "$bin"/gnutar -xvf "$dir"/jb/libresolv.9.dylib.tar -C /tmp/ramdisk/usr/lib
+                    sudo "$bin"/gnutar -xvf "$bin"/libresolv.9.dylib.tar -C /tmp/ramdisk/usr/lib
                 fi
                 # gptfdisk automation shenanigans
                 sudo "$bin"/gnutar -xvf "$dir"/jb/gpt.txt_hfs_dualboot.tar -C /tmp/ramdisk
@@ -525,11 +527,11 @@ _download_ramdisk_boot_files() {
                 "$bin"/hfsplus "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg untar "$sshtars"/ssh.tar
                 if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* || "$3" == "10."* || "$3" == "11."* ]]; then
                     # fix scp
-                    "$bin"/hfsplus "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg untar "$dir"/jb/libcharset.1.dylib_libiconv.2.dylib.tar
+                    "$bin"/hfsplus "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg untar "$bin"/libcharset.1.dylib_libiconv.2.dylib.tar
                 fi
                 if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* || "$3" == "10."* || "$3" == "11."* || "$3" == "12."* || "$3" == "13.0"* || "$3" == "13.1"* || "$3" == "13.2"* || "$3" == "13.3"* ]]; then
                     # fix scp
-                    "$bin"/hfsplus "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg untar "$dir"/jb/libresolv.9.dylib.tar
+                    "$bin"/hfsplus "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg untar "$bin"/libresolv.9.dylib.tar
                 fi
                 # gptfdisk automation shenanigans
                 "$bin"/hfsplus "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg untar "$dir"/jb/gpt.txt_hfs_dualboot.tar
@@ -560,11 +562,11 @@ _download_ramdisk_boot_files() {
                 "$bin"/hfsplus "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg untar "$sshtars"/ssh.tar
                 if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* || "$3" == "10."* || "$3" == "11."* ]]; then
                     # fix scp
-                    "$bin"/hfsplus "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg untar "$dir"/jb/libcharset.1.dylib_libiconv.2.dylib.tar
+                    "$bin"/hfsplus "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg untar "$bin"/libcharset.1.dylib_libiconv.2.dylib.tar
                 fi
                 if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* || "$3" == "10."* || "$3" == "11."* || "$3" == "12."* || "$3" == "13.0"* || "$3" == "13.1"* || "$3" == "13.2"* || "$3" == "13.3"* ]]; then
                     # fix scp
-                    "$bin"/hfsplus "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg untar "$dir"/jb/libresolv.9.dylib.tar
+                    "$bin"/hfsplus "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg untar "$bin"/libresolv.9.dylib.tar
                 fi
                 # gptfdisk automation shenanigans
                 "$bin"/hfsplus "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg untar "$dir"/jb/gpt.txt_hfs_dualboot.tar
