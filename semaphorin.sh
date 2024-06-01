@@ -1198,7 +1198,7 @@ _download_boot_files() {
                 "$bin"/img4 -i "$dir"/$1/$cpid/$3/trustcache.im4p -o "$dir"/$1/$cpid/$3/trustcache -M IM4M -T trst
             fi
             "$bin"/img4tool -e -o "$dir"/$1/$cpid/$3/devicetree.out "$dir"/$1/$cpid/$3/DeviceTree.dec
-            "$bin"/dtree_patcher "$dir"/$1/$cpid/$3/devicetree.out "$dir"/$1/$cpid/$3/DeviceTree.patched -n -d 0
+            "$bin"/dtree_patcher "$dir"/$1/$cpid/$3/devicetree.out "$dir"/$1/$cpid/$3/DeviceTree.patched -n
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/DeviceTree.patched -o "$dir"/$1/$cpid/$3/devicetree.img4 -A -M IM4M -T rdtr
         elif [[ "$3" == "13."* ]]; then
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/iBSS.patched -o "$dir"/$1/$cpid/$3/iBSS.img4 -M IM4M -A -T ibss
@@ -2092,11 +2092,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
             sleep 10
         fi
         cd "$dir"/$deviceid/$cpid/ramdisk/$rdversion
-        if [[ "$version" == "16."* || "$version" == "17."* ]]; then
-            pongo=1
-        else
-            pongo=0
-        fi
+        pongo=0
     else
         if [[ "$version" == "7."* || "$version" == "8."* ]]; then
             if [ "$os" = "Darwin" ]; then
@@ -2250,6 +2246,11 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
         fi
     fi
     cd "$wd"
+    if [[ "$ramdisk" == 1 || "$dump_blobs" == 1 || "$dump_nand" == 1 || "$restore_activation" == 1 || "$restore_nand" == 1 || "$restore_mnt1" == 1 || "$restore_mnt2" == 1 || "$disable_NoMoreSIGABRT" == 1 || "$NoMoreSIGABRT" == 1 ]]; then
+        if [[ "$version" == "16."* || "$version" == "17."* ]]; then
+            pongo=1
+        fi
+    fi
     _boot_ramdisk $deviceid $replace $r
     if [[ "$hit2" == 1 ]]; then
         hit2=0
@@ -3123,6 +3124,13 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/hdik -e $disktomount"
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt5/OS.dmg"
             fi
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt3" 2> /dev/null
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt4" 2> /dev/null
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt5" 2> /dev/null
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "bash -c mount_filesystems" 2> /dev/null
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt3" 2> /dev/null
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt4" 2> /dev/null
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt5" 2> /dev/null
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/$systemfs /mnt4"
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/$datafs /mnt5"
             "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mv -v /mnt4/private/var/* /mnt5"
@@ -4448,11 +4456,13 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                     if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
                         sleep 10
                         if [ "$(get_device_mode)" = "recovery" ]; then
+                            "$bin"/irecovery -c "setenv auto-boot true"
+                            "$bin"/irecovery -c "saveenv"
                             "$bin"/dfuhelper.sh
                         else
                             "$bin"/dfuhelper4.sh
                             sleep 5
-                            "$bin"/irecovery -c "setenv auto-boot false"
+                            "$bin"/irecovery -c "setenv auto-boot true"
                             "$bin"/irecovery -c "saveenv"
                             "$bin"/dfuhelper.sh
                         fi
@@ -4467,11 +4477,13 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                     if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
                         sleep 10
                         if [ "$(get_device_mode)" = "recovery" ]; then
+                            "$bin"/irecovery -c "setenv auto-boot true"
+                            "$bin"/irecovery -c "saveenv"
                             "$bin"/dfuhelper.sh
                         else
                             "$bin"/dfuhelper4.sh
                             sleep 5
-                            "$bin"/irecovery -c "setenv auto-boot false"
+                            "$bin"/irecovery -c "setenv auto-boot true"
                             "$bin"/irecovery -c "saveenv"
                             "$bin"/dfuhelper.sh
                         fi
