@@ -1558,12 +1558,8 @@ _download_root_fs() {
             else
                 fn="$("$bin"/PlistBuddy -c "Print BuildIdentities:0:Manifest:OS:Info:Path" BuildManifest.plist | tr -d '"')"
             fi
-            if [ "$os" = "Darwin" ]; then
-                "$bin"/pzb -g "$fn" "$ipswurl"
-            else
-                "$bin"/aria2c $ipswurl
-                "$bin"/7z x $(find . -name '*.ipsw*')
-            fi
+            "$bin"/aria2c $ipswurl
+            "$bin"/7z x $(find . -name '*.ipsw*')
             if [ "$os" = "Darwin" ]; then
                 asr -source $fn -target "$dir"/$1/$cpid/$3/OS.dmg --embed -erase -noprompt --chunkchecksum --puppetstrings
             else
