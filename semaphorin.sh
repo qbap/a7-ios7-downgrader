@@ -539,6 +539,8 @@ _download_ramdisk_boot_files() {
                 # gptfdisk automation shenanigans
                 sudo "$bin"/gnutar -xvf "$dir"/jb/gpt.txt_hfs_dualboot.tar -C /tmp/ramdisk
                 sudo "$bin"/gnutar -xvf "$dir"/jb/gpt.txt.tar -C /tmp/ramdisk
+                # fixup update partition script, i.e. changes all Update partitions to UpdateX partitions
+                sudo "$bin"/gnutar -xvf "$dir"/jb/fixup_update_partition.tar -C /tmp/ramdisk
                 hdiutil detach /tmp/ramdisk
                 "$bin"/img4tool -c "$dir"/$1/$cpid/ramdisk/$3/ramdisk.im4p -t rdsk "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg
                 "$bin"/img4tool -c "$dir"/$1/$cpid/ramdisk/$3/ramdisk.img4 -p "$dir"/$1/$cpid/ramdisk/$3/ramdisk.im4p -m IM4M
@@ -580,6 +582,8 @@ _download_ramdisk_boot_files() {
                 # gptfdisk automation shenanigans
                 sudo "$bin"/gnutar -xvf "$dir"/jb/gpt.txt_hfs_dualboot.tar -C /tmp/ramdisk
                 sudo "$bin"/gnutar -xvf "$dir"/jb/gpt.txt.tar -C /tmp/ramdisk
+                # fixup update partition script, i.e. changes all Update partitions to UpdateX partitions
+                sudo "$bin"/gnutar -xvf "$dir"/jb/fixup_update_partition.tar -C /tmp/ramdisk
                 hdiutil detach -force /tmp/ramdisk
                 if [[ "$3" == *"16"* || "$3" == *"17"* ]]; then
                     hdiutil resize -sectors min "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk1.dmg
@@ -641,6 +645,8 @@ _download_ramdisk_boot_files() {
                 # gptfdisk automation shenanigans
                 "$bin"/hfsplus "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg untar "$dir"/jb/gpt.txt_hfs_dualboot.tar
                 "$bin"/hfsplus "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg untar "$dir"/jb/gpt.txt.tar
+                # fixup update partition script, i.e. changes all Update partitions to UpdateX partitions
+                "$bin"/hfsplus "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg untar "$dir"/jb/fixup_update_partition.tar
                 "$bin"/img4tool -c "$dir"/$1/$cpid/ramdisk/$3/ramdisk.im4p -t rdsk "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg
                 "$bin"/img4tool -c "$dir"/$1/$cpid/ramdisk/$3/ramdisk.img4 -p "$dir"/$1/$cpid/ramdisk/$3/ramdisk.im4p -m IM4M
                 if [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* && "$3" == "9."* ]]; then
@@ -676,6 +682,8 @@ _download_ramdisk_boot_files() {
                 # gptfdisk automation shenanigans
                 "$bin"/hfsplus "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg untar "$dir"/jb/gpt.txt_hfs_dualboot.tar
                 "$bin"/hfsplus "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg untar "$dir"/jb/gpt.txt.tar
+                # fixup update partition script, i.e. changes all Update partitions to UpdateX partitions
+                "$bin"/hfsplus "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg untar "$dir"/jb/fixup_update_partition.tar
                 "$bin"/img4 -i "$dir"/$1/$cpid/ramdisk/$3/RestoreRamDisk.dmg -o "$dir"/$1/$cpid/ramdisk/$3/ramdisk.img4 -M IM4M -A -T rdsk
                 "$bin"/iBoot64Patcher "$dir"/$1/$cpid/ramdisk/$3/iBSS.dec "$dir"/$1/$cpid/ramdisk/$3/iBSS.patched
                 if [[ ! "$deviceid" == "iPhone6"* && ! "$deviceid" == "iPhone7"* && ! "$deviceid" == "iPad4"* && ! "$deviceid" == "iPad5"* && ! "$deviceid" == "iPod7"* ]]; then
@@ -1190,7 +1198,7 @@ _download_boot_files() {
                 "$bin"/img4 -i "$dir"/$1/$cpid/$3/trustcache.im4p -o "$dir"/$1/$cpid/$3/trustcache -M IM4M -T trst
             fi
             "$bin"/img4tool -e -o "$dir"/$1/$cpid/$3/devicetree.out "$dir"/$1/$cpid/$3/DeviceTree.dec
-            "$bin"/dtree_patcher "$dir"/$1/$cpid/$3/devicetree.out "$dir"/$1/$cpid/$3/DeviceTree.patched -n
+            "$bin"/dtree_patcher "$dir"/$1/$cpid/$3/devicetree.out "$dir"/$1/$cpid/$3/DeviceTree.patched -n -d 0
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/DeviceTree.patched -o "$dir"/$1/$cpid/$3/devicetree.img4 -A -M IM4M -T rdtr
         elif [[ "$3" == "13."* ]]; then
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/iBSS.patched -o "$dir"/$1/$cpid/$3/iBSS.img4 -M IM4M -A -T ibss
@@ -1489,7 +1497,13 @@ _download_clean_boot_files() {
             "$bin"/kairos "$dir"/$1/clean/$cpid/$3/iBEC.dec "$dir"/$1/clean/$cpid/$3/iBEC.patched -b "$boot_args rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1 amfi_get_out_of_my_way=1 amfi_allow_any_signature=1" -n
         else
             "$bin"/iBoot64Patcher "$dir"/$1/clean/$cpid/$3/iBSS.dec "$dir"/$1/clean/$cpid/$3/iBSS.patched
-            "$bin"/iBoot64Patcher "$dir"/$1/clean/$cpid/$3/iBEC.dec "$dir"/$1/clean/$cpid/$3/iBEC.patched -b "$boot_args rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1 amfi_get_out_of_my_way=1 amfi_allow_any_signature=1" -n
+            if [[ "$3" == "15."* ]]; then
+                "$bin"/iBoot64Patcher "$dir"/$1/clean/$cpid/$3/iBEC.dec "$dir"/$1/clean/$cpid/$3/iBEC.patched -b "$boot_args rd=disk0s1s6 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1 amfi_get_out_of_my_way=1 amfi_allow_any_signature=1" -n
+            elif [[ "$3" == "16."* ]]; then
+                "$bin"/iBoot64Patcher "$dir"/$1/clean/$cpid/$3/iBEC.dec "$dir"/$1/clean/$cpid/$3/iBEC.patched -b "$boot_args rd=disk1s6 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1 amfi_get_out_of_my_way=1 amfi_allow_any_signature=1" -n
+            else
+                "$bin"/iBoot64Patcher "$dir"/$1/clean/$cpid/$3/iBEC.dec "$dir"/$1/clean/$cpid/$3/iBEC.patched -b "$boot_args rd=disk0s1s1 amfi=0xff cs_enforcement_disable=1 keepsyms=1 debug=0x2014e PE_i_can_has_debugger=1 amfi_get_out_of_my_way=1 amfi_allow_any_signature=1" -n
+            fi
         fi
         "$bin"/img4 -i "$dir"/$1/clean/$cpid/$3/iBSS.patched -o "$dir"/$1/clean/$cpid/$3/iBSS.img4 -M IM4M -A -T ibss
         "$bin"/img4 -i "$dir"/$1/clean/$cpid/$3/iBEC.patched -o "$dir"/$1/clean/$cpid/$3/iBEC.img4 -M IM4M -A -T ibec
@@ -1506,8 +1520,13 @@ _download_clean_boot_files() {
         if [ -e "$dir"/$1/clean/$cpid/$3/audiocodecfirmware.dec ]; then
             "$bin"/img4 -i "$dir"/$1/clean/$cpid/$3/audiocodecfirmware.dec -o "$dir"/$1/clean/$cpid/$3/audiocodecfirmware.img4 -M IM4M -T acfw
         fi
-        "$bin"/KPlooshFinder "$dir"/$1/clean/$cpid/$3/kcache.raw "$dir"/$1/clean/$cpid/$3/kcache.patched
-        "$bin"/Kernel64Patcher "$dir"/$1/clean/$cpid/$3/kcache.patched "$dir"/$1/clean/$cpid/$3/kcache2.patched -f $(echo "$3" | cut -d '.' -f 1)
+        if [[ "$3" == "15."* || "$3" == "16."* ]]; then
+            cp "$dir"/$1/clean/$cpid/$3/kcache.raw "$dir"/$1/clean/$cpid/$3/kcache.patched
+            "$bin"/KPlooshFinder2 "$dir"/$1/clean/$cpid/$3/kcache.patched "$dir"/$1/clean/$cpid/$3/kcache2.patched
+        else
+            "$bin"/KPlooshFinder "$dir"/$1/clean/$cpid/$3/kcache.raw "$dir"/$1/clean/$cpid/$3/kcache.patched
+            "$bin"/Kernel64Patcher "$dir"/$1/clean/$cpid/$3/kcache.patched "$dir"/$1/clean/$cpid/$3/kcache2.patched -f $(echo "$3" | cut -d '.' -f 1)
+        fi
         "$bin"/kerneldiff "$dir"/$1/clean/$cpid/$3/kcache.raw "$dir"/$1/clean/$cpid/$3/kcache2.patched "$dir"/$1/clean/$cpid/$3/kc.bpatch
         if [[ "$?" == "0" ]]; then
             "$bin"/img4 -i "$dir"/$1/clean/$cpid/$3/kernelcache.dec -o "$dir"/$1/clean/$cpid/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/clean/$cpid/$3/kc.bpatch
@@ -2073,7 +2092,11 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
             sleep 10
         fi
         cd "$dir"/$deviceid/$cpid/ramdisk/$rdversion
-        pongo=0
+        if [[ "$version" == "16."* || "$version" == "17."* ]]; then
+            pongo=1
+        else
+            pongo=0
+        fi
     else
         if [[ "$version" == "7."* || "$version" == "8."* ]]; then
             if [ "$os" = "Darwin" ]; then
@@ -2495,41 +2518,9 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 fi
                 "$bin"/iproxy 2222 22 &
             fi
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "bash -c fixup_update_partition" 2> /dev/null
             echo "[*] Testing for baseband presence"
             if [[ "$version" == "13."* || "$version" == "14."* ]]; then
-                systemdisk=7
-                datadisk=8
-                if [ "$(remote_cmd "/usr/bin/mgask HasBaseband | grep -E 'true|false'")" = "true" ] && [[ "${cpid}" == *"0x700"* ]]; then
-                    systemdisk=6
-                    datadisk=7
-                elif [ "$(remote_cmd "/usr/bin/mgask HasBaseband | grep -E 'true|false'")" = "false" ]; then
-                    if [[ "${cpid}" == *"0x700"* ]]; then
-                        systemdisk=5
-                        datadisk=6
-                    else
-                        systemdisk=6
-                        datadisk=7
-                    fi
-                fi
-                systemfs=disk0s1s$systemdisk
-                datafs=disk0s1s$datadisk
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt3" 2> /dev/null
-                remote_cmd "/sbin/mount_apfs /dev/$systemfs /mnt3" && {
-                    sleep 1
-                    echo "[*] /dev/$systemfs already exists, skipping creation.."
-                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt3" 2> /dev/null
-                } || {
-                    sleep 1
-                    echo "[*] Creating /dev/$systemfs"
-                    if [[ "$version" == "13."* || "$version" == "14."* ]]; then
-                        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -o role=p -A -v Update /dev/disk0s1"
-                    else
-                        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -v Update /dev/disk0s1"
-                    fi
-                    sleep 2
-                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "ls /dev/"
-                }
-                sleep 2
                 systemdisk=8
                 datadisk=9
                 prebootdisk=10
