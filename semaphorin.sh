@@ -235,9 +235,6 @@ parse_arg() {
             if [[ "$version" == "11.0b1" ]]; then
                 version="11.0"
             fi
-            if [[ "$version" == "11.4.1" ]]; then
-                version="11.4"
-            fi
             if [[ "$version" == "12.1."* ]]; then
                 version="12.1"
             fi
@@ -1159,9 +1156,17 @@ _download_boot_files() {
             fi
             "$bin"/KPlooshFinder "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache.patched
             if [[ "$3" == "11.3"* || "$3" == "11.4"* ]]; then
-                "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched -u 11 -a -f 11 -m 11 -r
+                if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                    "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched -u 11 -f 11 -r -c
+                else
+                    "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched -u 11 -f 11 -r
+                fi
             else
-                "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched -u 11 -a -f 11 -m 11 -b
+                if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                    "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched -u 11 -f 11 -b -c
+                else
+                    "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched -u 11 -f 11 -b
+                fi
             fi
             "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache2.patched "$dir"/$1/$cpid/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$cpid/$3/kc.bpatch
@@ -1189,7 +1194,11 @@ _download_boot_files() {
                 "$bin"/img4 -i "$dir"/$1/$cpid/$3/audiocodecfirmware.dec -o "$dir"/$1/$cpid/$3/audiocodecfirmware.img4 -M IM4M -T acfw
             fi
             "$bin"/KPlooshFinder "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache.patched
-            "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched -u 12 -r -f 12
+            if [[ "$deviceid" == "iPhone10"* || "$cpid" == "0x8015"* ]]; then
+                "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched -u 12 -r -f 12 -c
+            else
+                "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kcache2.patched -u 12 -r -f 12
+            fi
             "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache2.patched "$dir"/$1/$cpid/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$cpid/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$cpid/$3/kc.bpatch
@@ -1577,6 +1586,7 @@ _download_root_fs() {
             else
                 fn="$("$bin"/PlistBuddy -c "Print BuildIdentities:0:Manifest:OS:Info:Path" BuildManifest.plist | tr -d '"')"
             fi
+            rm -rf BuildManifest.plist
             "$bin"/aria2c $ipswurl
             "$bin"/7z x $(find . -name '*.ipsw*')
             if [ "$os" = "Darwin" ]; then
@@ -1882,9 +1892,6 @@ if [[ "$clean" == 1 ]]; then
 fi
 if [ -z "$r" ]; then
     read -p "what ios version is or was installed on this device prior to downgrade? " r
-    if [[ "$r" == "11.4.1"* ]]; then
-        r="11.4"
-    fi
 fi
 if [[ "$boot_clean" == 1 ]]; then
     _download_clean_boot_files $deviceid $replace $version
@@ -3358,6 +3365,15 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                     "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 root@localhost:/mnt4/System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64 "$dir"/$deviceid/$cpid/$version/dyld_shared_cache_arm64.raw 2> /dev/null
                     "$bin"/dsc64patcher "$dir"/$deviceid/$cpid/$version/dyld_shared_cache_arm64.raw "$dir"/$deviceid/$cpid/$version/dyld_shared_cache_arm64.patched -11
                     "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/$deviceid/$cpid/$version/dyld_shared_cache_arm64.patched root@localhost:/mnt4/System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64 2> /dev/null
+                    if [[ -e "$dir"/$deviceid/0.0/activation_records/activation_record.plist ]]; then
+                        # [*] Alert
+                        # [*] If you boot now, you will get stuck at the \"screen time\" step in Setup.app
+                        # [*] You must delete Setup.app if you want to be able to use iOS $1
+                        # [*] See https://files.catbox.moe/96vhbl.mov for a video demonstration of the issue
+                        # [*] You will only see this message if activation_records are present for your device
+                        # Would you like to delete Setup.app? [y/n]:
+                        "$bin"/setuphelper.sh $version
+                    fi
                 fi
             elif [[ "$version" == "12."* ]]; then
                 if [[ "$appleinternal" == 1 ]]; then
