@@ -1,3 +1,6 @@
+cctools-927.0.2.tar.gz
+libssl-dev_1.1.1f-1ubuntu2.22_amd64.deb
+libssl1.1_1.1.1f-1ubuntu2.22_amd64.deb
 iPhone6,1_7.1.2_11D257_Restore.ipsw
 iPhone6,1_8.4.1_12H321_Restore.ipsw
 checkra1n-kpf-pongo
@@ -5,6 +8,7 @@ Darwin/.compiled
 kcache_15A5278f.raw
 kernelcache_15A5278f.dec
 iPhone_4.7_11.0_15A5278f_Restore.ipsw
+Info.plist*
 Carrier_Bundles.tar
 data_ark.plist
 trustcache
@@ -15,6 +19,8 @@ mnt2.*
 mnt3.*
 avefw.*
 aopfw.*
+ispfw.*
+kcache.raw.*
 homerfw.*
 multitouch.*
 audiocodecfirmware.*
