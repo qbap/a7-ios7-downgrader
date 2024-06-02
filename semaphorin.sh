@@ -1836,9 +1836,17 @@ check=$("$bin"/irecovery -q | grep CPID | sed 's/CPID: //')
 cpid=$("$bin"/irecovery -q | grep CPID | sed 's/CPID: //')
 replace=$("$bin"/irecovery -q | grep MODEL | sed 's/MODEL: //')
 deviceid=$("$bin"/irecovery -q | grep PRODUCT | sed 's/PRODUCT: //')
+if [[ "$deviceid" == *"iPad"* ]]; then
+    device_os=iPadOS
+elif [[ "$deviceid" == *"iPod"* ]]; then
+    device_os=iOS
+else
+    device_os=iOS
+fi
 echo $cpid
 echo $replace
 echo $deviceid
+echo $device_os
 scid="$cpid"
 if [[ "$cpid" == "0x8000" || "$cpid" == "0x8001" || "$cpid" == 8003 ]]; then
     scid=$(echo $cpid | sed 's/0x/s/g')
@@ -3339,12 +3347,14 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                     "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt4/AppleInternal.tar'
                     "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt5/mobile/Library/Caches/com.apple.MobileGestalt.plist'
                 fi
-                "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/jb/electra1141.app.tar.gz root@localhost:/mnt4/
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xzvf /mnt4/electra1141.app.tar.gz -C /mnt4/Applications/"
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt4/Applications/electra1141.app'
-                "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/jb/unc0ver.app.tar.gz root@localhost:/mnt4/
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xzvf /mnt4/unc0ver.app.tar.gz -C /mnt4/Applications/"
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt4/Applications/unc0ver.app'
+                if [[ "$r" == "16."* || "$r" == "17."* ]]; then
+                    "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/jb/Undecimus.app_disk0s1s9.tar.gz root@localhost:/mnt4/
+                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xzvf /mnt4/Undecimus.app_disk0s1s9.tar.gz -C /mnt4/Applications/"
+                else
+                    "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/jb/Undecimus.app_disk0s1s8.tar.gz root@localhost:/mnt4/
+                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xzvf /mnt4/Undecimus.app_disk0s1s8.tar.gz -C /mnt4/Applications/"
+                fi
+                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost '/usr/sbin/chown -R root:wheel /mnt4/Applications/Undecimus.app'
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt4/System/Library/DataClassMigrators/SystemAppMigrator.migrator/"
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mv -v /mnt5/staged_system_apps/* /mnt4/Applications"
                 "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/jb/UnlimFileManager.app.tar.gz root@localhost:/mnt4/
