@@ -3379,14 +3379,19 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xzvf /mnt4/Certificates.bundle.tar.gz -C /mnt4/' 2> /dev/null
                 "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 root@localhost:/mnt4/System/Library/Security/Certificates.bundle/Info.plist "$dir"/$deviceid/$cpid/$version/Info.plist 2> /dev/null
                 cd "$dir"/$deviceid/$cpid/$version/
-                plutil -convert xml1 Info.plist
                 if [ "$os" = "Darwin" ]; then
+                    plutil -convert xml1 Info.plist
                     cfbundleshortversionstring="$(/usr/bin/plutil -extract "CFBundleShortVersionString" xml1 -o - Info.plist | grep '<string>' | cut -d\> -f2 |cut -d\< -f1 | head -1)"
                 else
+                    plistutil -i Info.plist -f xml -o Info.plist
                     cfbundleshortversionstring="$("$bin"/PlistBuddy -c "Print CFBundleShortVersionString" Info.plist | tr -d '"')"
                 fi
                 LC_ALL=C sed -i -e "s/$cfbundleshortversionstring/2022070700/g" Info.plist
-                plutil -convert binary1 Info.plist
+                if [ "$os" = "Darwin" ]; then
+                    plutil -convert binary1 Info.plist
+                else
+                    plistutil -i Info.plist -f bin -o Info.plist
+                fi
                 cd "$dir"/
                 "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/$deviceid/$cpid/$version/Info.plist root@localhost:/mnt4/System/Library/Security/Certificates.bundle/Info.plist 2> /dev/null
                 if [[ "$version" == "11.3"* || "$version" == "11.4"* ]]; then
@@ -3440,14 +3445,19 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xzvf /mnt4/Certificates.bundle.tar.gz -C /mnt4/' 2> /dev/null
                 "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 root@localhost:/mnt4/System/Library/Security/Certificates.bundle/Info.plist "$dir"/$deviceid/$cpid/$version/Info.plist 2> /dev/null
                 cd "$dir"/$deviceid/$cpid/$version/
-                plutil -convert xml1 Info.plist
                 if [ "$os" = "Darwin" ]; then
+                    plutil -convert xml1 Info.plist
                     cfbundleshortversionstring="$(/usr/bin/plutil -extract "CFBundleShortVersionString" xml1 -o - Info.plist | grep '<string>' | cut -d\> -f2 |cut -d\< -f1 | head -1)"
                 else
+                    plistutil -i Info.plist -f xml -o Info.plist
                     cfbundleshortversionstring="$("$bin"/PlistBuddy -c "Print CFBundleShortVersionString" Info.plist | tr -d '"')"
                 fi
                 LC_ALL=C sed -i -e "s/$cfbundleshortversionstring/2022070700/g" Info.plist
-                plutil -convert binary1 Info.plist
+                if [ "$os" = "Darwin" ]; then
+                    plutil -convert binary1 Info.plist
+                else
+                    plistutil -i Info.plist -f bin -o Info.plist
+                fi
                 cd "$dir"/
                 "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 root@localhost:/mnt4/System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64 "$dir"/$deviceid/$cpid/$version/dyld_shared_cache_arm64.raw 2> /dev/null
                 "$bin"/dsc64patcher "$dir"/$deviceid/$cpid/$version/dyld_shared_cache_arm64.raw "$dir"/$deviceid/$cpid/$version/dyld_shared_cache_arm64.patched -12
