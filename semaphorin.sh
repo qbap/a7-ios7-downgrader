@@ -138,6 +138,7 @@ Main operation mode:
     --restore-activation       Copies the backed up activation records to /dev/disk0s1s2 on the iOS device
     --dump-nand                Backs up the entire contents of your iOS device to disk0.gz
     --dualboot-hfs             This is an experimental dualboot feature for iOS 10.3.3 devices only
+    --dont-wipe                Doesn't wipe the device after backing up the files required to downgrade
     --appleinternal            Enables internalization during restore
     --NoMoreSIGABRT            Adds the "protect" flag to /dev/disk0s1s2
     --disable-NoMoreSIGABRT    Removes the "protect" flag from /dev/disk0s1s2
@@ -205,6 +206,9 @@ parse_opt() {
             "$bin"/iproxy 2222 22 &
             ssh -o StrictHostKeyChecking=no -p2222 root@localhost
             exit 0
+            ;;
+        --dont-wipe)
+            dont_wipe=1
             ;;
         --restore)
             restore=1
@@ -2951,9 +2955,13 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                     "$bin"/iproxy 2222 22 &
                 }
             else
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "lwvm init" 2> /dev/null
-                sleep 1
-                echo "[*] Wiped the device"
+                if [[ "$dont_wipe" == 1 ]]; then
+                    echo "[*] Skipping lwvm init.."
+                else
+                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "lwvm init" 2> /dev/null
+                    sleep 1
+                    echo "[*] Wiped the device"
+                fi
                 $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
                 sleep 5
                 _kill_if_running iproxy
