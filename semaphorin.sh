@@ -836,9 +836,7 @@ _download_boot_files() {
             if [[ "$3" == "7."* || "$3" == "8."* || "$3" == "9."* ]]; then
                 fn="$(awk "/""$replace""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)"
                 if [[ "$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e $buildid $1)" == "true" ]]; then
-                    iv="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -iv $fn $buildid $1)"
-                    key="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -key $fn $buildid $1)"
-                    ivkey="$iv$key"
+                    ivkey="$(../java/bin/java -jar ../Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -ivkey $fn $buildid $1)"
                     if [ -z $ivkey ]; then
                         kbag=$("$bin"/img4 -i $fn -b | head -n 1)
                         iv=$("$bin"/gaster decrypt_kbag $kbag | tail -n 1 | cut -d ',' -f 1 | cut -d ' ' -f 2)
@@ -850,6 +848,8 @@ _download_boot_files() {
                     else
                         "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/$3/kcache.raw -k $ivkey
                         "$bin"/img4 -i $fn -o "$dir"/$1/$cpid/$3/kernelcache.dec -k $ivkey -D
+                        iv="${ivkey:0:32}"
+                        key="${ivkey:32}"
                         pyimg4 im4p extract -i $fn -o "$dir"/$1/$cpid/$3/kcache.raw.pyimg4 --iv $iv --key $key --extra "$dir"/$1/$cpid/$3/kpp.bin
                     fi
                 else
@@ -4743,6 +4743,11 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
             if [[ -e "$dir"/$deviceid/0.0/apticket.der ]]; then
                 echo "$dir"/$deviceid/0.0/apticket.der
             fi
+            pwd
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat /dev/rdisk1" | dd of=dump.raw bs=256 count=$((0x4000))
+            stat dump.raw
+            "$bin"/img4tool --convert -s dumped.shsh dump.raw
+            stat dumped.shsh
             $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
             _kill_if_running iproxy
             exit 0
