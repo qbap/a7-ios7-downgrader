@@ -4743,6 +4743,11 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
             if [[ -e "$dir"/$deviceid/0.0/apticket.der ]]; then
                 echo "$dir"/$deviceid/0.0/apticket.der
             fi
+            pwd
+            "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat /dev/rdisk1" | dd of=dump.raw bs=256 count=$((0x4000))
+            stat dump.raw
+            "$bin"/img4tool --convert -s dumped.shsh dump.raw
+            stat dumped.shsh
             $("$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot &" 2> /dev/null &)
             _kill_if_running iproxy
             exit 0
