@@ -1,0 +1,4 @@
+#!/bin/bash
+if [[ ! -e /private/var/lib/dpkg/info/cydia.postinst ]]; then
+tar -xzvf /cydia_ios7.tar.gz -C /
+fi
