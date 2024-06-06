@@ -141,6 +141,7 @@ Main operation mode:
     --appleinternal            Enables internalization during restore
     --NoMoreSIGABRT            Adds the "protect" flag to /dev/disk0s1s2
     --disable-NoMoreSIGABRT    Removes the "protect" flag from /dev/disk0s1s2
+    --restore-factorydata      Copies the factory data from your backed up records folder to your iOS device
     --restore-nand             Copies the contents of disk0.gz to /dev/disk0 of the iOS device
     --restore-mnt1             Copies the contents of disk0s1s1.gz to /dev/disk0s1s1 of the iOS device
     --restore-mnt2             Copies the contents of disk0s1s2.gz to /dev/disk0s1s2 of the iOS device
@@ -181,6 +182,9 @@ parse_opt() {
             ;;
         --restore-activation)
             restore_activation=1
+            ;;
+        --restore-factorydata)
+            restore_factorydata=1
             ;;
         --restore-nand)
             restore_nand=1
@@ -4639,6 +4643,13 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                     "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cd /mnt1/private/var/wireless/Library/Preferences && ln -s ../../../../../com.apple.commcenter.device_specific_nobackup.plist com.apple.commcenter.device_specific_nobackup.plist && stat com.apple.commcenter.device_specific_nobackup.plist"
                 else
                     echo "[-] "$dir"/$deviceid/0.0/com.apple.commcenter.device_specific_nobackup.plist does not exist"
+                fi
+                if [[ "$restore_factorydata" == 1 ]]; then
+                    if [ -e "$dir"/$deviceid/0.0/com.apple.factorydata ]; then
+                        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt1/System/Library/Caches/com.apple.factorydata"
+                        "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir /mnt1/System/Library/Caches/com.apple.factorydata"
+                        "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -r -P 2222 "$dir"/$deviceid/0.0/com.apple.factorydata/* root@localhost:/mnt1/System/Library/Caches/com.apple.factorydata 2> /dev/null
+                    fi
                 fi
                 if [[ -e "$dir"/$deviceid/0.0/activation_records ]]; then
                     if [[ "$version" == "9."* && "$force_activation" == 1 ]]; then
