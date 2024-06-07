@@ -1089,7 +1089,7 @@ _download_boot_files() {
         elif [[ "$3" == "9."* ]]; then
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/iBSS.patched -o "$dir"/$1/$cpid/$3/iBSS.img4 -M IM4M -A -T ibss
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/iBEC.patched -o "$dir"/$1/$cpid/$3/iBEC.img4 -M IM4M -A -T ibec
-            "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache.patched -u 9 -f 9 -m 9 -a -k -y
+            "$bin"/Kernel64Patcher "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache.patched -u 9 -f 9 -k
             "$bin"/kerneldiff "$dir"/$1/$cpid/$3/kcache.raw "$dir"/$1/$cpid/$3/kcache.patched "$dir"/$1/$cpid/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache.img4 -M IM4M -T rkrn -P "$dir"/$1/$cpid/$3/kc.bpatch
             "$bin"/img4 -i "$dir"/$1/$cpid/$3/kernelcache.dec -o "$dir"/$1/$cpid/$3/kernelcache -M IM4M -T krnl -P "$dir"/$1/$cpid/$3/kc.bpatch
@@ -2140,7 +2140,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
             _download_ramdisk_boot_files $deviceid $replace 10.3.3
             if [[ "$(./java/bin/java -jar ./Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e 14.3 $deviceid)" == "true" ]]; then
                 _download_ramdisk_boot_files $deviceid $replace 14.3
-            elif [[ "$deviceid" == "iPad"* && ! "$deiceid" == "iPad4"* ]]; then
+            elif [[ "$deviceid" == "iPad"* && ! "$deviceid" == "iPad4"* ]]; then
                 _download_ramdisk_boot_files $deviceid $replace 14.3
             else
                 _download_ramdisk_boot_files $deviceid $replace 12.5.4
@@ -2149,7 +2149,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
             _download_ramdisk_boot_files $deviceid $replace 10.3.3
             if [[ "$(./java/bin/java -jar ./Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e 14.3 $deviceid)" == "true" ]]; then
                 _download_ramdisk_boot_files $deviceid $replace 14.3
-            elif [[ "$deviceid" == "iPad"* && ! "$deiceid" == "iPad4"* ]]; then
+            elif [[ "$deviceid" == "iPad"* && ! "$deviceid" == "iPad4"* ]]; then
                 _download_ramdisk_boot_files $deviceid $replace 14.3
             else
                 _download_ramdisk_boot_files $deviceid $replace 12.5.4
@@ -2157,7 +2157,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
         elif [[ "$version" == "11."* || "$version" == "12."* || "$version" == "13."* || "$version" == "14."* ]]; then
             if [[ "$(./java/bin/java -jar ./Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e 14.3 $deviceid)" == "true" ]]; then
                 _download_ramdisk_boot_files $deviceid $replace 14.3
-            elif [[ "$deviceid" == "iPad"* && ! "$deiceid" == "iPad4"* ]]; then
+            elif [[ "$deviceid" == "iPad"* && ! "$deviceid" == "iPad4"* ]]; then
                 _download_ramdisk_boot_files $deviceid $replace 14.3
             else
                 _download_ramdisk_boot_files $deviceid $replace 12.5.4
@@ -2252,7 +2252,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
         elif [[ "$version" == "11."* || "$version" == "12."* || "$version" == "13."* || "$version" == "14."* ]]; then
             if [[ "$(./java/bin/java -jar ./Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e 14.3 $deviceid)" == "true" ]]; then
                 cd "$dir"/$deviceid/$cpid/ramdisk/14.3
-            elif [[ "$deviceid" == "iPad"* && ! "$deiceid" == "iPad4"* ]]; then
+            elif [[ "$deviceid" == "iPad"* && ! "$deviceid" == "iPad4"* ]]; then
                 cd "$dir"/$deviceid/$cpid/ramdisk/14.3
             else
                 cd "$dir"/$deviceid/$cpid/ramdisk/12.5.4
@@ -2515,7 +2515,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 elif [[ "$version" == "11."* || "$version" == "12."* || "$version" == "13."* || "$version" == "14."* ]]; then
                     if [[ "$(./java/bin/java -jar ./Darwin/FirmwareKeysDl-1.0-SNAPSHOT.jar -e 14.3 $deviceid)" == "true" ]]; then
                         cd "$dir"/$deviceid/$cpid/ramdisk/14.3
-                    elif [[ "$deviceid" == "iPad"* && ! "$deiceid" == "iPad4"* ]]; then
+                    elif [[ "$deviceid" == "iPad"* && ! "$deviceid" == "iPad4"* ]]; then
                         cd "$dir"/$deviceid/$cpid/ramdisk/14.3
                     else
                         cd "$dir"/$deviceid/$cpid/ramdisk/12.5.4
@@ -3693,7 +3693,7 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                     "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount -w -t hfs -o suid,dev /dev/disk0s1s2 /mnt2" 2> /dev/null
                 fi
             fi
-            if [[ "$version" == "7."* || "$version" == "8."* || "$version" == "9."* ]]; then
+            if [[ "$version" == "7."* || "$version" == "8."* ]]; then
                 "$bin"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P 2222 "$dir"/jb/cydia_ios7.tar.gz root@localhost:/mnt2 2> /dev/null
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xzvf /mnt2/cydia_ios7.tar.gz -C /mnt1"
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/cydia_ios7.tar.gz" 2> /dev/null
@@ -3856,17 +3856,12 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mkdir -p /mnt2/mobile/Media/" 2> /dev/null
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt2/mobile/Media/.evasi0n7_installed" 2> /dev/null
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chmod 777 /mnt2/mobile/Media/.evasi0n7_installed" 2> /dev/null
-            elif [[ "$version" == "9."*  ]]; then
-                "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/jb/launchctl.tar.gz root@localhost:/mnt1/ 2> /dev/null
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xzvf /mnt1/launchctl.tar.gz -C /mnt1/' 2> /dev/null
-                "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/jb/untether_ios8.tar root@localhost:/mnt1/ 2> /dev/null
-                "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xvf /mnt1/untether_ios8.tar -C /mnt1/' 2> /dev/null
             elif [[ "$version" == "8."*  ]]; then
                 "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/jb/untether_ios8.tar root@localhost:/mnt1/ 2> /dev/null
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'tar --preserve-permissions -xvf /mnt1/untether_ios8.tar -C /mnt1/' 2> /dev/null
             fi
             "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/$deviceid/$cpid/$version/kernelcache root@localhost:/mnt1/System/Library/Caches/com.apple.kernelcaches 2> /dev/null
-            if [[ ! "$version" == "10."* ]]; then
+            if [[ ! "$version" == "10."* && ! "$version" == "9."* ]]; then
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "touch /mnt1/.cydia_no_stash" 2> /dev/null
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/chown root:wheel /mnt1/.cydia_no_stash" 2> /dev/null
                 "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chmod 777 /mnt1/.cydia_no_stash" 2> /dev/null
@@ -3958,6 +3953,10 @@ if [[ "$ramdisk" == 1 || "$restore" == 1 || "$dump_blobs" == 1 || "$force_activa
                     "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost 'rm -rf /mnt1/System/Library/DataClassMigrators/RestorePostProcess.migrator/' 2> /dev/null
                     "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/chflags schg /mnt2/root/Library/Lockdown/data_ark.plist"
                     "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/chflags schg /mnt2/mobile/Library/mad/data_ark.plist"
+                fi
+                if [[ "$version" == "9.3"* ]]; then
+                    "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 "$dir"/jb/NvwaStone.app.tar.gz root@localhost:/mnt1/
+                    "$bin"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "tar -xzvf /mnt1/NvwaStone.app.tar.gz -C /mnt1/Applications/"
                 fi
                 "$bin"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P 2222 root@localhost:/mnt1/System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64 "$dir"/$deviceid/$cpid/$version/dyld_shared_cache_arm64.raw 2> /dev/null
                 "$bin"/dsc64patcher "$dir"/$deviceid/$cpid/$version/dyld_shared_cache_arm64.raw "$dir"/$deviceid/$cpid/$version/dyld_shared_cache_arm64.patched -9

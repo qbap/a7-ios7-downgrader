@@ -10,6 +10,8 @@
 
 # IF YOUR DEVICE SUPPORTS [LEGACY-IOS-KIT](https://github.com/LukeZGD/Legacy-iOS-Kit), YOU SHOULD REALLY USE THAT OVER THIS.
 
+# SEMAPHORIN IS NOW DISCONTINUED, PLEASE ASK [Mineek](https://github.com/mineek) FOR THE BEST ALTERNATIVE.
+
 # Chart of compatibility
 
 | iOS         | App Store | Cydia       | Tweaks    | Respring| Cellular | Sideloadly | iTunes     |
@@ -74,14 +76,6 @@ USB Type-A port and Lightning cable. USB Type-C ports will **NOT** work with thi
 
 Working iDevice: The script has to backup `apticket.der`, `sep-firmware.img4`, `Baseband`, and `keybags` from your device before you can downgrade to an older iOS version.
 
-## Support
-
-We now have a [Discord server](https://discord.gg/WQWDBBYJTb) where you can get help with this project.
-
-If, for whatever reason, that invite link does not work, please contact [wilm271](https://t.me/wilm271) on Telegram.
-
-The Discord server is strictly for Semaphorin support only. Please don't bring personal issues into our server.
-
 ## Setup.app bypass
 
 We will not be providing any support for any method of deleting `/Applications/Setup.app` with our script.
@@ -122,7 +116,7 @@ Linux and Windows support is not planned either, do not ask about this either.
    ### Safari does not work (iOS 10)
    Use the FileManager app on the home screen instead. It is a drop in replacement for Safari, and has a built in download manager also. Until further notice, this does not work on iPads, due to it being missing from the home screen and not being able to launch the app from Safari. This may be fixed at a later date. Sorry for the inconvenience. As a workaround, for iPads only, you can sign into App Store and download https://apps.apple.com/us/app/unlimfilemanager/id456683394 from there.
 
-   ### Cydia is absent (on iPads)
+   ### Cydia is absent (iOS 7, 8 on iPads)
    iPads have uicache issues with most jailbreaking tools. To open Cydia, enter `cydia://` in Safari's address bar and press Enter.
 
    ### Meridian is absent (on iPads)
@@ -133,6 +127,9 @@ Linux and Windows support is not planned either, do not ask about this either.
 
    ### Electra is absent (on iPads)
    iPads have uicache issues with most jailbreaking tools. To open Electra, enter `electra://` in Safari's address bar and press Enter.
+
+   ### Pangu is absent (on iPads)
+   iPads have uicache issues with most jailbreaking tools. To open Pangu, enter `nvwastone://` in Safari's address bar and press Enter.
 
    ### Terminal is absent (on iPads)
    iPads have uicache issues with most jailbreaking tools. To open Terminal, enter `mterminal://` in Safari's address bar and press Enter.  
